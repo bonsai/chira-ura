@@ -1,6 +1,6 @@
 # chira-ura UI 仕様（実装の正）
 # 変更したら実装（crx/）と同時に更新する。ここに無い UI は足さない。
-version: 2.5.2-dev
+version: 2.5.3-dev
 updated: 2026-10-19
 
 brand:
@@ -129,4 +129,4 @@ rules:
   - 権限は storage / sidePanel / identity / identity.email / alarms のみ
   - popup のコマンドは動詞のみ。値は右に小さく
   - brand は popup 最下部だけ。gh はコマンド（イシュー/履歴）に統合
-  - 変更は version と version_name(-dev) を細かく上げ、doc/dev.history.md に追記
+  - 変更は version と version_name(-dev) を細かく上げ、dev/dev.history.md に追記
