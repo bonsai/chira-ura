@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "kami copi / 紙コピー",
-  "version": "2.0.0",
+  "version": "2.2.0",
   "description": "書いたら自動保存。メモ入力・コピーだけの超軽量メモ帳。箱はGDrive(GAS)がマスター。設定はCLI。",
   "icons": {
     "16": "icons/icon.svg",
@@ -20,7 +20,16 @@
   },
   "permissions": [
     "storage",
-    "sidePanel"
+    "sidePanel",
+    "identity",
+    "identity.email"
   ],
-  "host_permissions": []
+  "host_permissions": [],
+  "version_name": "2.2.0-dev",
+  "oauth2": {
+    "client_id": "REPLACE_ME.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/drive.file"
+    ]
+  }
 }

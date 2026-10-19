@@ -24,12 +24,12 @@ html, body {
   width: 300px;
 }
 
-/* ---------- コマンド ---------- */
+/* ---------- コマンド（動詞のみ） ---------- */
 .cmds { display: flex; flex-direction: column; padding: 6px; }
 
 .cmd {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
   width: 100%;
   padding: 8px 10px;
@@ -52,42 +52,117 @@ html, body {
   color: var(--mute);
   letter-spacing: 0.04em;
 }
-.cmd .hint.on { color: var(--enji); font-weight: 700; }
 .cmd.open { background: #efe9db; }
 
-/* ---------- CLI 案内 ---------- */
-.cli {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  padding: 2px 16px 10px;
-}
-.cli[hidden] { display: none; }
-.cli code {
-  display: block;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.72rem;
-  color: var(--ink);
-  background: #f2ecdd;
-  border-radius: 4px;
-  padding: 3px 6px;
-}
-.cli p {
-  margin: 0;
-  font-size: 0.66rem;
-  line-height: 1.45;
+.badge {
+  min-width: 18px;
+  padding: 1px 5px;
+  border-radius: 9px;
+  background: #e7dfcb;
   color: var(--mute);
+  font-size: 0.64rem;
+  text-align: center;
 }
 
-/* ---------- ステータス（下部・絵文字のみ） ---------- */
+/* ---------- 箱パネル ---------- */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 10px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.panel[hidden] { display: none; }
+
+.box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 0.78rem;
+  text-align: left;
+  cursor: pointer;
+}
+.box:hover { background: #efe9db; }
+.box .dot {
+  margin-left: auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: transparent;
+}
+.box.active { font-weight: 700; }
+.box.active .dot { background: var(--enji); }
+
+.panel-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px 0;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+.panel-foot .link {
+  font-size: 0.68rem;
+  color: var(--mute);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.panel-foot .link:hover { color: var(--enji); }
+.panel-foot code.as-link {
+  cursor: pointer;
+  text-decoration: underline;
+}
+.panel-foot code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.64rem;
+  color: var(--mute);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- ステータス行（自動保存 + 絵文字） ---------- */
 .statusline {
   display: flex;
-  justify-content: flex-end;
   align-items: center;
-  height: 16px;
+  gap: 8px;
+  height: 22px;
   padding: 0 14px;
 }
+.switch { display: inline-flex; cursor: pointer; }
+.switch input {
+  appearance: none;
+  margin: 0;
+  width: 26px;
+  height: 14px;
+  border-radius: 8px;
+  background: #e0d9c8;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.switch input::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fffaf0;
+  transition: transform 0.15s;
+}
+.switch input:checked { background: var(--enji); }
+.switch input:checked::after { transform: translateX(12px); }
+
 .status {
+  margin-left: auto;
   font-size: 0.78rem;
   line-height: 1;
   opacity: 0.28;

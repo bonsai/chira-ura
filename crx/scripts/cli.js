@@ -1,80 +1,124 @@
 #!/usr/bin/env node
-// kami copi CLI — 設定・同期専用
-// 拡張機能内には設定画面を作らない。すべてここから操作する。
+// kami copi CLI — 設定専用（拡張内に設定画面は作らない）
+// 鍵は平文 JSON に置く。拡張側は popup の「箱 → 鍵を読む」でこのファイルを読込む。
 
-import { execSync } from "node:child_process";
+import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
+import { homedir } from "node:os";
+import { join, dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const CHROME_PATH = process.env.CHROME_PATH || "google-chrome";
-const EXTENSION_ID = process.env.KAMI_EXTENSION_ID || ""; // chrome://extensions から確認
+const KEYS_PATH = process.env.KAMI_KEYS
+  || join(homedir(), ".config", "kami-copi", "keys.json");
 
-const args = process.argv.slice(2);
-const cmd = args[0];
-const sub = args[1];
-const val = args.slice(2).join(" ");
+const BOXES = ["local", "gdrive", "gh", "box"];
+const MANIFEST = resolve(dirname(fileURLToPath(import.meta.url)), "..", "manifest.json");
 
-function log(msg) { console.log(msg); }
-function err(msg) { console.error(msg); process.exit(1); }
+function usage() {
+  console.log(`kami copi CLI
 
-async function main() {
-  switch (cmd) {
-    case "set":
-      await setConfig(sub, val);
-      break;
-    case "sync":
-      await syncCommand(sub);
-      break;
-    case "id":
-      log("拡張機能IDを環境変数 KAMI_EXTENSION_ID に設定してください");
-      log("例: export KAMI_EXTENSION_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-      break;
-    default:
-      err("使い方: node cli.js set <key> <value> | sync <pull|push> | id");
+  kami set <key> <value>     非秘密の設定のみ（トークンは OAuth なので置かない）
+                                 kami set gdrive.folderId <id>
+                                 kami set gdrive.url https://script.google.com/...
+                                 kami set auth.gh.clientId <id>
+                                 kami set auth.box.clientId <id>
+  kami get [key]             鍵を表示（key 省略で全部）
+  kami box <${BOXES.join("|")}>
+  kami client-id <id>.apps.googleusercontent.com   manifest の oauth2.client_id を書く
+  kami path                  鍵ファイルのパス
+  kami keys                  鍵ファイルの中身をそのまま表示
+
+鍵ファイル（平文 JSON）: ${KEYS_PATH}
+読込: popup → 箱 → 鍵を読む`);
+}
+
+function read() {
+  if (!existsSync(KEYS_PATH)) return {};
+  try {
+    return JSON.parse(readFileSync(KEYS_PATH, "utf8"));
+  } catch (e) {
+    console.error(`壊れた JSON: ${KEYS_PATH}`);
+    process.exit(1);
   }
 }
 
-async function setConfig(key, value) {
-  if (!key || !value) err("使い方: node cli.js set <key> <value>");
-  switch (key) {
-    case "gas-url":
-    case "gas-url":
-      log(`GAS URL: ${value}`);
-      log("※ 拡張機能側の storage.db / background でこのURLを読み込むようにしてください（実装予定）");
-      break;
-    case "default-box":
-      log(`デフォルト箱: ${value}`);
-      break;
-    case "autosave-interval":
-      log(`自動保存間隔: ${value}ms`);
-      break;
-    default:
-      err(`不明なキー: ${key}`);
-  }
+function write(obj) {
+  mkdirSync(dirname(KEYS_PATH), { recursive: true });
+  writeFileSync(KEYS_PATH, JSON.stringify(obj, null, 2) + "\n", "utf8");
+  console.log(`saved: ${KEYS_PATH}`);
 }
 
-async function syncCommand(sub) {
-  if (!EXTENSION_ID) {
-    err("KAMI_EXTENSION_ID 環境変数を設定してください（chrome://extensions でIDを確認）");
+function setPath(obj, path, value) {
+  const parts = path.split(".");
+  let cur = obj;
+  for (const p of parts.slice(0, -1)) {
+    if (typeof cur[p] !== "object" || cur[p] === null) cur[p] = {};
+    cur = cur[p];
   }
-  switch (sub) {
-    case "pull":
-      log("GDrive(GAS) → ローカル に同期中...");
-      await fetchFromGas("pull");
-      break;
-    case "push":
-      log("ローカル → GDrive(GAS) に同期中...");
-      await fetchFromGas("push");
-      break;
-    default:
-      err("使い方: node cli.js sync <pull|push>");
-  }
+  cur[parts[parts.length - 1]] = value;
+  return obj;
 }
 
-async function fetchFromGas(action) {
-  // ※ 実際のGAS連携は、拡張機能側の background/service-worker.js または
-  //    sidepanel/app.js から chrome.storage.local を介して行う。
-  // CLI からは「拡張機能にメッセージを送って同期をトリガー」するか、
-  // GAS の Web API を直接叩く実装をここに追加する。
-  log(`[stub] ${action} 同期（GAS連携は拡張機能側で実装してください）`);
+function getPath(obj, path) {
+  return path.split(".").reduce((a, k) => (a == null ? a : a[k]), obj);
 }
 
-main().catch(err);
+const [cmd, ...rest] = process.argv.slice(2);
+
+switch (cmd) {
+  case "set": {
+    const [key, ...val] = rest;
+    const value = val.join(" ");
+    if (!key || !value) {
+      console.error("使い方: kami set <key> <value>");
+      process.exit(1);
+    }
+    write(setPath(read(), key, value));
+    break;
+  }
+  case "get": {
+    const keys = read();
+    const out = rest[0] ? getPath(keys, rest[0]) : keys;
+    console.log(typeof out === "string" ? out : JSON.stringify(out, null, 2));
+    break;
+  }
+  case "client-id": {
+    const id = rest[0];
+    if (!id || !id.includes(".apps.googleusercontent.com")) {
+      console.error("使い方: kami client-id <id>.apps.googleusercontent.com");
+      process.exit(1);
+    }
+    const m = JSON.parse(readFileSync(MANIFEST, "utf8"));
+    m.oauth2 = { ...(m.oauth2 || {}), client_id: id };
+    writeFileSync(MANIFEST, JSON.stringify(m, null, 2) + "\n", "utf8");
+    console.log(`oauth2.client_id -> ${id}`);
+    console.log("chrome://extensions で再読み込み");
+    break;
+  }
+  case "box": {
+    const id = rest[0];
+    if (!BOXES.includes(id)) {
+      console.error(`使い方: kami box <${BOXES.join("|")}>`);
+      process.exit(1);
+    }
+    write(setPath(read(), "box", id));
+    break;
+  }
+  case "path":
+    console.log(KEYS_PATH);
+    break;
+  case "keys":
+    console.log(JSON.stringify(read(), null, 2));
+    break;
+  case "sync": {
+    const sub = rest[0];
+    if (!["pull", "push"].includes(sub)) {
+      console.error("使い方: kami sync <pull|push>（未実装: 箱の同期は拡張側で行う）");
+      process.exit(1);
+    }
+    console.error(`[stub] ${sub}: 同期は未実装。箱の設定だけ先に済ませる。`);
+    process.exit(1);
+  }
+  default:
+    usage();
+    if (cmd) process.exit(1);
+}
