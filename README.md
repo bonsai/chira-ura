@@ -24,6 +24,8 @@ chira set gdrive.folderId <id>                    # 箱フォルダ
 chira set auth.gh.clientId <id>                   # GitHub OAuth
 chira box gdrive                                  # 既定の箱
 chira path                                        # 鍵ファイル（平文 JSON・非秘密のみ）
+chira serve                                       # ブリッジを立てる（拡張が 5 分毎に pull）
+chira pull | push | sync                          # 同期の意味は「GDrive が正」
 ```
 
 トークンは保存しない。Google は `chrome.identity.getAuthToken`、GH/Box は `launchWebAuthFlow`（コード取得まで）。
@@ -45,6 +47,7 @@ chira path                                        # 鍵ファイル（平文 JSO
 
 ## 現在地
 
+- v2.4.0-dev: CLI⇄拡張を localhost ブリッジ（8787）で同期。意味は「GDrive が正」（拡張は pull のみ）。
 - v2.3.0-dev: 商標回避で `kami copi` → `chira-ura` に改名（repo / 鍵パス / Chrome 読込先も変更）。
 - popup 動詞コマンド・箱選択・積みキュー・OAuth まで実装。
 - 未確定: Google OAuth の `client_id`（`REPLACE_ME`）、GH/Box のトークン交換、箱への実際の保存。

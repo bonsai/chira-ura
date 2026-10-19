@@ -26,6 +26,7 @@ crx/
   scripts/auth.js        OAuth（Google=getAuthToken、GH/Box=launchWebAuthFlow）
   scripts/boxes.js       箱の定義と鍵のマージ
   scripts/stack.js       クリップボードの積みキュー（LIFO・最大50・先頭が最新）
+  scripts/bridge.js      localhost ブリッジ（GET/PUT http://127.0.0.1:8787/state）
   scripts/flash.js       絵文字のみの status 通知
   scripts/clipboard.js   コピー共通処理
   storage/db.js          chrome.storage.local ラッパ（ローカルはキャッシュ）
@@ -56,6 +57,8 @@ bash tools/sync.sh          # crx/ → <LOAD> へ rsync
   （folder ID、client_id、GAS URL）。
 - GDrive 箱フォルダ: `<folder-id>`（<account>）。
 - version は変更単位で細かく上げる。`version_name` に `-dev` を付ける。
+- 同期の意味は「GDrive が正」だけ。CLI（`chira serve`）が GDrive ミラーを配り、
+  拡張は background の alarm で pull する。**拡張から push しない**。
 
 ## 未実施
 

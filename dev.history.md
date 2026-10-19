@@ -2,6 +2,16 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-10-19 / v2.4.0-dev — CLI ⇄ 拡張のブリッジ（GDrive が正）
+
+- 指示: CLI⇄crx の同期は localhost ブリッジ（選択肢2）。CLI 側にも同種のクライアントを実装。
+  同期の意味は「GDrive が正」だけ。
+- 変更: `crx/scripts/bridge.js`（protocol: `GET/PUT http://127.0.0.1:8787/state`）。
+  background が 5 分 alarm + 起動時に pull し、`keys` / `box` / `gasUrl` / `bridgeRev` を `chrome.storage` に写す。
+  拡張からは push しない（正は GDrive）。`chira serve`（サーバ）/ `chira pull` / `chira push` / `chira sync`。
+- 権限: `alarms` 追加、`host_permissions: http://127.0.0.1:8787/*`。background を `type: module` に。
+- 検証: GET/PUT と rev 増加、`chira pull` を実測。8765 は別プロセスが使用中だったため 8787 に決定。
+
 ## 2026-10-19 / v2.3.0-dev — 改名（商標回避）
 
 - 指示: `http://kamicopi.net/` と衝突＝商標違反なので名を変える。新名 `chira-ura`。
