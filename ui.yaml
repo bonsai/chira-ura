@@ -1,17 +1,16 @@
 # chira-ura UI 仕様（実装の正）
 # 変更したら実装（crx/）と同時に更新する。ここに無い UI は足さない。
-version: 2.4.0-dev
+version: 2.5.1-dev
 updated: 2026-10-19
 
 brand:
   name: chira-ura / チラ裏
-  mark: "chira<span>ura</span>"         # 前半は淡色、後半にアクセント
+  mark: "chira<span>ura</span>"
   placement: [popup.footer]             # sidepanel には置かない
-  link_placement: [popup.footer]        # gh のみ。brand の直上
-  gh: https://github.com/bonsai/chira-ura
+  gh: https://github.com/bonsai/chira-ura   # リンクは popup の「イシュー」「履歴」に統合
 
 tokens:                                # crx/popup/style.css, crx/sidepanel/style.css
-  washi: "#faf7f0"                     # 背景
+  washi: "#faf7f0"
   sumi: "#2c241e"
   enji: "#8b0000"                      # accent / active
   ink: "#3a322a"
@@ -20,55 +19,58 @@ tokens:                                # crx/popup/style.css, crx/sidepanel/styl
   font: '"Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif'
   mono: "ui-monospace, SFMono-Regular, Menlo, monospace"
 
-popup:                                 # crx/popup/index.html
+popup:                                 # crx/popup/{index.html,app.js,style.css}
   width: 300
   height: auto
   header: none
   editor: none                         # 入力欄は置かない（書くのは sidepanel）
-  commands:                            # 動詞のみ・最大7
+  commands:                            # 動詞のみ
     max: 7
     items:
-      - { id: cmdWrite,  label: 書く,     action: sidePanel.open(sidepanel/index.html) }
-      - { id: cmdRead,   label: 読む,     action: sidePanel.open(sidepanel/log.html) }
-      - { id: cmdCopy,   label: コピー,   action: "copy(activeNote) + stack.push" }
-      - { id: cmdPush,   label: 積む,     action: stack.push(activeNote) }
-      - { id: cmdPop,    label: 取る,     action: "stack.pop -> copy", badge: stack.depth }
-      - { id: cmdImport, label: 読み込む, action: "file input (.jsonl/.json) -> notes" }
-      - { id: cmdBox,    label: 箱,       action: toggle(boxPanel), hint: active box name }
-  box_panel:                           # コマンド行の下に開閉
+      - { id: cmdWrite,   label: 書く,   action: "sidePanel.open(sidepanel/write.html)" }
+      - { id: cmdRead,    label: 読む,   action: "sidePanel.open(sidepanel/read.html)" }
+      - { id: cmdBox,     label: 箱,     action: toggle(boxPanel), hint: active box name }
+      - { id: cmdIssue,   label: イシュー, action: "open <repo>/issues/new" }
+      - { id: cmdHistory, label: 履歴,   action: "open <repo>#readme" }
+    removed: [コピー, 積む, 取る, 読み込む]   # 2026-10-19 に削除。読む/箱に統合
+  box_panel:                           # 「箱」で開閉。保存先 + フォルダ + ファイル
     items: [local, gdrive, gh, box]
-    mark: dot                            # 選択中は enji の点
+    mark: dot                          # 選択中は enji の点
+    default: gdrive
     actions:
       local:  { auth: none }
       gdrive: { auth: "chrome.identity.getAuthToken", scope: "drive.file" }
       gh:     { auth: "launchWebAuthFlow", client_id: "keys.auth.gh.clientId" }
       box:    { auth: "launchWebAuthFlow", client_id: "keys.auth.box.clientId" }
-    foot:
-      - { id: keysFile, label: 鍵を読む, accept: .json }   # keys.json を chrome.storage へマージ
-      - { id: keyHint,  label: "chira set gdrive.folderId … | GDrive を開く" }
+    rows:
+      - { id: folderInput, label: フォルダ, kind: text, placeholder: "folder ID / URL",
+          save: "keys.gdrive.folderId（URL なら folders/<id> を抽出）" }
+      - { id: jsonlFile,   label: ファイル, kind: file, accept: ".jsonl,.json",
+          action: "notes へ取り込む（ちょっとしたものを読む）" }
+      - { id: keysFile,    label: 鍵,       kind: file, accept: ".json",
+          action: "keys.json を chrome.storage へマージ（box も適用）" }
   statusline:
     left: "autosave switch (default on, storage: autoSave)"
     right: "status emoji (blink 0.55s x2, idle opacity 0.28)"
   footer:
-    - gh link (small, mute)
-    - brand (bottom-most)
+    - brand (bottom-most, 唯一のフッター要素)
 
-sidepanel_write:                       # crx/sidepanel/index.html
+sidepanel_write:                       # crx/sidepanel/write.html
   title: "chira-ura — 書く"
   body: "textarea (full height, autosave debounce 600ms)"
-  footer: [コピー (primary), 過去記事 (ghost -> log.html)]
+  footer: [コピー (primary), 過去記事 (ghost -> read.html)]
   brand: none
   gh: none
 
-sidepanel_log:                         # crx/sidepanel/log.html
+sidepanel_read:                        # crx/sidepanel/read.html
   title: "chira-ura — 過去記事"
   body: memo list (sorted by updatedAt desc)
   card:
     head: title + date
     collapsed: "preview 60 chars"
     expanded: "pre (white-space pre-wrap)"
-    action: コピー (content only, no title/prefix; also pushes stack)
-  footer: [書く (ghost -> index.html)]
+    action: コピー (content only, no title/prefix)
+  footer: [書く (ghost -> write.html)]
   brand: none
   gh: none
 
@@ -77,8 +79,6 @@ status:                                # 絵文字のみ。テキストは title
   saved:    { emoji: "📝", label: ローカル保存済み }
   copied:   { emoji: "📋", label: クリップボード保存済み }
   dirty:    { emoji: "✏️", label: 未保存 }
-  stacked:  { emoji: "🗃", label: 積みました }
-  popped:   { emoji: "📤", label: 取り出しました }
   imported: { emoji: "🗂", label: 読み込みました }
   box:      { emoji: "📦", label: 箱を変更しました }
   keyed:    { emoji: "🔑", label: 認証・鍵 }
@@ -87,51 +87,46 @@ status:                                # 絵文字のみ。テキストは title
   fail:     { emoji: "🚫", label: 失敗しました }
 
 copy:
-  scope: 本文のみ                         # タイトル・前置きを付けない＝そのままプロンプトに流せる
+  scope: 本文のみ                        # 前置き・タイトルを付けない＝プロンプトに流せる
+  where: [sidepanel_write, sidepanel_read]   # popup にはコピーコマンドを置かない
 
-stack:                                 # crx/scripts/stack.js
-  storage: clipStack                   # [{ text, at }] 先頭が最新
-  order: LIFO
-  max: 50
-  dedupe: consecutive only
+bridge:                                # GDrive が正
+  port: 8787
+  endpoint: "http://127.0.0.1:8787/state"
+  method: [GET, PUT]
+  meaning: "CLI が GDrive ミラーを配り、拡張は pull のみ（push しない）"
+  poll: "background の alarm 5分 + onInstalled/onStartup"
+  applies_to_storage: [keys, box, gasUrl, bridgeRev]
+  server: "chira serve"
 
 storage_keys:                          # chrome.storage.local
   notes: "配列 [{ id, title, content, updatedAt }]"
   activeNoteId: string
   autoSave: bool
-  box: "local | gdrive | gh | box"
+  box: "local | gdrive | gh | box（既定 gdrive）"
   keys: "keys.json をマージした非秘密設定（トークンは置かない）"
   gasUrl: string
-  clipStack: "積みキュー"
-  note: "旧キー（残骸・popup はもう書かない）"
-
-bridge:                                # crx/scripts/bridge.js + background（GDrive が正）
-  port: 8787
-  endpoint: "http://127.0.0.1:8787/state"
-  method: [GET, PUT]
-  meaning: "GDrive が正。CLI が GDrive ミラーを配り、拡張は pull のみ（push しない）"
-  poll: "background の alarm 5分 + onInstalled/onStartup"
-  applies_to_storage: [keys, box, gasUrl, bridgeRev]
-  server: "chira serve"
+  bridgeRev: number
+  note: "旧キー（残骸）"
 
 cli:                                   # crx/scripts/cli.js（bin: chira）
-  keys_path: ~/.config/chira-ura/keys.json   # 平文 JSON・非秘密のみ
+  keys_path: ~/.config/chira-ura/keys.json
   commands:
     - "chira set <key> <value>"
     - "chira get [key]"
     - "chira box <local|gdrive|gh|box>"
-    - "chira client-id <id>.apps.googleusercontent.com"   # manifest.oauth2.client_id
+    - "chira client-id <id>.apps.googleusercontent.com"
     - "chira path"
     - "chira keys"
-    - "chira serve [--port N]"          # ブリッジを立てる
-    - "chira pull"                       # ブリッジ -> keys.json
-    - "chira push"                       # keys.json -> ブリッジ（GDrive ミラー）
-    - "chira sync"                       # 意味は「GDrive が正」= pull
+    - "chira serve [--port N]"
+    - "chira pull"
+    - "chira push"
+    - "chira sync"                     # 意味は「GDrive が正」= pull
 
 rules:
   - 設定画面・テーマ選択・複数箱リストを拡張内に作らない
   - 認証は OAuth。トークンを平文に置かない
-  - 権限は storage / sidePanel / identity / identity.email のみ
+  - 権限は storage / sidePanel / identity / identity.email / alarms のみ
   - popup のコマンドは動詞のみ。値は右に小さく
-  - brand と gh は popup 最下部だけ
+  - brand は popup 最下部だけ。gh はコマンド（イシュー/履歴）に統合
   - 変更は version と version_name(-dev) を細かく上げ、dev.history.md に追記

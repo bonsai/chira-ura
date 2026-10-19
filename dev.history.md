@@ -2,6 +2,22 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-10-19 / v2.5.1-dev — サイドのファイル名を write/read に
+
+- 指示: `write.html` `read.html` で直す。
+- 変更: `sidepanel/index.html` → `write.html`（+ write.js）、`log.html` → `read.html`（+ read.js）。
+  manifest `side_panel.default_path` と popup のパス、相互リンクを更新。
+
+## 2026-10-19 / v2.5.0-dev — popup を 5 コマンドに削減
+
+- 指示: コピー不要。積むは意味不明で不要。取るは読むと同義。読み込むは「ちょっとしたものを読みたい」なので
+  箱のフォルダ・ファイル指定に統合。イシュー作成は gh リンクに飛ばす（gh リンクを統合）。
+  開発履歴を読むは gh README にリンク。
+- 変更: popup = 書く / 読む / 箱 / イシュー / 履歴。
+  箱パネルに「フォルダ」（folderId/URL）と「ファイル」（JSONL 読込）を統合。
+  フッターの gh リンクを廃止し、brand のみ最下部。
+  `scripts/stack.js` と積みキュー（積む/取る）を削除。コピーはサイドパネルにのみ残す。
+
 ## 2026-10-19 / v2.4.0-dev — CLI ⇄ 拡張のブリッジ（GDrive が正）
 
 - 指示: CLI⇄crx の同期は localhost ブリッジ（選択肢2）。CLI 側にも同種のクライアントを実装。
@@ -46,8 +62,8 @@
 
 ## 2026-10-19 / v2.0.0 — sidepanel を書く/読むに分離
 
-- 指示: 過去記事は `sidepanel/log.html` に分離。status は下部、brand と gh はフッターのみ。
-- 変更: `sidepanel/index.html`（書く）/ `sidepanel/log.html`（過去記事）。コピーは本文のみ（前置き無し）。
+- 指示: 過去記事は `sidepanel/read.html` に分離。status は下部、brand と gh はフッターのみ。
+- 変更: `sidepanel/write.html`（書く）/ `sidepanel/read.html`（過去記事）。コピーは本文のみ（前置き無し）。
   タイトルは本文1行目から導出。`scripts/flash.js` を新設し、通知を絵文字のみ（📝/📋/💾/✏️/🗂/⚠️/🚫）に統一。
 
 ## 2026-10-19 / v2.0.0 — skill 化

@@ -19,8 +19,8 @@ description: >
 crx/
   manifest.json          MV3 / permissions: storage, sidePanel, identity, identity.email
   popup/                 動詞コマンドのみ（書く/読む/コピー/積む/取る/読み込む/箱）
-  sidepanel/index.html   書く（エディタ + コピー）
-  sidepanel/log.html     過去記事を読む（展開・コピー）
+  sidepanel/write.html   書く（エディタ + コピー）
+  sidepanel/read.html     過去記事を読む（展開・コピー）
   background/            初期データの種付けのみ
   scripts/cli.js         設定 CLI（chira set / box / client-id / path / keys）
   scripts/auth.js        OAuth（Google=getAuthToken、GH/Box=launchWebAuthFlow）
@@ -44,7 +44,7 @@ bash tools/sync.sh          # crx/ → <LOAD> へ rsync
 
 - popup は**動詞コマンドのみ**（最大7）。入力欄は置かない。値は右に小さく出す。
 - popup の最下部は brand、その直上に gh。sidepanel には brand / gh を置かない。
-- 書くのは sidepanel。`index.html` = 書く、`log.html` = 過去記事を読む。
+- 書くのは sidepanel。`write.html` = 書く、`read.html` = 過去記事を読む。
 - 箱・読み込みは popup 側。サイドパネルに置かない。
 - 自動保存は既定 on。popup 下部のスイッチで切替（コマンド行にしない）。
 - ステータスは下部にさりげなく、**絵文字のみ**でブリンク:
