@@ -1,6 +1,6 @@
 # chira-ura UI 仕様（実装の正）
 # 変更したら実装（crx/）と同時に更新する。ここに無い UI は足さない。
-version: 2.5.4-dev
+version: 0.1.0-rel
 updated: 2026-10-19
 
 brand:

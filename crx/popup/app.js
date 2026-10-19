@@ -2,6 +2,7 @@
 import { createFlasher } from "../scripts/flash.js";
 import { boxName, getBox, setBox, mergeKeys, getKeys, KEYS_KEY, BOX_KEY } from "../scripts/boxes.js";
 import { googleToken, googleAccount, webAuthCode } from "../scripts/auth.js";
+import { resolveFolder } from "../scripts/drive.js";
 
 const NOTES_KEY = "notes";
 const AUTO_KEY = "autoSave";
@@ -125,14 +126,17 @@ els.boxPanel.querySelectorAll(".box").forEach(btn => {
   });
 });
 
-// フォルダ指定（箱の場所）
+// フォルダ指定（箱の場所）。ID を焼き込まず OAuth で解決する。
 els.folderInput.addEventListener("change", async () => {
   const raw = els.folderInput.value.trim();
-  const m = raw.match(/folders\/([A-Za-z0-9_-]+)/);
-  const folderId = m ? m[1] : raw;
-  if (!folderId) return;
-  await mergeKeys({ gdrive: { folderId, ...(m ? { folder: raw } : {}) } });
-  flasher.flash("keyed");
+  if (!raw) return;
+  try {
+    const folderId = await resolveFolder(raw);
+    await mergeKeys({ gdrive: { folderId, folderName: raw } });
+    flasher.flash("keyed");
+  } catch (e) {
+    flasher.note("🚫", e?.message || "フォルダを解決できない");
+  }
 });
 
 // ファイル（ちょっとしたものを読む）

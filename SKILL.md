@@ -66,7 +66,7 @@ bash cli/sync.sh    # crx/ → <LOAD>。rsync なので削除も反映
 - `~/.config/chira-ura/keys.json` は非秘密のみ（folder ID、client_id、GAS URL）。
 - 同期の意味は「GDrive が正」だけ。`chira serve` が GDrive ミラーを配り、拡張は 5 分 alarm で pull。
   拡張から push しない。
-- GDrive 箱フォルダ: `<folder-id>`（<account>）。
+- GDrive の箱フォルダ ID は repo に書かない。OAuth 後に Drive API で解決し、ローカル設定（`~/.config/chira-ura/keys.json`）にのみ持つ。
 - version は変更単位で細かく上げ、`version_name` に `-dev` を付ける。`dev/dev.history.md` に追記。
 
 ## 未実施

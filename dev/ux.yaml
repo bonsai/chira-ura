@@ -1,6 +1,6 @@
 # chira-ura UX 仕様（振る舞い・遷移・状態）
 # ui.yaml = 見た目と要素、ux.yaml = 流れと状態遷移。実装は crx/。
-version: 2.5.4-dev
+version: 0.1.0-rel
 updated: 2026-10-19
 
 principles:                            # 迷ったらこれに戻す
