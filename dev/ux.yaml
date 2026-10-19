@@ -1,0 +1,125 @@
+# chira-ura UX 仕様（振る舞い・遷移・状態）
+# ui.yaml = 見た目と要素、ux.yaml = 流れと状態遷移。実装は crx/。
+version: 2.5.4-dev
+updated: 2026-10-19
+
+principles:                            # 迷ったらこれに戻す
+  - 書く → 自動保存。保存操作を意識させない
+  - コピーした文字列はそのままプロンプトに流せる（前置き・タイトルを付けない）
+  - popup は入口（動詞のみ）。長く読む/書くはサイドパネル
+  - 設定は CLI。拡張内に設定画面を作らない
+  - 通知は絵文字ひとつ。邪魔をしない（ブリンク2回で終わる）
+
+surfaces:
+
+  popup:
+    open_when: toolbar アイコン
+    size: "300px 幅・高さ自動"
+    first_paint: "storage 読込 → hintBox/スイッチ/status を描く（200ms 以内目標）"
+    close_on:
+      - 書く / 読む（サイドパネルを開いて閉じる）
+      - イシュー / 履歴（新規タブで開いて閉じる）
+      - 外側クリック
+    flows:
+      write:
+        steps: [cmdWrite → sidePanel.setOptions(write.html) → sidePanel.open → window.close]
+        fallback: "setOptions 失敗時は open({windowId}) のみ。それも失敗なら status=🚫"
+      read:
+        steps: [cmdRead → sidePanel.setOptions(read.html) → sidePanel.open → window.close]
+      box:
+        steps: [cmdBox → panel 開閉（排他ではない）]
+        panel_steps:
+          select_local: [setBox(local) → status=📝]
+          select_gdrive: [setBox(gdrive) → getAuthToken(interactive) → status=🔑(account) | ⚠️(理由)]
+          select_gh: [setBox(gh) → clientId 有無 → launchWebAuthFlow → status=🔑 | ⚠️]
+          select_box: 同上（Box）
+          folder: [入力 → folders/<id> 抽出 → keys.gdrive.folderId 保存 → status=🔑]
+          file: [JSONL 選択 → 行ごとに JSON.parse → notes 先頭に積む → status=🗂 | ✖️]
+          keys: [keys.json 選択 → mergeKeys → box があれば適用 → status=🔑 | 🚫]
+      issue:
+        steps: [cmdIssue → <repo>/issues/new を新規タブ]
+      history:
+        steps: [cmdHistory → <repo>#readme を新規タブ]
+    autosave_switch:
+      default: true
+      effect: "off の間は保存しない（サイドパネルの入力は ✏️ 表示）。コピー時に保存する"
+      persistence: chrome.storage.local.autoSave
+
+  sidepanel_write:
+    open_when: [popup の 書く, Chrome のサイドパネルボタン（default_path）]
+    flow:
+      type: [input イベント → upsert（無ければ新規作成）→ 600ms debounce → save]
+      save_success: status=📝
+      save_off: status=✏️（保存しない）
+      copy: [本文を copy → status=📋 | ✖️(空) | 🚫]
+    states:
+      empty: "textarea 空。status は無表示"
+      restored: "activeNoteId か notes[0] を復元し status=📝"
+    notes: "タイトルは本文1行目から導出（30字）。タイトル入力欄は作らない"
+
+  sidepanel_read:
+    open_when: [popup の 読む]
+    flow:
+      list: "updatedAt 降順。ヘッダ押下で開閉（1件のみ展開）"
+      copy_card: [本文のみ copy → status=📋 | ✖️ | 🚫]
+      to_write: [footer の 書く → write.html]
+    states:
+      empty: "「まだ記事がありません」"
+      updated: "storage.onChanged で再描画（他画面の保存を即反映）"
+
+status_feedback:
+  duration: "0.55s × 2 ブリンク、その後 opacity 0.28"
+  text: "title / aria-label にのみ持つ"
+  mapping:
+    "📝": [保存済み, 箱=local 選択]
+    "📋": [コピー成功]
+    "💾": [保存中]
+    "✏️": [未保存（自動保存 off）]
+    "🗂": [JSONL 読込成功]
+    "📦": [箱変更]
+    "🔑": [OAuth 成功, client_id 未設定の案内, keys 読込]
+    "⚠️": [設定不足]
+    "✖️": [対象なし（空文字・0件）]
+    "🚫": [失敗（コピー・認証・JSON 破損）]
+
+auth_ux:
+  google: "選んだ瞬間に同意画面。成功で 🔑、失敗で 🚫（理由を title）"
+  gh_box: "client_id 未設定なら同意画面を出さず ⚠️ で `chira set auth.<id>.clientId` を案内"
+  never: "トークンを画面に出さない・保存しない"
+
+sync_ux:                               # 意味は「GDrive が正」
+  trigger: [onInstalled, onStartup, alarm 5分, runtime message sync-now]
+  behavior: "bridge が居れば pull して keys/box/gasUrl/bridgeRev を写す"
+  absent: "bridge 未起動は無音でスキップ（ローカル動作を止めない）"
+  direction: "拡張 → CLI の push はしない"
+
+copy_ux:
+  rule: "本文のみ。タイトル・見出し・前置きを付けない"
+  where: [sidepanel_write, sidepanel_read]
+  feedback: "📋 のみ（トースト・ダイアログは出さない）"
+
+empty_and_errors:
+  no_notes: "読む画面は空メッセージ、popup はコマンドのみ表示（無効化しない）"
+  no_folder: "フォルダ未設定でも箱は選べる（保存時に ⚠️）"
+  bad_jsonl: "壊れた行は捨て、1件でも入れば 🗂、0件なら ✖️"
+  bad_keys: "JSON 不正なら 🚫 で何も書かない"
+
+a11y:
+  - status は role=status / aria-live=polite
+  - コマンドは button（外部リンクのみ a）
+  - フォーカスリングはブラウザ既定を消さない
+
+out_of_scope:                          # 作らない
+  - 設定画面・テーマ選択・複数箱リストの常設表示
+  - トースト/モーダル/確認ダイアログ
+  - コピー履歴の閲覧 UI（積む・取るは削除済み）
+  - 通知音・バッジ・ポップアップ自動展開
+
+test_checklist:                        # 手動確認（実機）
+  - "popup: 5コマンド表示、brand が最下部、gh リンクは イシュー/履歴 のみ"
+  - "書く → sidepanel write.html が開く。文字入力 → 📝"
+  - "読む → read.html が開き、記事が降順。カード展開とコピーが効く"
+  - "箱 → gdrive 選択で同意画面（client_id 設定後）"
+  - "自動保存 off → 入力で ✏️、コピーで保存+📋"
+  - "chira serve 起動中に popup を開くと box/keys が GDrive ミラーに揃う"
+  - "bridge 未起動でも操作が固まらない"
