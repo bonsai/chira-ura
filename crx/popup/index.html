@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>kami copi / 紙コピー</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- コマンド（最大7） -->
+    <nav class="cmds">
+      <button class="cmd" id="cmdWrite">
+        <span class="label">書く</span>
+        <span class="hint">サイドパネル</span>
+      </button>
+      <button class="cmd" id="cmdLog">
+        <span class="label">過去記事</span>
+        <span class="hint">読む</span>
+      </button>
+      <button class="cmd" id="cmdCopy">
+        <span class="label">コピー</span>
+        <span class="hint">直近の記事</span>
+      </button>
+      <button class="cmd" id="cmdAuto">
+        <span class="label">自動保存</span>
+        <span class="hint" id="hintAuto">on</span>
+      </button>
+      <button class="cmd" id="cmdCloud">
+        <span class="label">クラウド</span>
+        <span class="hint" id="hintCloud">off</span>
+      </button>
+      <button class="cmd" id="cmdCli">
+        <span class="label">CLI</span>
+        <span class="hint">設定</span>
+      </button>
+      <a class="cmd" id="cmdBox" target="_blank" rel="noopener" hidden>
+        <span class="label">箱</span>
+        <span class="hint">Drive</span>
+      </a>
+    </nav>
+
+    <!-- CLI の案内（コマンド行から開閉） -->
+    <div class="cli" id="cliBody" hidden>
+      <code>kami set gas-url &lt;URL&gt;</code>
+      <code>kami set default-box &lt;名&gt;</code>
+      <code>kami sync pull | push</code>
+      <p>接続先と箱は CLI。拡張は書いてコピるだけ。</p>
+    </div>
+
+    <!-- ステータス（下部・絵文字のみ） -->
+    <div class="statusline">
+      <span class="status" id="status" role="status" aria-live="polite"></span>
+    </div>
+
+    <!-- 最下部: gh → brand -->
+    <footer class="footer">
+      <a class="gh" id="linkGh" target="_blank" rel="noopener" hidden>gh</a>
+      <div class="brand">kami<span>copi</span></div>
+    </footer>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

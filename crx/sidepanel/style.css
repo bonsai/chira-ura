@@ -171,21 +171,3 @@ html, body {
   font-weight: 500;
 }
 .btn.mini:hover { background: #efe9db; }
-
-.gh {
-  font-size: 0.68rem;
-  color: var(--mute);
-  text-decoration: none;
-  letter-spacing: 0.06em;
-}
-.gh:hover { color: var(--enji); }
-
-.brand {
-  margin-left: auto;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  color: #c2b8a4;
-  user-select: none;
-}
-.brand span { color: #d8a06a; }

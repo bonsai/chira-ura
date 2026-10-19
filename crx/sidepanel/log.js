@@ -5,14 +5,11 @@ import { createFlasher } from "../scripts/flash.js";
 const NOTES_KEY = "notes";
 const GAS_URL_KEY = "gasUrl";
 
-const GH_URL = "https://github.com/bonsai/kami-copi";
-
 const els = {
   status: document.getElementById("status"),
   noteList: document.getElementById("noteList"),
   jsonlFile: document.getElementById("jsonlFile"),
-  btnGDrive: document.getElementById("btnGDrive"),
-  linkGh: document.getElementById("linkGh")
+  btnGDrive: document.getElementById("btnGDrive")
 };
 
 const flasher = createFlasher(els.status);
@@ -29,10 +26,6 @@ async function init() {
   if (gasUrl) {
     els.btnGDrive.href = gasUrl;
     els.btnGDrive.hidden = false;
-  }
-  if (GH_URL) {
-    els.linkGh.href = GH_URL;
-    els.linkGh.hidden = false;
   }
   render();
 }
