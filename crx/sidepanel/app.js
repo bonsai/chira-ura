@@ -1,6 +1,7 @@
 // kami copi v2 — sidepanel: 書く（保存とコピーだけ）
 import { copy } from "../scripts/clipboard.js";
 import { createFlasher } from "../scripts/flash.js";
+import { pushStack } from "../scripts/stack.js";
 
 const NOTES_KEY = "notes";
 const ACTIVE_KEY = "activeNoteId";
@@ -99,6 +100,7 @@ els.btnCopy.addEventListener("click", async () => {
   try {
     if (!autoSave) await save();
     await copy(text);
+    await pushStack(text);
     flasher.flash("copied");
   } catch (_) {
     flasher.flash("fail");

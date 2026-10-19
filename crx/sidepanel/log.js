@@ -1,15 +1,13 @@
 // kami copi v2 — sidepanel: 過去記事を読む（読み専用）
 import { copy } from "../scripts/clipboard.js";
 import { createFlasher } from "../scripts/flash.js";
+import { pushStack } from "../scripts/stack.js";
 
 const NOTES_KEY = "notes";
-const GAS_URL_KEY = "gasUrl";
 
 const els = {
   status: document.getElementById("status"),
-  noteList: document.getElementById("noteList"),
-  jsonlFile: document.getElementById("jsonlFile"),
-  btnGDrive: document.getElementById("btnGDrive")
+  noteList: document.getElementById("noteList")
 };
 
 const flasher = createFlasher(els.status);
@@ -19,14 +17,8 @@ let openId = null;
 
 // ---------- 初期化 ----------
 async function init() {
-  const res = await chrome.storage.local.get([NOTES_KEY, GAS_URL_KEY]);
+  const res = await chrome.storage.local.get([NOTES_KEY]);
   notes = res[NOTES_KEY] || [];
-  const gasUrl = res[GAS_URL_KEY] || "";
-
-  if (gasUrl) {
-    els.btnGDrive.href = gasUrl;
-    els.btnGDrive.hidden = false;
-  }
   render();
 }
 
@@ -91,60 +83,20 @@ async function copyMemo(id) {
     return;
   }
   try {
-    // 前置きを付けない＝そのままプロンプトに流せる
+    // 前置きを付けない＝そのままプロンプトに流せる。積みキューにも入れる。
     await copy(n.content);
+    await pushStack(n.content);
     flasher.flash("copied");
   } catch (_) {
     flasher.flash("fail");
   }
 }
 
-// ---------- JSONL 読み込み ----------
-els.jsonlFile.addEventListener("change", async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const text = await file.text();
-  const lines = text.split("\n").filter(l => l.trim());
-  let imported = 0;
-
-  for (const line of lines) {
-    try {
-      const obj = JSON.parse(line);
-      if (obj.content === undefined) continue;
-      notes.unshift({
-        id: obj.id || "note-" + Date.now() + "-" + imported,
-        title: obj.title || "無題",
-        content: obj.content,
-        updatedAt: obj.updatedAt || Date.now()
-      });
-      imported++;
-    } catch (_) { /* 壊れた行は捨てる */ }
-  }
-
-  if (imported > 0) {
-    await chrome.storage.local.set({ [NOTES_KEY]: notes });
-    flasher.flash("imported");
-    render();
-  } else {
-    flasher.flash("empty");
-  }
-  e.target.value = "";
-});
-
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== "local") return;
   if (changes[NOTES_KEY]) {
     notes = changes[NOTES_KEY].newValue || [];
     render();
-  }
-  if (changes[GAS_URL_KEY]) {
-    const url = changes[GAS_URL_KEY].newValue || "";
-    if (url) {
-      els.btnGDrive.href = url;
-      els.btnGDrive.hidden = false;
-    } else {
-      els.btnGDrive.hidden = true;
-    }
   }
 });
 

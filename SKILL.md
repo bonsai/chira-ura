@@ -23,6 +23,9 @@ crx/
   scripts/cli.js         設定・同期 CLI（kami set / kami sync）
   scripts/clipboard.js   コピー共通処理
   scripts/flash.js       絵文字のみの status 通知（popup / sidepanel 共用）
+  scripts/stack.js       クリップボードのスタックキュー（push / pop、先頭が最新、最大50）
+  scripts/boxes.js       箱の定義（local / gdrive / gh / box）と鍵のマージ
+  scripts/auth.js        OAuth（Google=chrome.identity.getAuthToken、GH/Box=launchWebAuthFlow）
   storage/db.js          chrome.storage.local ラッパ（ローカルはキャッシュ）
 ```
 
@@ -50,6 +53,13 @@ bash tools/sync.sh          # crx/ → <LOAD> へ rsync
   `📝` ローカル保存済み / `📋` クリップボード保存済み / `💾` 保存中 / `✏️` 未保存 /
   `🗂` 読込完了 / `⚠️` 設定不足 / `✖️` 対象なし / `🚫` 失敗。テキストは `title` に退避。
 - brand と gh は popup の最下部のみ。sidepanel（書く/過去記事）には置かない。
+- 認証は **OAuth**。トークンは保存しない（Google は `chrome.identity` のキャッシュ、GH/Box はコード取得まで）。
+  `~/.config/kami-copi/keys.json` は非秘密だけ（folder ID、client_id、GAS URL）。
+- 箱は popup の「箱」コマンドから選ぶ（local / gdrive / gh / box）。選ぶと認証が走る。
+- 箱・読み込みは popup 側。サイドパネルには置かない（過去記事は読むだけ）。
+- コマンドのラベルは**動詞のみ**（書く/読む/コピー/積む/取る/読み込む/箱）。値は右側に小さく出す。
+- 自動保存は既定 on。popup 下部のスイッチで切替（コマンド行は使わない）。
+- GDrive の箱フォルダ: `<folder-id>`（<account>）
 - コピーは内容のみ（タイトルや前置きを付けない）＝そのままプロンプトに流せる。
 - メモのタイトルは本文1行目から導出する（タイトル入力欄を作らない）。
 
@@ -57,6 +67,8 @@ bash tools/sync.sh          # crx/ → <LOAD> へ rsync
 
 - popup の保存先が `note`（単数）で sidepanel の `notes`（配列）と不一致。統一が必要。
 - GAS 同期は `scripts/cli.js` が stub。`gasUrl` / `defaultBox` の書き込み経路も未実装。
+- Google OAuth の `client_id` 未発行（`manifest.json` が REPLACE_ME）。GCP で OAuth クライアント発行 → `kami client-id`。
+- GH / Box はコード取得まで。トークン交換は GAS 等のサーバ側が必要。
 （解決済み）gh リンク = https://github.com/bonsai/kami-copi
 
 ## 禁止
