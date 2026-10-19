@@ -1,0 +1,12 @@
+{
+  "name": "kami-copi-cli",
+  "version": "2.0.0",
+  "description": "kami copi 設定・同期CLI",
+  "type": "module",
+  "bin": {
+    "kami": "cli.js"
+  },
+  "scripts": {
+    "set": "node cli.js"
+  }
+}

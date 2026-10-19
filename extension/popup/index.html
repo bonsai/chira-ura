@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>kami copi / 紙コピー</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 書く -->
+    <main class="editor">
+      <textarea id="note" placeholder="ここにメモを書く… 自動保存されます"></textarea>
+    </main>
+
+    <!-- ステータス（下部・絵文字のみ） -->
+    <div class="statusline">
+      <span class="status" id="status" role="status" aria-live="polite"></span>
+    </div>
+
+    <!-- 設定（toggle 集約） -->
+    <details class="panel" id="panelSettings">
+      <summary>設定</summary>
+      <div class="panel-body">
+        <label class="toggle">
+          <input type="checkbox" id="toggleAuto" checked />
+          <span>自動保存（ローカル）</span>
+        </label>
+        <label class="toggle">
+          <input type="checkbox" id="toggleCloud" />
+          <span>クラウド（GAS）</span>
+        </label>
+      </div>
+    </details>
+
+    <!-- CLI の紹介 -->
+    <details class="panel" id="panelCli">
+      <summary>CLI</summary>
+      <div class="panel-body cli">
+        <code>kami set gas-url &lt;URL&gt;</code>
+        <code>kami set default-box &lt;名&gt;</code>
+        <code>kami sync pull | push</code>
+        <p>接続先と箱は CLI で設定する。拡張は書いてコピるだけ。</p>
+      </div>
+    </details>
+
+    <!-- フッター: 操作 + ブランド + gh -->
+    <footer class="footer">
+      <button class="btn copy" id="btnCopy">コピー</button>
+      <button class="btn ghost" id="btnPast">過去記事</button>
+      <a class="gh" id="linkGh" target="_blank" rel="noopener" hidden>gh</a>
+      <span class="brand">kami<span>copi</span></span>
+    </footer>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

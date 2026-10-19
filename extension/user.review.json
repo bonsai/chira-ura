@@ -1,0 +1,52 @@
+{
+  "reviewer": "user",
+  "review_at": "2026-10-19",
+  "summary": "メモするだけなのに余計なものが多すぎる。書いたら自動保存(local)。箱はGDriveだけにある。設定はCLIからできるように。",
+  "direction": "ultra_minimal",
+  "removed_ui": [
+    "サイドパネルの箱リスト",
+    "箱検索・メモ検索",
+    "モーダルダイアログ",
+    "ポップアップのメモ一覧",
+    "GAS同期ボタン（画面内）",
+    "色・テーマ・配色選択",
+    "複数箱のローカル保持",
+    "エディタ／一覧の分離画面"
+  ],
+  "kept_ui": [
+    "メモ入力エリア（1画面）",
+    "コピー（クリップボード）ボタン",
+    "保存ステータス表示（保存済み／保存中）"
+  ],
+  "storage": {
+    "local": "chrome.storage.local（書いたら即座に自動保存、キャッシュ）",
+    "remote_master": "Google Drive via GAS（箱・メモの単一情報源、マスターはこちら）"
+  },
+  "config": {
+    "method": "CLI only",
+    "tool": "scripts/cli.js",
+    "settable": ["GAS WebアプリURL", "デフォルト箱名", "自動保存間隔(ms)", "ローカル保持期間"]
+  },
+  "files_to_change": [
+    "manifest.json（サイドパネルを極簡素ビューまたはポップアップ単一に変更、不要な権限削除）",
+    "sidepanel/index.html → 入力＋コピー＋ステータスのみの単一ビュー",
+    "sidepanel/app.js → ローカル自動保存のみ、GASは初期同期or手動CLIで操作",
+    "storage/db.js → GDriveマスターとの同期ロジックを簡略化（ローカルはキャッシュ扱い）",
+    "scripts/cli.js → 新規作成（設定CLI）",
+    "scripts/package.json → 新規作成（CLI実行用）",
+    "ux.yaml → 廃止 or 大幅簡略化",
+    "user.review.json → 本ファイル"
+  ],
+  "files_to_delete": [
+    "popup/",
+    "scripts/gas-code.gs（GAS側はユーザーが別途デプロイ、拡張側は持たない）",
+    "scripts/gas-setup.md"
+  ],
+  "new_cli_commands": [
+    "node scripts/cli.js set gas-url <URL>",
+    "node scripts/cli.js set default-box <名>",
+    "node scripts/cli.js sync pull",
+    "node scripts/cli.js sync push"
+  ],
+  "note": "拡張機能内には「設定画面」を作らない。すべてCLIで操作し、拡張は「書いてコピーする」だけに専念する。"
+}
