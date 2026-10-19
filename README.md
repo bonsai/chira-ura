@@ -11,7 +11,7 @@
 
 ## 使い方
 
-1. `bash tools/sync.sh` で `extension/` を Chrome の unpacked 読込先へコピー
+1. `bash tools/sync.sh` で `crx/` を Chrome の unpacked 読込先へコピー
 2. `chrome://extensions` →「パッケージ化されていない拡張機能を読み込む」→ `.crx/kami-copi-crx` を指定
 3. toolbar の popup に書く → 自動保存 → `コピー` でクリップボードへ
 
@@ -23,23 +23,23 @@ kami sync pull | push
 
 ## UI 決定（user.review.json / ultra_minimal）
 
-- popup: 入力エリア + コピー + `設定`(toggle 集約) + `CLI`(案内) + `過去記事`
+- popup: コマンド一覧のみ（最大7行）— 書く / 過去記事 / コピー / 自動保存 / クラウド / CLI / 箱。最下部 brand、その上 gh
 - sidepanel: `index.html` = 書く / `log.html` = 過去記事を読む（展閖・コピー・JSONL 読込・箱）
 - ステータスは下部・絵文字のみ・ブリンク（📝 ローカル保存済み / 📋 コピー済み / 🗂 読込）
-- ブランドはフッターのみ、フッターの外部リンクは gh だけ
+- brand と gh は popup 最下部のみ（sidepanel には置かない）
 - コピーは内容のみ（前置き無し＝そのままプロンプトに流せる）
 - 設定画面・テーマ選択・複数箱リストは戻さない
 
 ## エージェント
 
-- 編集は `extension/` のみ。`<LOAD>/.crx/kami-copi-crx` はキャッシュなので直接編集しない。
+- 編集は `crx/` のみ。`<LOAD>/.crx/kami-copi-crx` はキャッシュなので直接編集しない。
 - 反映は `bash tools/sync.sh` → 拡張の再読み込み。ファイル監視はしない。
 - 権限追加・設定 UI の復活は禁止（`storage`, `sidePanel` のみ）。
 - 識別子（gh URL / GAS URL / 箱名）は勝手に決めない。番号付き候補を出して選ばせる。
 
 ## 現在地
 
-- popup v2 再構成 完了: toggle 集約（sidepanel から撤去）、CLI 案内、過去記事ボタン（log.html へ切替）、下部 status（絵文字ブリンク）、フッターにブランド + gh 枠。
+- popup v2 再構成 完了: コマンド一覧のみ（書く/過去記事/コピー/自動保存/クラウド/CLI/箱）、最下部に brand・その上に gh、status は下部絵文字ブリンク。
 - sidepanel 2 ページ化 完了: `index.html`（書く）/ `log.html`（過去記事を読む）。相互リンク、JSONL 読込は log 側。
 - 未確定: GAS 同期（`scripts/cli.js` は stub）。
 - 未着手: popup と sidepanel の保存キー統一（`note` vs `notes`）。
@@ -49,3 +49,4 @@ kami sync pull | push
 
 - 2026-10-19 popup を「書く＋コピる＋設定集約」に再構成、skill repo 化
 - 2026-10-19 sidepanel を書く（index.html）/ 過去記事を読む（log.html）に分離、status を絵文字ブリンクに統一
+- 2026-10-19 popup をコマンド一覧（最大7・brand/gh は最下部）に変更、sidepanel から brand/gh 撤去、`extension/` → `crx/`

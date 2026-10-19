@@ -14,9 +14,9 @@ description: >
 ## 構造
 
 ```
-extension/
+crx/
   manifest.json          MV3 / permissions: storage, sidePanel のみ
-  popup/                 書く＋コピる＋設定 toggle＋CLI 案内（340×440）
+  popup/                 コマンド一覧のみ（最大7行・最下部 brand・その上 gh）
   sidepanel/index.html   書く（エディタ + コピー）
   sidepanel/log.html     過去記事を読む（一覧・展開・JSONL 読込・箱リンク）
   background/            初期データの種付けのみ
@@ -31,15 +31,16 @@ extension/
 ```bash
 # 1. 編集は <REPO>/extension 側で行う
 # 2. Chrome の読込先へ反映（unpacked は同期されないためコピーする）
-bash tools/sync.sh          # extension/ → <LOAD> へ rsync
+bash tools/sync.sh          # crx/ → <LOAD> へ rsync
 # 3. chrome://extensions で「再読み込み」
 ```
 
-`<LOAD>` を直接編集しない。`<LOAD>` はキャッシュ、`<REPO>/extension` が正。
+`<LOAD>` を直接編集しない。`<LOAD>` はキャッシュ、`<REPO>/crx` が正。
 
 ## UI 規約（ユーザー決定事項）
 
-- popup は「書く／コピー」1 画面。ヘッダーは置かない。
+- popup は**コマンド一覧のみ**（最大7行）。入力欄は置かない（書くのは sidepanel）。
+- popup の並び: コマンド（書く/過去記事/コピー/自動保存/クラウド/CLI/箱）→ 最下部に brand、その直上に gh。
 - 設定 toggle（自動保存 / クラウド）は popup の `<details>` に集約。sidepanel には置かない。
 - CLI は popup の `<details>` で案内のみ（設定画面は作らない）。
 - sidepanel は 2 ページに分離: `index.html` = 書く、`log.html` = 過去記事を読む。
@@ -48,7 +49,7 @@ bash tools/sync.sh          # extension/ → <LOAD> へ rsync
 - 全画面で共通: ステータスは下部にさりげなく、**絵文字のみ**でブリンク通知:
   `📝` ローカル保存済み / `📋` クリップボード保存済み / `💾` 保存中 / `✏️` 未保存 /
   `🗂` 読込完了 / `⚠️` 設定不足 / `✖️` 対象なし / `🚫` 失敗。テキストは `title` に退避。
-- ブランド表記はフッターのみ。フッターの外部リンクは gh だけ（箱リンクは gh の隣）。
+- brand と gh は popup の最下部のみ。sidepanel（書く/過去記事）には置かない。
 - コピーは内容のみ（タイトルや前置きを付けない）＝そのままプロンプトに流せる。
 - メモのタイトルは本文1行目から導出する（タイトル入力欄を作らない）。
 

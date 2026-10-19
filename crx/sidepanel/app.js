@@ -7,13 +7,10 @@ const ACTIVE_KEY = "activeNoteId";
 const AUTO_KEY = "autoSave";
 const DEBOUNCE_MS = 600;
 
-const GH_URL = "https://github.com/bonsai/kami-copi";
-
 const els = {
   note: document.getElementById("note"),
   status: document.getElementById("status"),
-  btnCopy: document.getElementById("btnCopy"),
-  linkGh: document.getElementById("linkGh")
+  btnCopy: document.getElementById("btnCopy")
 };
 
 const flasher = createFlasher(els.status);
@@ -29,11 +26,6 @@ async function init() {
   notes = res[NOTES_KEY] || [];
   activeNoteId = res[ACTIVE_KEY] || null;
   autoSave = res[AUTO_KEY] !== false;
-
-  if (GH_URL) {
-    els.linkGh.href = GH_URL;
-    els.linkGh.hidden = false;
-  }
 
   const note = activeNoteId ? getNote(activeNoteId) : notes[0];
   if (note) {

@@ -1,0 +1,125 @@
+/* kami copi v2 — popup: コマンド一覧 */
+
+:root {
+  --washi: #faf7f0;
+  --sumi: #2c241e;
+  --enji: #8b0000;
+  --ink: #3a322a;
+  --border: #e3dcc9;
+  --mute: #8a8071;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  background: var(--washi);
+  color: var(--ink);
+  font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+}
+
+/* ---------- コマンド ---------- */
+.cmds { display: flex; flex-direction: column; padding: 6px; }
+
+.cmd {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 0.86rem;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.cmd[hidden] { display: none; }
+.cmd:hover { background: #efe9db; }
+.cmd:active { background: #e7dfcb; }
+.cmd .label { flex: 1; font-weight: 600; }
+.cmd .hint {
+  font-size: 0.68rem;
+  color: var(--mute);
+  letter-spacing: 0.04em;
+}
+.cmd .hint.on { color: var(--enji); font-weight: 700; }
+.cmd.open { background: #efe9db; }
+
+/* ---------- CLI 案内 ---------- */
+.cli {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 2px 16px 10px;
+}
+.cli[hidden] { display: none; }
+.cli code {
+  display: block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.72rem;
+  color: var(--ink);
+  background: #f2ecdd;
+  border-radius: 4px;
+  padding: 3px 6px;
+}
+.cli p {
+  margin: 0;
+  font-size: 0.66rem;
+  line-height: 1.45;
+  color: var(--mute);
+}
+
+/* ---------- ステータス（下部・絵文字のみ） ---------- */
+.statusline {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  height: 16px;
+  padding: 0 14px;
+}
+.status {
+  font-size: 0.78rem;
+  line-height: 1;
+  opacity: 0.28;
+  transition: opacity 0.4s;
+}
+.status.flash { animation: blink 0.55s ease-in-out 2; }
+@keyframes blink {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 1; }
+}
+
+/* ---------- 最下部: gh → brand ---------- */
+.footer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 6px 12px 10px;
+  border-top: 1px solid var(--border);
+}
+.gh {
+  font-size: 0.66rem;
+  color: var(--mute);
+  text-decoration: none;
+  letter-spacing: 0.08em;
+}
+.gh:hover { color: var(--enji); }
+.brand {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #c2b8a4;
+  user-select: none;
+}
+.brand span { color: #d8a06a; }
