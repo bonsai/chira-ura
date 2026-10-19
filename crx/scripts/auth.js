@@ -27,6 +27,15 @@ export async function googleToken(interactive = true) {
   });
 }
 
+/** 同意画面を出さずに取れるトークン（無ければ null） */
+export async function googleTokenSilent() {
+  try {
+    return await googleToken(false);
+  } catch (_) {
+    return null;
+  }
+}
+
 /** キャッシュ済みトークンを捨てる（失効・切り替え用） */
 export async function googleSignOut() {
   let token = null;

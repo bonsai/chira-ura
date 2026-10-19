@@ -62,15 +62,6 @@ html, body {
 }
 .cmd.open { background: #efe9db; }
 
-.badge {
-  min-width: 18px;
-  padding: 1px 5px;
-  border-radius: 9px;
-  background: #e7dfcb;
-  color: var(--mute);
-  font-size: 0.64rem;
-  text-align: center;
-}
 
 /* ---------- 箱パネル ---------- */
 .panel {

@@ -1,7 +1,7 @@
 // chira-ura v2 — popup: コマンド（書く/読む/箱/イシュー/履歴）
 import { createFlasher } from "../scripts/flash.js";
 import { boxName, getBox, setBox, mergeKeys, getKeys, KEYS_KEY, BOX_KEY } from "../scripts/boxes.js";
-import { googleToken, googleAccount, webAuthCode } from "../scripts/auth.js";
+import { googleToken, googleTokenSilent, googleAccount, webAuthCode } from "../scripts/auth.js";
 import { resolveFolder } from "../scripts/drive.js";
 
 const NOTES_KEY = "notes";
@@ -97,9 +97,13 @@ els.cmdBox.addEventListener("click", () => {
 });
 
 // ---------- 箱（保存先 + 認証） ----------
-async function authorize(id) {
+async function authorize(id, { interactive = false } = {}) {
   if (id === "gdrive") {
-    await googleToken(true);
+    const token = interactive ? await googleToken(true) : await googleTokenSilent();
+    if (!token) {
+      flasher.note("⚠️", "未同意。同じ箱をもう一度押すと同意画面が出る");
+      return;
+    }
     const acc = googleAccount();
     flasher.note("🔑", acc ? `GDrive 認証 OK: ${acc}` : "GDrive 認証 OK");
     return;
@@ -123,10 +127,12 @@ async function authorize(id) {
 
 els.boxPanel.querySelectorAll(".box").forEach(btn => {
   btn.addEventListener("click", async () => {
+    const same = btn.dataset.box === box;
     try {
       box = await setBox(btn.dataset.box);
       await paint();
-      await authorize(box);
+      // 1 度目は無言（同意画面を飛ばす）。同じ箱の 2 度目で同意を出す。
+      await authorize(box, { interactive: same });
     } catch (e) {
       flasher.note("🚫", e?.message || "認証に失敗");
     }

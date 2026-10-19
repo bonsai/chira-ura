@@ -2,7 +2,7 @@
 name: chira-ura
 description: >
   Chrome 拡張「chira-ura / チラ裏」— 書いたら自動保存、コピーだけの軽量メモ帳。
-  popup は動詞コマンド（書く/読む/箱/イシュー/履歴）、書く/読むはサイドパネル、
+  popup は動詞コマンド（箱を設定する/読む/書く）+ 自動保存・自動同期スイッチ、書く/読むはサイドパネル、
   箱は local / GDrive / GitHub / Box を OAuth で選び、CLI とは localhost ブリッジで同期（GDrive が正）。
   「chira-ura」「チラ裏」「メモ拡張」「popup を直す」「サイドパネル」「箱を変える」「プロンプトに貼る」
   で発動。英語でも発動（memo extension, clipboard note）。
@@ -19,14 +19,15 @@ description: >
 ```
 crx/                    拡張の実体（Chrome に読ませるのはここ）
   manifest.json         MV3 / permissions: storage, sidePanel, identity, identity.email, alarms
-  popup/                動詞コマンドのみ（書く/読む/箱/イシュー/履歴）
+  popup/                箱を設定する / 読む / 書く + ver（履歴）/ ロゴ（サイト）
   sidepanel/write.html  書く（エディタ + コピー）
   sidepanel/read.html   過去記事を読む（展開・コピー）
   background/           ブリッジ pull（GDrive が正）+ 初期データ
   scripts/              auth.js / boxes.js / bridge.js / flash.js / clipboard.js
   storage/db.js         chrome.storage.local ラッパ
-cli/                    設定・同期 CLIENT（bin: chira）
+cli/                    設定・同期 CLIENT（bin: chira。`bash cli/install.sh` で PATH へ）
   cli.js                set / get / box / client-id / path / keys / serve / pull / push / sync
+  install.sh            ~/.local/bin/chira に symlink（skill から `chira` を直接叩く）
   sync.sh               crx/ → <LOAD> へ流し込む
   package.json
 dev/                    開発資料
@@ -48,11 +49,11 @@ bash cli/sync.sh    # crx/ → <LOAD>。rsync なので削除も反映
 
 ## UI 規約（ユーザー決定事項）
 
-- popup は**動詞コマンドのみ**: 書く / 読む / 箱 / イシュー / 履歴。入力欄は置かない。
+- popup は**動詞コマンドのみ**: 箱を設定する（右に自動同期 switch）/ 読む / 書く。入力欄は置かない。
 - コピー・積む・取る・読み込む は置かない（2026-10-19 削除）。読込は箱に統合。
 - 箱 = 保存先（local/gdrive/gh/box）+ フォルダ（folder ID/URL）+ ファイル（JSONL）。
 - 書くのは sidepanel。`write.html` = 書く、`read.html` = 過去記事を読む。
-- brand は popup 最下部のみ。gh リンクは「イシュー」（issues/new）と「履歴」（README）に統合。
+- 最下部は `ver <version_name>`（→ dev/dev.history.md）とロゴ（→ https://bonsai.github.io/chira-ura/）だけ。イシューリンクは置かない。
 - 自動保存は既定 on。popup 下部のスイッチで切替。
 - ステータスは下部にさりげなく、**絵文字のみ**でブリンク:
   `📝` 保存済み / `📋` コピー済み / `💾` 保存中 / `✏️` 未保存 / `🗂` 読込 /
@@ -60,8 +61,25 @@ bash cli/sync.sh    # crx/ → <LOAD>。rsync なので削除も反映
 - コピーは本文のみ（前置き・タイトルを付けない）＝そのままプロンプトに流せる。
 - メモのタイトルは本文1行目から導出。
 
+## CLI スキル（oauth 経由）
+
+```bash
+bash cli/install.sh        # ~/.local/bin/chira（初回だけ）
+chira auth                 # ブラウザ同意 → ~/.config/chira-ura/token.json (0600)
+chira token                # 有効な access token（期限切れは refresh）
+chira logout
+chira box gdrive           # 箱を CLI から指定（引数なしで現在値）
+chira serve                # ブリッジ（拡張が 5 分毎に pull）
+```
+
+- CLI も拡張と同じ OAuth クライアント（`chira client-id`）= `oauth.clientId` を使う。
+- client_secret は `chira set oauth.clientSecret <secret>`（desktop client のもの。0600 でローカルのみ）。
+- トークンは repo に置かない。`~/.config/chira-ura/` のみ。
+
 ## 認証・同期
 
+- 箱は CLI から指定できる（`chira box gdrive` → keys.json → ブリッジ → 拡張が pull）。
+- 箱選択は 1 度目は無言トークン（同意画面を飛ばす）。同じ箱を再度押すと同意画面。
 - 認証は OAuth。トークンは保存しない（Google = `chrome.identity.getAuthToken`、GH/Box = コード取得まで）。
 - `~/.config/chira-ura/keys.json` は非秘密のみ（folder ID、client_id、GAS URL）。
 - 同期の意味は「GDrive が正」だけ。`chira serve` が GDrive ミラーを配り、拡張は 5 分 alarm で pull。

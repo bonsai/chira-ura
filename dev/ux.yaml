@@ -1,6 +1,6 @@
 # chira-ura UX 仕様（振る舞い・遷移・状態）
 # ui.yaml = 見た目と要素、ux.yaml = 流れと状態遷移。実装は crx/。
-version: 0.1.1-dev
+version: 0.1.3-dev
 updated: 2026-10-19
 
 principles:                            # 迷ったらこれに戻す
@@ -18,7 +18,7 @@ surfaces:
     first_paint: "storage 読込 → hintBox/スイッチ/status を描く（200ms 以内目標）"
     close_on:
       - 書く / 読む（サイドパネルを開いて閉じる）
-      - イシュー / 履歴（新規タブで開いて閉じる）
+      - ver / ロゴ（新規タブで開いて閉じる）
       - 外側クリック
     flows:
       write:
@@ -87,7 +87,11 @@ status_feedback:
     "🚫": [失敗（コピー・認証・JSON 破損）]
 
 auth_ux:
-  google: "選んだ瞬間に同意画面。成功で 🔑、失敗で 🚫（理由を title）"
+  google:
+    first_click: "無言トークンのみ（同意画面を飛ばす）。無ければ ⚠️ で案内"
+    second_click: "同じ箱を再度押すと同意画面（interactive）"
+    success: "🔑（account を title に）"
+  cli_box: "`chira box gdrive` で箱を指定 → ブリッジ経由で拡張に反映（認証は拡張側で 1 回だけ）"
   gh_box: "client_id 未設定なら同意画面を出さず ⚠️ で `chira set auth.<id>.clientId` を案内"
   never: "トークンを画面に出さない・保存しない"
 

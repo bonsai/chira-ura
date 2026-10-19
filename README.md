@@ -21,6 +21,9 @@
 3. popup の `書く` でサイドパネルを開いて書き、`コピー` でクリップボードへ
 
 ```bash
+bash cli/install.sh                              # chira を PATH へ
+chira auth                                       # OAuth（ブラウザ同意 → token.json 0600）
+chira box gdrive                                 # 箱を CLI から指定
 chira client-id <id>.apps.googleusercontent.com   # manifest の oauth2.client_id
 chira set gdrive.folderId <id>                    # 箱フォルダ
 chira set auth.gh.clientId <id>                   # GitHub OAuth
@@ -34,7 +37,7 @@ chira pull | push | sync                          # 同期の意味は「GDrive 
 
 ## UI
 
-- popup: 動詞5つ — 書く / 読む / 箱 / イシュー / 履歴。下部に自動保存スイッチと status（絵文字のみ）、最下部に brand。
+- popup: 箱を設定する（自動同期 switch 付き）/ 読む / 書く。下部に自動保存スイッチと status（絵文字のみ）、最下部に `ver`（履歴）とロゴ（サイト）。
 - 箱パネル: local / GDrive / GitHub / Box、フォルダ（folder ID/URL）、ファイル（JSONL 読込）、鍵（keys.json）。
 - サイドパネル: `write.html` = 書く / `read.html` = 過去記事を読む。
 - コピーは本文のみ（前置き無し＝そのままプロンプトに流せる）。
@@ -49,8 +52,10 @@ chira pull | push | sync                          # 同期の意味は「GDrive 
 
 ## 現在地
 
+- v0.1.3-dev: `chira auth`（OAuth ループバック + PKCE、token.json 0600）と `chira token`/`logout`。sync.sh は読込先を自動検出。
+- v0.1.2-dev: 箱を CLI から指定（`chira box`）。箱選択は同意画面を飛ばして無言トークン、2 度押しで同意。`cli/install.sh` 追加。
 - v2.5.3-dev: repo を `dev/ crx/ cli/` 構成に（`dev/` は旧 `doc/`）。
-- popup は 5 コマンド。コピー・積む・取るは削除、読込は箱へ統合、gh はイシュー/履歴へ統合。
+- popup は 3 コマンド + ver/ロゴ。コピー・積む・取る・イシューは削除、読込は箱へ統合。
 - 未確定: Google OAuth の `client_id`（`REPLACE_ME`）、GH/Box のトークン交換、箱への実際の保存。
 - 未検証: Chrome 実機での再読み込み後の表示、`sidePanel.setOptions` で read.html が開くか。
 

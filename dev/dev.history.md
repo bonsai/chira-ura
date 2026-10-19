@@ -2,6 +2,22 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-10-19 / v0.1.3-dev — CLI を OAuth 経由に
+
+- 指示: cli スキル oauth に経由して / box フォルダ / アカウント。
+- 変更: `chira auth`（PKCE + ループバック 127.0.0.1:8799）→ `~/.config/chira-ura/token.json`（0600）。
+  `chira token`（期限切れは refresh）/ `chira logout`。CLI は拡張と同じ `client_id`（manifest か `oauth.clientId`）を使う。
+  `cli/sync.sh` は読込先を `CHIRA_LOAD_DIR` → `~/.crx` → `/mnt/*/Users/*/.crx` の順で自動検出（個人パスを書かない）。
+  ローカル keys.json に gdrive.folder / folderId / account / gh.account を設定（repo には入れない）。
+
+## 2026-10-19 / v0.1.2-dev — 箱を CLI から指定 / OAuth を飛ばす / CLI を PATH へ
+
+- 指示: cli から設定して箱を指定したい。cli スキル。oauth で飛ばして。
+- 変更: `chira box` を引数なしで現在値表示に（`chira box gh` で設定 → keys.json → ブリッジ → 拡張が pull）。
+  `cli/install.sh` で `~/.local/bin/chira` に symlink（skill から `chira` を直接叩ける）。
+  箱選択は 1 度目に無言トークン（同意画面を飛ばす）、同じ箱の 2 度押しで同意画面。
+  flash の未使用キー（box / gas）と popup CSS の未使用 `.badge` を削除。
+
 ## 2026-10-19 / v0.1.1-dev — popup を 3 コマンド + ver/ロゴに
 
 - 指示: 箱を設定する（選択肢は OAuth / cli.js）、自動同期トグル、読む、書く、hr、ver0.1.0 とロゴ。
