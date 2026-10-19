@@ -1,6 +1,6 @@
 # chira-ura UI 仕様（実装の正）
 # 変更したら実装（crx/）と同時に更新する。ここに無い UI は足さない。
-version: 2.5.1-dev
+version: 2.5.2-dev
 updated: 2026-10-19
 
 brand:
@@ -109,7 +109,7 @@ storage_keys:                          # chrome.storage.local
   bridgeRev: number
   note: "旧キー（残骸）"
 
-cli:                                   # crx/scripts/cli.js（bin: chira）
+cli:                                   # cli/cli.js（bin: chira）
   keys_path: ~/.config/chira-ura/keys.json
   commands:
     - "chira set <key> <value>"
@@ -129,4 +129,4 @@ rules:
   - 権限は storage / sidePanel / identity / identity.email / alarms のみ
   - popup のコマンドは動詞のみ。値は右に小さく
   - brand は popup 最下部だけ。gh はコマンド（イシュー/履歴）に統合
-  - 変更は version と version_name(-dev) を細かく上げ、dev.history.md に追記
+  - 変更は version と version_name(-dev) を細かく上げ、doc/dev.history.md に追記

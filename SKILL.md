@@ -36,7 +36,7 @@ crx/
 
 ```bash
 # 編集は crx/ 側で行う（<LOAD> はキャッシュ、直接編集しない）
-bash tools/sync.sh          # crx/ → <LOAD> へ rsync
+bash cli/sync.sh          # crx/ → <LOAD> へ rsync
 # chrome://extensions で「再読み込み」
 ```
 

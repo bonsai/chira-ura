@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url";
 const KEYS_PATH = process.env.CHIRA_KEYS
   || join(homedir(), ".config", "chira-ura", "keys.json");
 
-const MANIFEST = resolve(dirname(fileURLToPath(import.meta.url)), "..", "manifest.json");
+const MANIFEST = resolve(dirname(fileURLToPath(import.meta.url)), "..", "crx", "manifest.json");
 const BOXES = ["local", "gdrive", "gh", "box"];
 const PORT = Number(process.env.CHIRA_PORT || 8787);
 

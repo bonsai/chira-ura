@@ -10,11 +10,11 @@
 - `chrome.storage.local`（ローカルはキャッシュ）
 - `chrome.identity`（Google OAuth / GitHub・Box は Web Auth Flow）
 - Google Drive + Apps Script（箱のマスター、拡張の外でデプロイ）
-- Node CLI（`crx/scripts/cli.js`）
+- Node CLI（`cli/cli.js`）
 
 ## 使い方
 
-1. `bash tools/sync.sh` で `crx/` を Chrome の unpacked 読込先へコピー
+1. `bash cli/sync.sh` で `crx/` を Chrome の unpacked 読込先へコピー
 2. `chrome://extensions` →「パッケージ化されていない拡張機能を読み込む」→ `.crx/chira-ura-crx` を指定
 3. toolbar の popup から `書く` でサイドパネルを開いて書き、`コピー` / `取る` でクリップボードへ
 
@@ -40,7 +40,7 @@ chira pull | push | sync                          # 同期の意味は「GDrive 
 ## エージェント
 
 - 編集は `crx/` のみ。`/mnt/c/Users/dance/.crx/chira-ura-crx` はキャッシュなので直接編集しない。
-- 反映は `bash tools/sync.sh` → 拡張の再読み込み。
+- 反映は `bash cli/sync.sh` → 拡張の再読み込み。
 - version は変更単位で細かく上げる（`version_name` に `-dev`）。
 - 権限追加・設定 UI の復活は禁止。認証は OAuth のみ（トークンを平文に置かない）。
 - 識別子（gh URL / OAuth client / 箱フォルダ / 箱名）は勝手に決めない。番号付き候補を出して選ばせる。
@@ -55,9 +55,9 @@ chira pull | push | sync                          # 同期の意味は「GDrive 
 
 ## ログ
 
-- 2026-10-19 v2.3.0-dev 改名（chira-ura）・dev.history.md 追加
+- 2026-10-19 v2.3.0-dev 改名（chira-ura）・doc/dev.history.md 追加
 - 2026-10-19 v2.2.0-dev OAuth 化（identity / auth.js / client-id）
 - 2026-10-19 v2.1.0 箱(local/gdrive/gh/box)・積みキュー・動詞コマンド
 - 2026-10-19 v2.0.0 popup 再構成 / skill 化 / sidepanel 分離
 
-詳細は `dev.history.md`。
+詳細は `doc/dev.history.md`。

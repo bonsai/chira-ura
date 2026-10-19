@@ -2,6 +2,14 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-10-19 / v2.5.2-dev — repo を doc / crx / cli の3構成に
+
+- 指示: doc crx cli の構成にする。
+- 変更: `cli/`（cli.js, package.json, sync.sh）/ `crx/`（拡張のみ）/ `doc/`（dev.history.md, ui.yaml, user.review.json）。
+  `SKILL.md` と `README.md` は skill 検出と GitHub の入口なのでルート据え置き。
+  `cli.js` の manifest 参照を `../crx/manifest.json` に変更。
+- 同期手順は `bash cli/sync.sh`。
+
 ## 2026-10-19 / v2.5.1-dev — サイドのファイル名を write/read に
 
 - 指示: `write.html` `read.html` で直す。
@@ -70,7 +78,7 @@
 
 - 指示: `make skills`。
 - 変更: `~/.skills/<name>/` に SKILL.md + README + `crx/` を置く形で repo 化。`gh repo create --private`。
-  Chrome 読込先は `tools/sync.sh` で流し込むキャッシュ扱い。
+  Chrome 読込先は `cli/sync.sh` で流し込むキャッシュ扱い。
 
 ## 2026-10-19 / v2.0.0 — popup 再構成
 
@@ -83,4 +91,4 @@
 
 - version は変更単位で細かく上げる。`version_name` に `-dev` を付ける。
 - 実体は `crx/`。`~/.crx/chira-ura-crx` はキャッシュ（直接編集しない）。
-- 反映は `bash tools/sync.sh` → `chrome://extensions` で再読み込み。
+- 反映は `bash cli/sync.sh` → `chrome://extensions` で再読み込み。
