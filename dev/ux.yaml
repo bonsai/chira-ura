@@ -1,6 +1,6 @@
 # chira-ura UX 仕様（振る舞い・遷移・状態）
 # ui.yaml = 見た目と要素、ux.yaml = 流れと状態遷移。実装は crx/。
-version: 0.1.0-rel
+version: 0.1.1-dev
 updated: 2026-10-19
 
 principles:                            # 迷ったらこれに戻す
@@ -36,10 +36,14 @@ surfaces:
           folder: [入力 → folders/<id> 抽出 → keys.gdrive.folderId 保存 → status=🔑]
           file: [JSONL 選択 → 行ごとに JSON.parse → notes 先頭に積む → status=🗂 | ✖️]
           keys: [keys.json 選択 → mergeKeys → box があれば適用 → status=🔑 | 🚫]
-      issue:
-        steps: [cmdIssue → <repo>/issues/new を新規タブ]
-      history:
-        steps: [cmdHistory → <repo>#readme を新規タブ]
+      ver:
+        steps: [linkVer → repo/blob/main/dev/dev.history.md を新規タブ]
+      logo:
+        steps: [linkLogo → https://bonsai.github.io/chira-ura/ を新規タブ]
+    autosync_switch:
+      where: "箱を設定する 行の右"
+      default: true
+      effect: "off の間は background の pull をしない（storage: autoSync）"
     autosave_switch:
       default: true
       effect: "off の間は保存しない（サイドパネルの入力は ✏️ 表示）。コピー時に保存する"
@@ -116,7 +120,7 @@ out_of_scope:                          # 作らない
   - 通知音・バッジ・ポップアップ自動展開
 
 test_checklist:                        # 手動確認（実機）
-  - "popup: 5コマンド表示、brand が最下部、gh リンクは イシュー/履歴 のみ"
+  - "popup: 箱を設定する（自動同期 switch 付き）/ 読む / 書く、hr の下に ver とロゴ"
   - "書く → sidepanel write.html が開く。文字入力 → 📝"
   - "読む → read.html が開き、記事が降順。カード展開とコピーが効く"
   - "箱 → gdrive 選択で同意画面（client_id 設定後）"

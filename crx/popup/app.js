@@ -10,31 +10,36 @@ const AUTO_KEY = "autoSave";
 const WRITE_PATH = "sidepanel/write.html";
 const LOG_PATH = "sidepanel/read.html";
 const REPO = "https://github.com/bonsai/chira-ura";
+const SITE = "https://bonsai.github.io/chira-ura/";
+const HISTORY = REPO + "/blob/main/dev/dev.history.md";
 
 const els = {
   status: document.getElementById("status"),
   cmdWrite: document.getElementById("cmdWrite"),
   cmdRead: document.getElementById("cmdRead"),
   cmdBox: document.getElementById("cmdBox"),
-  cmdIssue: document.getElementById("cmdIssue"),
-  cmdHistory: document.getElementById("cmdHistory"),
+  linkVer: document.getElementById("linkVer"),
+  linkLogo: document.getElementById("linkLogo"),
   hintBox: document.getElementById("hintBox"),
   boxPanel: document.getElementById("boxPanel"),
   folderInput: document.getElementById("folderInput"),
   keysFile: document.getElementById("keysFile"),
   jsonlFile: document.getElementById("jsonlFile"),
-  toggleAuto: document.getElementById("toggleAuto")
+  toggleAuto: document.getElementById("toggleAuto"),
+  toggleSync: document.getElementById("toggleSync")
 };
 
 const flasher = createFlasher(els.status);
 
 let notes = [];
 let autoSave = true;
+let autoSync = true;
 let box = "gdrive";
 
 // ---------- 表示 ----------
 async function paint() {
   els.toggleAuto.checked = autoSave;
+  els.toggleSync.checked = autoSync;
   els.hintBox.textContent = boxName(box);
   document.querySelectorAll(".box").forEach(b => {
     b.classList.toggle("active", b.dataset.box === box);
@@ -47,13 +52,16 @@ function renderKeys(keys) {
 
 // ---------- 初期化 ----------
 async function init() {
-  const res = await chrome.storage.local.get([NOTES_KEY, AUTO_KEY]);
+  const res = await chrome.storage.local.get([NOTES_KEY, AUTO_KEY, "autoSync"]);
   notes = res[NOTES_KEY] || [];
   autoSave = res[AUTO_KEY] !== false;
+  autoSync = res.autoSync !== false;
   box = await getBox();
 
-  els.cmdIssue.href = `${REPO}/issues/new`;
-  els.cmdHistory.href = `${REPO}#readme`;
+  const m = chrome.runtime.getManifest();
+  els.linkVer.textContent = `ver ${m.version_name || m.version}`;
+  els.linkVer.href = HISTORY;
+  els.linkLogo.href = SITE;
 
   renderKeys(await getKeys());
   await paint();
@@ -80,8 +88,8 @@ async function openPanel(path) {
 }
 
 // ---------- コマンド ----------
-els.cmdWrite.addEventListener("click", () => openPanel(WRITE_PATH));
 els.cmdRead.addEventListener("click", () => openPanel(LOG_PATH));
+els.cmdWrite.addEventListener("click", () => openPanel(WRITE_PATH));
 
 els.cmdBox.addEventListener("click", () => {
   els.boxPanel.hidden = !els.boxPanel.hidden;
@@ -188,6 +196,13 @@ els.keysFile.addEventListener("change", async (e) => {
   e.target.value = "";
 });
 
+// ---------- 自動同期（CLI ブリッジからの pull） ----------
+els.toggleSync.addEventListener("change", async (e) => {
+  autoSync = e.target.checked;
+  await chrome.storage.local.set({ autoSync });
+  flasher.flash(autoSync ? "saved" : "dirty");
+});
+
 // ---------- 自動保存 ----------
 els.toggleAuto.addEventListener("change", async (e) => {
   autoSave = e.target.checked;
@@ -200,6 +215,7 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
   if (area !== "local") return;
   if (changes[NOTES_KEY]) notes = changes[NOTES_KEY].newValue || [];
   if (changes[AUTO_KEY]) autoSave = changes[AUTO_KEY].newValue !== false;
+  if (changes.autoSync) autoSync = changes.autoSync.newValue !== false;
   if (changes[BOX_KEY]) box = changes[BOX_KEY].newValue || "gdrive";
   if (changes[KEYS_KEY]) renderKeys(changes[KEYS_KEY].newValue || {});
   await paint();

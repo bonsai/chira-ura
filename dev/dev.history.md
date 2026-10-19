@@ -2,6 +2,14 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-10-19 / v0.1.1-dev — popup を 3 コマンド + ver/ロゴに
+
+- 指示: 箱を設定する（選択肢は OAuth / cli.js）、自動同期トグル、読む、書く、hr、ver0.1.0 とロゴ。
+  ver は履歴リンク、ロゴは https://bonsai.github.io/chira-ura/ 、イシューリンクは無し。
+- 変更: popup = 箱を設定する（右に自動同期 switch）/ 読む / 書く。`hr.rule` の下に `ver <version_name>`（→ dev/dev.history.md）
+  とロゴ（→ サイト）。イシュー/履歴コマンドを削除。箱パネルの鍵行は「cli.js」表記に。
+  background は `autoSync` が false のとき pull しない。
+
 ## 2026-10-19 / v0.1.0-rel — 初回公開リリース
 
 - 指示: release v0.1.0-rel / ID は repo に置かず OAuth で解決 / 1（識別子を消してから public）

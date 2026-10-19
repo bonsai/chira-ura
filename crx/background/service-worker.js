@@ -36,6 +36,8 @@ function setupAlarm() {
 
 async function syncNow() {
   try {
+    const { autoSync } = await chrome.storage.local.get(["autoSync"]);
+    if (autoSync === false) return;
     const state = await fetchState();
     const patch = await applyState(state);
     if (chrome.action?.setTitle) {

@@ -1,9 +1,12 @@
 # chira-ura UI 仕様（実装の正）
 # 変更したら実装（crx/）と同時に更新する。ここに無い UI は足さない。
-version: 0.1.0-rel
+version: 0.1.1-dev
 updated: 2026-10-19
 
 brand:
+  display: "footer のロゴ（icons/icon.svg）"
+  logo_link: https://bonsai.github.io/chira-ura/
+  version: "footer 左に `ver <version_name>`。クリックで dev/dev.history.md"
   name: chira-ura / チラ裏
   mark: "chira<span>ura</span>"
   placement: [popup.footer]             # sidepanel には置かない
@@ -24,15 +27,15 @@ popup:                                 # crx/popup/{index.html,app.js,style.css}
   height: auto
   header: none
   editor: none                         # 入力欄は置かない（書くのは sidepanel）
-  commands:                            # 動詞のみ
+  commands:                            # 上から 箱 / 読む / 書く
     max: 7
     items:
-      - { id: cmdWrite,   label: 書く,   action: "sidePanel.open(sidepanel/write.html)" }
-      - { id: cmdRead,    label: 読む,   action: "sidePanel.open(sidepanel/read.html)" }
-      - { id: cmdBox,     label: 箱,     action: toggle(boxPanel), hint: active box name }
-      - { id: cmdIssue,   label: イシュー, action: "open <repo>/issues/new" }
-      - { id: cmdHistory, label: 履歴,   action: "open <repo>#readme" }
-    removed: [コピー, 積む, 取る, 読み込む]   # 2026-10-19 に削除。読む/箱に統合
+      - { id: cmdBox,   label: 箱を設定する, action: toggle(boxPanel), hint: active box name,
+          right: "自動同期 switch (toggleSync, default on)" }
+      - { id: cmdRead,  label: 読む, action: "sidePanel.open(sidepanel/read.html)" }
+      - { id: cmdWrite, label: 書く, action: "sidePanel.open(sidepanel/write.html)" }
+    removed: [コピー, 積む, 取る, 読み込む, イシュー, 履歴]
+      # イシュー/履歴は削除。履歴は footer の ver リンクへ、サイトはロゴへ
   box_panel:                           # 「箱」で開閉。保存先 + フォルダ + ファイル
     items: [local, gdrive, gh, box]
     mark: dot                          # 選択中は enji の点
@@ -43,17 +46,19 @@ popup:                                 # crx/popup/{index.html,app.js,style.css}
       gh:     { auth: "launchWebAuthFlow", client_id: "keys.auth.gh.clientId" }
       box:    { auth: "launchWebAuthFlow", client_id: "keys.auth.box.clientId" }
     rows:
-      - { id: folderInput, label: フォルダ, kind: text, placeholder: "folder ID / URL",
-          save: "keys.gdrive.folderId（URL なら folders/<id> を抽出）" }
+      - { id: folderInput, label: フォルダ, kind: text, placeholder: "folder ID / name",
+          save: "OAuth 後に Drive API で ID へ解決して keys.gdrive.folderId に保存" }
       - { id: jsonlFile,   label: ファイル, kind: file, accept: ".jsonl,.json",
           action: "notes へ取り込む（ちょっとしたものを読む）" }
-      - { id: keysFile,    label: 鍵,       kind: file, accept: ".json",
-          action: "keys.json を chrome.storage へマージ（box も適用）" }
+      - { id: keysFile,    label: cli.js,   kind: file, accept: ".json",
+          action: "cli.js が書く keys.json を chrome.storage へマージ（box も適用）" }
   statusline:
     left: "autosave switch (default on, storage: autoSave)"
     right: "status emoji (blink 0.55s x2, idle opacity 0.28)"
   footer:
-    - brand (bottom-most, 唯一のフッター要素)
+    - { id: linkVer,  text: "ver <version_name>", href: "repo/blob/main/dev/dev.history.md" }
+    - { id: linkLogo, text: "logo", href: "https://bonsai.github.io/chira-ura/" }
+    - 区切り線 hr.rule を footer 直上に置く
 
 sidepanel_write:                       # crx/sidepanel/write.html
   title: "chira-ura — 書く"
@@ -128,5 +133,5 @@ rules:
   - 認証は OAuth。トークンを平文に置かない
   - 権限は storage / sidePanel / identity / identity.email / alarms のみ
   - popup のコマンドは動詞のみ。値は右に小さく
-  - brand は popup 最下部だけ。gh はコマンド（イシュー/履歴）に統合
+  - 最下部は ver（履歴リンク）とロゴ（サイトリンク）だけ。イシュー/gh リンクは置かない
   - 変更は version と version_name(-dev) を細かく上げ、dev/dev.history.md に追記
