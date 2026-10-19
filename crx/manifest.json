@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "kami copi / 紙コピー",
-  "version": "2.2.0",
-  "description": "書いたら自動保存。メモ入力・コピーだけの超軽量メモ帳。箱はGDrive(GAS)がマスター。設定はCLI。",
+  "name": "chira-ura / チラ裏",
+  "version": "2.3.0",
+  "description": "書いたら自動保存。メモとコピーだけの軽量メモ帳。箱はローカル / GDrive / GitHub / Box。",
   "icons": {
     "16": "icons/icon.svg",
     "48": "icons/icon.svg",
@@ -10,7 +10,7 @@
   },
   "action": {
     "default_popup": "popup/index.html",
-    "default_title": "kami copi"
+    "default_title": "chira-ura"
   },
   "side_panel": {
     "default_path": "sidepanel/index.html"
@@ -25,7 +25,7 @@
     "identity.email"
   ],
   "host_permissions": [],
-  "version_name": "2.2.0-dev",
+  "version_name": "2.3.0-dev",
   "oauth2": {
     "client_id": "REPLACE_ME.apps.googleusercontent.com",
     "scopes": [

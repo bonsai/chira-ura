@@ -1,4 +1,4 @@
-// kami copi v2 — sidepanel: 過去記事を読む（読み専用）
+// chira-ura v2 — sidepanel: 過去記事を読む（読み専用）
 import { copy } from "../scripts/clipboard.js";
 import { createFlasher } from "../scripts/flash.js";
 import { pushStack } from "../scripts/stack.js";

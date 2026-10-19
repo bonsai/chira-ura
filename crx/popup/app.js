@@ -1,4 +1,4 @@
-// kami copi v2 — popup: コマンド（動詞のみ）/ 箱 / クリップボード積み
+// chira-ura v2 — popup: コマンド（動詞のみ）/ 箱 / クリップボード積み
 import { copy } from "../scripts/clipboard.js";
 import { createFlasher } from "../scripts/flash.js";
 import { pushStack, popStack, stackDepth } from "../scripts/stack.js";
@@ -12,7 +12,7 @@ const GAS_URL_KEY = "gasUrl";
 
 const WRITE_PATH = "sidepanel/index.html";
 const LOG_PATH = "sidepanel/log.html";
-const GH_URL = "https://github.com/bonsai/kami-copi";
+const GH_URL = "https://github.com/bonsai/chira-ura";
 
 const els = {
   status: document.getElementById("status"),
@@ -58,7 +58,7 @@ function renderKeys(keys) {
     els.keyHint.dataset.url = folder;
     els.keyHint.classList.add("as-link");
   } else {
-    els.keyHint.textContent = "kami set gdrive.token …";
+    els.keyHint.textContent = "chira set gdrive.folderId …";
     delete els.keyHint.dataset.url;
     els.keyHint.classList.remove("as-link");
   }
@@ -164,7 +164,7 @@ async function authorize(id) {
     const keys = await getKeys();
     const clientId = keys?.auth?.[id]?.clientId;
     if (!clientId) {
-      flasher.note("⚠️", `client_id 未設定: kami set auth.${id}.clientId <id>`);
+      flasher.note("⚠️", `client_id 未設定: chira set auth.${id}.clientId <id>`);
       return;
     }
     const conf = id === "gh"

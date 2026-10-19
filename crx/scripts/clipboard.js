@@ -1,4 +1,4 @@
-// kami copi — clipboard utility (ES module)
+// chira-ura — clipboard utility (ES module)
 // Chrome拡張（MV3）のサイドパネル／ポップアップで使うクリップボード操作。
 // navigator.clipboard が使えない環境へのフォールバック付き。
 

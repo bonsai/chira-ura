@@ -1,4 +1,4 @@
-// kami copi — 絵文字のみのステータス通知（popup / sidepanel 共用）
+// chira-ura — 絵文字のみのステータス通知（popup / sidepanel 共用）
 // テキストは title / aria-label に退避する。
 
 export const MSG = {

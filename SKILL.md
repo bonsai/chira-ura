@@ -1,77 +1,70 @@
 ---
-name: kami-copi
+name: chira-ura
 description: >
-  Chrome 拡張「kami copi / 紙コピー」— 書いたら自動保存、コピーだけの超軽量メモ帳。
-  popup に設定 toggle と CLI 案内を集約し、過去記事はサイドパネル、箱は GDrive(GAS) がマスター。
-  「kami copi」「紙コピー」「メモ拡張」「popup を直す」「サイドパネル」「GAS 同期」「クリップボードに流す」
-  「プロンプトに貼るボタン」で発動。英語でも発動（memo extension, clipboard note）。
+  Chrome 拡張「chira-ura / チラ裏」— 書いたら自動保存、コピーだけの軽量メモ帳。
+  popup は動詞コマンド7つ、書く/読むはサイドパネル、箱は local / GDrive / GitHub / Box を OAuth で選ぶ。
+  「chira-ura」「チラ裏」「メモ拡張」「popup を直す」「サイドパネル」「箱を変える」「クリップボードに積む」
+  「プロンプトに貼る」で発動。英語でも発動（memo extension, clipboard stack）。
 ---
 
-# kami copi — 書いてコピるだけのメモ拡張
+# chira-ura — 書いてコピるだけのメモ拡張
 
-変数: `<REPO>=~/.skills/kami-copi`, `<LOAD>=/mnt/c/Users/dance/.crx/kami-copi-crx`（Chrome の unpacked 読込先）
+変数: `<REPO>=~/.skills/chira-ura`, `<LOAD>=/mnt/c/Users/dance/.crx/chira-ura-crx`（Chrome の unpacked 読込先）
+
+旧名 `kami copi` は `kamicopi.net` と衝突するため 2026-10-19 に改名。
 
 ## 構造
 
 ```
 crx/
-  manifest.json          MV3 / permissions: storage, sidePanel のみ
-  popup/                 コマンド一覧のみ（最大7行・最下部 brand・その上 gh）
+  manifest.json          MV3 / permissions: storage, sidePanel, identity, identity.email
+  popup/                 動詞コマンドのみ（書く/読む/コピー/積む/取る/読み込む/箱）
   sidepanel/index.html   書く（エディタ + コピー）
-  sidepanel/log.html     過去記事を読む（一覧・展開・JSONL 読込・箱リンク）
+  sidepanel/log.html     過去記事を読む（展開・コピー）
   background/            初期データの種付けのみ
-  scripts/cli.js         設定・同期 CLI（kami set / kami sync）
+  scripts/cli.js         設定 CLI（chira set / box / client-id / path / keys）
+  scripts/auth.js        OAuth（Google=getAuthToken、GH/Box=launchWebAuthFlow）
+  scripts/boxes.js       箱の定義と鍵のマージ
+  scripts/stack.js       クリップボードの積みキュー（LIFO・最大50・先頭が最新）
+  scripts/flash.js       絵文字のみの status 通知
   scripts/clipboard.js   コピー共通処理
-  scripts/flash.js       絵文字のみの status 通知（popup / sidepanel 共用）
-  scripts/stack.js       クリップボードのスタックキュー（push / pop、先頭が最新、最大50）
-  scripts/boxes.js       箱の定義（local / gdrive / gh / box）と鍵のマージ
-  scripts/auth.js        OAuth（Google=chrome.identity.getAuthToken、GH/Box=launchWebAuthFlow）
   storage/db.js          chrome.storage.local ラッパ（ローカルはキャッシュ）
 ```
 
 ## 編集 → 読込
 
 ```bash
-# 1. 編集は <REPO>/extension 側で行う
-# 2. Chrome の読込先へ反映（unpacked は同期されないためコピーする）
+# 編集は crx/ 側で行う（<LOAD> はキャッシュ、直接編集しない）
 bash tools/sync.sh          # crx/ → <LOAD> へ rsync
-# 3. chrome://extensions で「再読み込み」
+# chrome://extensions で「再読み込み」
 ```
-
-`<LOAD>` を直接編集しない。`<LOAD>` はキャッシュ、`<REPO>/crx` が正。
 
 ## UI 規約（ユーザー決定事項）
 
-- popup は**コマンド一覧のみ**（最大7行）。入力欄は置かない（書くのは sidepanel）。
-- popup の並び: コマンド（書く/過去記事/コピー/自動保存/クラウド/CLI/箱）→ 最下部に brand、その直上に gh。
-- 設定 toggle（自動保存 / クラウド）は popup の `<details>` に集約。sidepanel には置かない。
-- CLI は popup の `<details>` で案内のみ（設定画面は作らない）。
-- sidepanel は 2 ページに分離: `index.html` = 書く、`log.html` = 過去記事を読む。
-  popup の「過去記事」は `chrome.sidePanel.setOptions({path: 'sidepanel/log.html'})` → `open()`。
-  両ページのフッターで相互に行き来（`index.html` ⇄ `log.html`）。
-- 全画面で共通: ステータスは下部にさりげなく、**絵文字のみ**でブリンク通知:
-  `📝` ローカル保存済み / `📋` クリップボード保存済み / `💾` 保存中 / `✏️` 未保存 /
-  `🗂` 読込完了 / `⚠️` 設定不足 / `✖️` 対象なし / `🚫` 失敗。テキストは `title` に退避。
-- brand と gh は popup の最下部のみ。sidepanel（書く/過去記事）には置かない。
-- 認証は **OAuth**。トークンは保存しない（Google は `chrome.identity` のキャッシュ、GH/Box はコード取得まで）。
-  `~/.config/kami-copi/keys.json` は非秘密だけ（folder ID、client_id、GAS URL）。
-- 箱は popup の「箱」コマンドから選ぶ（local / gdrive / gh / box）。選ぶと認証が走る。
-- 箱・読み込みは popup 側。サイドパネルには置かない（過去記事は読むだけ）。
-- コマンドのラベルは**動詞のみ**（書く/読む/コピー/積む/取る/読み込む/箱）。値は右側に小さく出す。
-- 自動保存は既定 on。popup 下部のスイッチで切替（コマンド行は使わない）。
-- GDrive の箱フォルダ: `<folder-id>`（<account>）
-- コピーは内容のみ（タイトルや前置きを付けない）＝そのままプロンプトに流せる。
-- メモのタイトルは本文1行目から導出する（タイトル入力欄を作らない）。
+- popup は**動詞コマンドのみ**（最大7）。入力欄は置かない。値は右に小さく出す。
+- popup の最下部は brand、その直上に gh。sidepanel には brand / gh を置かない。
+- 書くのは sidepanel。`index.html` = 書く、`log.html` = 過去記事を読む。
+- 箱・読み込みは popup 側。サイドパネルに置かない。
+- 自動保存は既定 on。popup 下部のスイッチで切替（コマンド行にしない）。
+- ステータスは下部にさりげなく、**絵文字のみ**でブリンク:
+  `📝` ローカル保存済み / `📋` コピー済み / `💾` 保存中 / `✏️` 未保存 /
+  `🗃` 積んだ / `📤` 取った / `🔑` 認証・鍵 / `📦` 箱 / `🗂` 読込 / `⚠️` 設定不足 / `🚫` 失敗。
+  テキストは `title` に退避。
+- コピーは内容のみ（前置き・タイトルを付けない）＝そのままプロンプトに流せる。
+- メモのタイトルは本文1行目から導出（入力欄を増やさない）。
+- 認証は **OAuth**。トークンは保存しない。`~/.config/chira-ura/keys.json` は非秘密のみ
+  （folder ID、client_id、GAS URL）。
+- GDrive 箱フォルダ: `<folder-id>`（<account>）。
+- version は変更単位で細かく上げる。`version_name` に `-dev` を付ける。
 
-## 未実施（今後）
+## 未実施
 
-- popup の保存先が `note`（単数）で sidepanel の `notes`（配列）と不一致。統一が必要。
-- GAS 同期は `scripts/cli.js` が stub。`gasUrl` / `defaultBox` の書き込み経路も未実装。
-- Google OAuth の `client_id` 未発行（`manifest.json` が REPLACE_ME）。GCP で OAuth クライアント発行 → `kami client-id`。
-- GH / Box はコード取得まで。トークン交換は GAS 等のサーバ側が必要。
-（解決済み）gh リンク = https://github.com/bonsai/kami-copi
+- Google OAuth の `client_id` 未発行（manifest が `REPLACE_ME`）→ `chira client-id <id>` が必要。
+- GH / Box は認可コード取得まで。トークン交換はサーバ（GAS 等）側が未実装。
+- 同期（`chira sync`）は stub。箱への書き込み・読み込みは未実装。
+- popup の旧キー `note`（単数）が残骸。sidepanel は `notes`（配列）。
 
 ## 禁止
 
-- 拡張内に設定画面・テーマ選択・複数箱リストを戻さない（user.review.json の ultra_minimal 決定）。
-- 権限を増やさない（`storage`, `sidePanel` のみ）。
+- 商標 `kami copi` / `kamicopi` を名前に戻さない。
+- 設定画面・テーマ選択・複数箱リストを拡張内に作らない。

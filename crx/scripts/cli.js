@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// kami copi CLI — 設定専用（拡張内に設定画面は作らない）
+// chira-ura CLI — 設定専用（拡張内に設定画面は作らない）
 // 鍵は平文 JSON に置く。拡張側は popup の「箱 → 鍵を読む」でこのファイルを読込む。
 
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
@@ -7,25 +7,25 @@ import { homedir } from "node:os";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const KEYS_PATH = process.env.KAMI_KEYS
-  || join(homedir(), ".config", "kami-copi", "keys.json");
+const KEYS_PATH = process.env.CHIRA_KEYS
+  || join(homedir(), ".config", "chira-ura", "keys.json");
 
 const BOXES = ["local", "gdrive", "gh", "box"];
 const MANIFEST = resolve(dirname(fileURLToPath(import.meta.url)), "..", "manifest.json");
 
 function usage() {
-  console.log(`kami copi CLI
+  console.log(`chira-ura CLI
 
-  kami set <key> <value>     非秘密の設定のみ（トークンは OAuth なので置かない）
-                                 kami set gdrive.folderId <id>
-                                 kami set gdrive.url https://script.google.com/...
-                                 kami set auth.gh.clientId <id>
-                                 kami set auth.box.clientId <id>
-  kami get [key]             鍵を表示（key 省略で全部）
-  kami box <${BOXES.join("|")}>
-  kami client-id <id>.apps.googleusercontent.com   manifest の oauth2.client_id を書く
-  kami path                  鍵ファイルのパス
-  kami keys                  鍵ファイルの中身をそのまま表示
+  chira set <key> <value>     非秘密の設定のみ（トークンは OAuth なので置かない）
+                                 chira set gdrive.folderId <id>
+                                 chira set gdrive.url https://script.google.com/...
+                                 chira set auth.gh.clientId <id>
+                                 chira set auth.box.clientId <id>
+  chira get [key]             鍵を表示（key 省略で全部）
+  chira box <${BOXES.join("|")}>
+  chira client-id <id>.apps.googleusercontent.com   manifest の oauth2.client_id を書く
+  chira path                  鍵ファイルのパス
+  chira keys                  鍵ファイルの中身をそのまま表示
 
 鍵ファイル（平文 JSON）: ${KEYS_PATH}
 読込: popup → 箱 → 鍵を読む`);
@@ -69,7 +69,7 @@ switch (cmd) {
     const [key, ...val] = rest;
     const value = val.join(" ");
     if (!key || !value) {
-      console.error("使い方: kami set <key> <value>");
+      console.error("使い方: chira set <key> <value>");
       process.exit(1);
     }
     write(setPath(read(), key, value));
@@ -84,7 +84,7 @@ switch (cmd) {
   case "client-id": {
     const id = rest[0];
     if (!id || !id.includes(".apps.googleusercontent.com")) {
-      console.error("使い方: kami client-id <id>.apps.googleusercontent.com");
+      console.error("使い方: chira client-id <id>.apps.googleusercontent.com");
       process.exit(1);
     }
     const m = JSON.parse(readFileSync(MANIFEST, "utf8"));
@@ -97,7 +97,7 @@ switch (cmd) {
   case "box": {
     const id = rest[0];
     if (!BOXES.includes(id)) {
-      console.error(`使い方: kami box <${BOXES.join("|")}>`);
+      console.error(`使い方: chira box <${BOXES.join("|")}>`);
       process.exit(1);
     }
     write(setPath(read(), "box", id));
@@ -112,7 +112,7 @@ switch (cmd) {
   case "sync": {
     const sub = rest[0];
     if (!["pull", "push"].includes(sub)) {
-      console.error("使い方: kami sync <pull|push>（未実装: 箱の同期は拡張側で行う）");
+      console.error("使い方: chira sync <pull|push>（未実装: 箱の同期は拡張側で行う）");
       process.exit(1);
     }
     console.error(`[stub] ${sub}: 同期は未実装。箱の設定だけ先に済ませる。`);
