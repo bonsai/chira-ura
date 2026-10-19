@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "chira-ura / チラ裏",
-  "version": "2.5.4",
+  "version": "0.1.0",
   "description": "書いたら自動保存。メモとコピーだけの軽量メモ帳。箱はローカル / GDrive / GitHub / Box。",
   "icons": {
     "16": "icons/icon.svg",
@@ -29,7 +29,7 @@
   "host_permissions": [
     "http://127.0.0.1:8787/*"
   ],
-  "version_name": "2.5.4-dev",
+  "version_name": "0.1.0-rel",
   "oauth2": {
     "client_id": "REPLACE_ME.apps.googleusercontent.com",
     "scopes": [
