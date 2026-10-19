@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>kami copi / 紙コピー</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- ヘッダー -->
+    <header class="header">
+      <div class="brand">kami<span>copi</span></div>
+      <div class="controls">
+        <div class="status" id="status">保存済み</div>
+      </div>
+    </header>
+
+    <!-- メイン：入力エリア -->
+    <main class="editor-wrap">
+      <textarea id="note" rows="6" placeholder="ここにメモを書く… 自動保存されます"></textarea>
+    </main>
+
+    <!-- メモリスト（ぱらぱら見る） -->
+    <section class="list-wrap">
+      <div class="list-header">
+        <h2>過去メモ</h2>
+        <div class="list-actions">
+          <input type="file" id="jsonlFile" accept=".jsonl,.json" />
+          <label class="btn ghost" for="jsonlFile">JSONL読み込み</label>
+          <a id="btnGDrive" class="btn ghost" target="_blank" rel="noopener">📦 箱を見る（Drive）</a>
+        </div>
+      </div>
+      <div class="list" id="noteList"></div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="footer">
+      <button class="btn copy" id="btnCopy">📋 コピー</button>
+    </footer>
+  </div>
+
+  <div id="toast"></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
