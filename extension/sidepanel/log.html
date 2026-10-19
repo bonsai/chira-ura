@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>kami copi — 過去記事</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 読む -->
+    <main class="log-wrap">
+      <div class="list" id="noteList"></div>
+    </main>
+
+    <!-- ステータス（下部・絵文字のみ） -->
+    <div class="statusline">
+      <span class="status" id="status" role="status" aria-live="polite"></span>
+    </div>
+
+    <!-- フッター: 操作 + gh + ブランド -->
+    <footer class="footer">
+      <a class="btn ghost" id="btnWrite" href="index.html">書く</a>
+      <input type="file" id="jsonlFile" accept=".jsonl,.json" hidden />
+      <label class="btn ghost" for="jsonlFile">読込</label>
+      <a class="btn ghost" id="btnGDrive" target="_blank" rel="noopener" hidden>箱</a>
+      <a class="gh" id="linkGh" target="_blank" rel="noopener" hidden>gh</a>
+      <span class="brand">kami<span>copi</span></span>
+    </footer>
+  </div>
+
+  <script type="module" src="log.js"></script>
+</body>
+</html>

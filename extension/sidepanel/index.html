@@ -3,44 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>kami copi / 紙コピー</title>
+  <title>kami copi — 書く</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="app">
-    <!-- ヘッダー -->
-    <header class="header">
-      <div class="brand">kami<span>copi</span></div>
-      <div class="controls">
-        <div class="status" id="status">保存済み</div>
-      </div>
-    </header>
-
-    <!-- メイン：入力エリア -->
-    <main class="editor-wrap">
-      <textarea id="note" rows="6" placeholder="ここにメモを書く… 自動保存されます"></textarea>
+    <!-- 書く -->
+    <main class="editor">
+      <textarea id="note" placeholder="ここにメモを書く… 自動保存されます"></textarea>
     </main>
 
-    <!-- メモリスト（ぱらぱら見る） -->
-    <section class="list-wrap">
-      <div class="list-header">
-        <h2>過去メモ</h2>
-        <div class="list-actions">
-          <input type="file" id="jsonlFile" accept=".jsonl,.json" />
-          <label class="btn ghost" for="jsonlFile">JSONL読み込み</label>
-          <a id="btnGDrive" class="btn ghost" target="_blank" rel="noopener">📦 箱を見る（Drive）</a>
-        </div>
-      </div>
-      <div class="list" id="noteList"></div>
-    </section>
+    <!-- ステータス（下部・絵文字のみ） -->
+    <div class="statusline">
+      <span class="status" id="status" role="status" aria-live="polite"></span>
+    </div>
 
-    <!-- フッター -->
+    <!-- フッター: 操作 + gh + ブランド -->
     <footer class="footer">
-      <button class="btn copy" id="btnCopy">📋 コピー</button>
+      <button class="btn copy" id="btnCopy">コピー</button>
+      <a class="btn ghost" id="btnLog" href="log.html">過去記事</a>
+      <a class="gh" id="linkGh" target="_blank" rel="noopener" hidden>gh</a>
+      <span class="brand">kami<span>copi</span></span>
     </footer>
   </div>
-
-  <div id="toast"></div>
 
   <script type="module" src="app.js"></script>
 </body>
