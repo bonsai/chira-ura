@@ -1,4 +1,4 @@
-// kami copi — 認証（OAuth 優先）
+// chira-ura — 認証（OAuth 優先）
 // トークンは保存しない。Google は chrome.identity.getAuthToken のキャッシュに任せる。
 // GitHub / Box は launchWebAuthFlow でコード取得まで（トークン交換はサーバ側 = GAS 等が担う）。
 
@@ -16,7 +16,7 @@ function hasPlaceholderClientId() {
 /** Google のアクセストークン（interactive=true で同意画面を出す） */
 export async function googleToken(interactive = true) {
   if (hasPlaceholderClientId()) {
-    throw new Error("manifest.json の oauth2.client_id が未設定（CLI: kami set oauth.client_id）");
+    throw new Error("manifest.json の oauth2.client_id が未設定（CLI: chira client-id）");
   }
   return new Promise((resolve, reject) => {
     chrome.identity.getAuthToken({ interactive, scopes: GOOGLE_SCOPES }, (token) => {
@@ -47,7 +47,7 @@ export function googleAccount() {
 /** GitHub / Box: client_id は chrome.storage の keys から。コード取得まで。 */
 export async function webAuthCode(provider, clientId, authUrl, scope) {
   if (!clientId) throw new Error(`${provider}: client_id 未設定`);
-  const redirectUri = chrome.identity.getRedirectURL("kami");
+  const redirectUri = chrome.identity.getRedirectURL("chira");
   const url = new URL(authUrl);
   url.searchParams.set("client_id", clientId);
   url.searchParams.set("redirect_uri", redirectUri);

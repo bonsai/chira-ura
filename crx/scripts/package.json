@@ -1,10 +1,10 @@
 {
-  "name": "kami-copi-cli",
+  "name": "chira-ura-cli",
   "version": "2.0.0",
-  "description": "kami copi 設定・同期CLI",
+  "description": "chira-ura 設定CLI",
   "type": "module",
   "bin": {
-    "kami": "cli.js"
+    "chira": "cli.js"
   },
   "scripts": {
     "set": "node cli.js"

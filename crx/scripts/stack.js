@@ -1,4 +1,4 @@
-// kami copi — クリップボードのスタックキュー
+// chira-ura — クリップボードのスタックキュー
 // chrome.storage.local に { text, at } の配列で持つ（先頭が最新）。
 
 export const STACK_KEY = "clipStack";

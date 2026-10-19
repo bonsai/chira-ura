@@ -1,4 +1,4 @@
-// kami copi v2 — storage (minimal)
+// chira-ura v2 — storage (minimal)
 // ローカルはキャッシュ。箱・設定はCLI、GAS/GDriveがマスター。
 
 const KEYS = {

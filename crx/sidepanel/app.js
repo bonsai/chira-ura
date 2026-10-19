@@ -1,4 +1,4 @@
-// kami copi v2 — sidepanel: 書く（保存とコピーだけ）
+// chira-ura v2 — sidepanel: 書く（保存とコピーだけ）
 import { copy } from "../scripts/clipboard.js";
 import { createFlasher } from "../scripts/flash.js";
 import { pushStack } from "../scripts/stack.js";

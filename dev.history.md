@@ -1,0 +1,60 @@
+# dev.history — chira-ura
+
+指示と実装の履歴。新しいものが上。
+
+## 2026-10-19 / v2.3.0-dev — 改名（商標回避）
+
+- 指示: `http://kamicopi.net/` と衝突＝商標違反なので名を変える。新名 `chira-ura`。
+- 変更: manifest `name` → `chira-ura / チラ裏`、brand 表記 → `chiraura`、CLI のコマンド名 `kami` → `chira`、
+  鍵ファイル `~/.config/kami-copi/keys.json` → `~/.config/chira-ura/keys.json`、
+  Chrome 読込先 `~/.crx/kami-copi-crx` → `~/.crx/chira-ura-crx`、repo `bonsai/kami-copi` → `bonsai/chira-ura`。
+- 注意: 読込先が変わったので拡張 ID が変わる。旧 ID の `chrome.storage.local` は引き継がれない。
+  `chrome://extensions` で旧エントリを削除し、`chira-ura-crx` を読み込み直す。
+
+## 2026-10-19 / v2.2.0-dev — OAuth 化
+
+- 指示: key を平文 JSON で CLI 設定 →「set by oauth is better」。
+- 変更: `chrome.identity` を導入（`identity`, `identity.email`）。Google は `getAuthToken`（scope `drive.file`）、
+  GitHub / Box は `launchWebAuthFlow` でコード取得まで。トークンは保存しない。
+  `scripts/auth.js` / `kami client-id` コマンド（manifest の `oauth2.client_id` を書く）。
+- 残: `client_id` 未発行（`REPLACE_ME`）。GH/Box のトークン交換はサーバ（GAS）側が未実装。
+
+## 2026-10-19 / v2.1.0 — 箱・積みキュー・コマンド動詞化
+
+- 指示: 箱は local / gdrive / gh / box を API 設定で選ぶ。自動保存は当然でトグル。箱と読み込みはサイドから popup へ。
+  CLI から key 設定（この時点は平文 JSON）。コマンドは動詞のみ。
+- GDrive 箱フォルダ: `<folder-id>`（<account>）。
+- 変更: `scripts/boxes.js`（箱の定義）/ `scripts/stack.js`（クリップボード LIFO、最大50、連投の重複は無視）。
+  popup を動詞7つ（書く/読む/コピー/積む/取る/読み込む/箱）に。箱パネル + 自動保存スイッチ。
+  sidepanel から箱・読込を撤去（過去記事は読むだけ）。
+
+## 2026-10-19 / v2.0.0 — popup をコマンドのみに
+
+- 指示: popup はコマンドのみ、7つまで、最下部が brand、その上が gh。note 側からはロゴとリンクを消す。
+- 変更: popup の textarea 撤去。コマンド行のみ。`gh` → `brand` の順で最下部に固定。
+  sidepanel（書く / 過去記事）から brand と gh を撤去。
+
+## 2026-10-19 / v2.0.0 — sidepanel を書く/読むに分離
+
+- 指示: 過去記事は `sidepanel/log.html` に分離。status は下部、brand と gh はフッターのみ。
+- 変更: `sidepanel/index.html`（書く）/ `sidepanel/log.html`（過去記事）。コピーは本文のみ（前置き無し）。
+  タイトルは本文1行目から導出。`scripts/flash.js` を新設し、通知を絵文字のみ（📝/📋/💾/✏️/🗂/⚠️/🚫）に統一。
+
+## 2026-10-19 / v2.0.0 — skill 化
+
+- 指示: `make skills`。
+- 変更: `~/.skills/<name>/` に SKILL.md + README + `crx/` を置く形で repo 化。`gh repo create --private`。
+  Chrome 読込先は `tools/sync.sh` で流し込むキャッシュ扱い。
+
+## 2026-10-19 / v2.0.0 — popup 再構成
+
+- 指示: 設定 toggle を popup に集約、CLI の紹介、過去記事はサイドで読む、コピーはプロンプトに流せる形、
+  status は下部にさりげなく、brand はフッターのみ、gh リンク、絵文字のみでブリンク通知。
+- 変更: popup に `<details>`（設定 / CLI）とブランド・gh フッター。sidepanel から toggle 撤去。
+  ステータスを絵文字ブリンクに（`📝` ローカル保存済み / `📋` クリップボード保存済み）。
+
+## 運用
+
+- version は変更単位で細かく上げる。`version_name` に `-dev` を付ける。
+- 実体は `crx/`。`~/.crx/chira-ura-crx` はキャッシュ（直接編集しない）。
+- 反映は `bash tools/sync.sh` → `chrome://extensions` で再読み込み。

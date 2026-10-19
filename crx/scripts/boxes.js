@@ -1,4 +1,4 @@
-// kami copi — 箱（保存先バックエンド）の定義
+// chira-ura — 箱（保存先バックエンド）の定義
 // 鍵は chrome.storage.local に平文 JSON で持つ（CLI が書く keys.json を読込んで流し込む）。
 
 export const BOXES = [

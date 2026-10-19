@@ -3,7 +3,7 @@
 set -euo pipefail
 
 SRC="$(cd "$(dirname "$0")/.." && pwd)/crx"
-DST="${KAMI_LOAD_DIR:-<LOAD>/.crx/kami-copi-crx}"
+DST="${CHIRA_LOAD_DIR:-<LOAD>}"
 
 [ -d "$DST" ] || { echo "読込先が無い: $DST" >&2; exit 1; }
 
