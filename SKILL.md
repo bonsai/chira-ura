@@ -17,10 +17,12 @@ description: >
 extension/
   manifest.json          MV3 / permissions: storage, sidePanel のみ
   popup/                 書く＋コピる＋設定 toggle＋CLI 案内（340×440）
-  sidepanel/             過去メモ一覧・JSONL 読込・GAS 箱リンク
+  sidepanel/index.html   書く（エディタ + コピー）
+  sidepanel/log.html     過去記事を読む（一覧・展開・JSONL 読込・箱リンク）
   background/            初期データの種付けのみ
   scripts/cli.js         設定・同期 CLI（kami set / kami sync）
   scripts/clipboard.js   コピー共通処理
+  scripts/flash.js       絵文字のみの status 通知（popup / sidepanel 共用）
   storage/db.js          chrome.storage.local ラッパ（ローカルはキャッシュ）
 ```
 
@@ -40,16 +42,18 @@ bash tools/sync.sh          # extension/ → <LOAD> へ rsync
 - popup は「書く／コピー」1 画面。ヘッダーは置かない。
 - 設定 toggle（自動保存 / クラウド）は popup の `<details>` に集約。sidepanel には置かない。
 - CLI は popup の `<details>` で案内のみ（設定画面は作らない）。
-- 「過去記事」ボタンはサイドパネルを開く。
-- ステータスは下部にさりげなく、**絵文字のみ**でブリンク通知:
-  `📝` ローカル保存済み / `📋` クリップボード保存済み / `💾` 保存中 / `✏️` 未保存 / `⚠️` 設定不足。
-  テキストは `title` に退避。
-- ブランド表記はフッターのみ。フッターのリンクは gh だけ。
-- コピーした内容をそのままプロンプトへ流せる形にする（前置き文を付けない）。
+- sidepanel は 2 ページに分離: `index.html` = 書く、`log.html` = 過去記事を読む。
+  popup の「過去記事」は `chrome.sidePanel.setOptions({path: 'sidepanel/log.html'})` → `open()`。
+  両ページのフッターで相互に行き来（`index.html` ⇄ `log.html`）。
+- 全画面で共通: ステータスは下部にさりげなく、**絵文字のみ**でブリンク通知:
+  `📝` ローカル保存済み / `📋` クリップボード保存済み / `💾` 保存中 / `✏️` 未保存 /
+  `🗂` 読込完了 / `⚠️` 設定不足 / `✖️` 対象なし / `🚫` 失敗。テキストは `title` に退避。
+- ブランド表記はフッターのみ。フッターの外部リンクは gh だけ（箱リンクは gh の隣）。
+- コピーは内容のみ（タイトルや前置きを付けない）＝そのままプロンプトに流せる。
+- メモのタイトルは本文1行目から導出する（タイトル入力欄を作らない）。
 
 ## 未実施（今後）
 
-- 過去記事を `sidepanel/log.html` に分離し、各メモに「プロンプトへ」コピー button を付ける。
 - popup の保存先が `note`（単数）で sidepanel の `notes`（配列）と不一致。統一が必要。
 - GAS 同期は `scripts/cli.js` が stub。`gasUrl` / `defaultBox` の書き込み経路も未実装。
 （解決済み）gh リンク = https://github.com/bonsai/kami-copi
