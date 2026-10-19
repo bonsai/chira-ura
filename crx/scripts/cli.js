@@ -1,8 +1,12 @@
 #!/usr/bin/env node
-// chira-ura CLI — 設定専用（拡張内に設定画面は作らない）
-// 鍵は平文 JSON に置く。拡張側は popup の「箱 → 鍵を読む」でこのファイルを読込む。
+// chira-ura CLI — 設定 + ブリッジ（GDrive が正）
+// 鍵は平文 JSON（非秘密のみ）。トークンは OAuth なので置かない。
+//
+// 同期の意味はひとつ: 「GDrive が正」。CLI は GDrive を映したミラーを配り、
+// 拡張はそれを pull するだけ。拡張側の値を正にしない。
 
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
+import { createServer } from "node:http";
 import { homedir } from "node:os";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -10,8 +14,9 @@ import { fileURLToPath } from "node:url";
 const KEYS_PATH = process.env.CHIRA_KEYS
   || join(homedir(), ".config", "chira-ura", "keys.json");
 
-const BOXES = ["local", "gdrive", "gh", "box"];
 const MANIFEST = resolve(dirname(fileURLToPath(import.meta.url)), "..", "manifest.json");
+const BOXES = ["local", "gdrive", "gh", "box"];
+const PORT = Number(process.env.CHIRA_PORT || 8787);
 
 function usage() {
   console.log(`chira-ura CLI
@@ -20,15 +25,16 @@ function usage() {
                                  chira set gdrive.folderId <id>
                                  chira set gdrive.url https://script.google.com/...
                                  chira set auth.gh.clientId <id>
-                                 chira set auth.box.clientId <id>
-  chira get [key]             鍵を表示（key 省略で全部）
+  chira get [key]
   chira box <${BOXES.join("|")}>
-  chira client-id <id>.apps.googleusercontent.com   manifest の oauth2.client_id を書く
-  chira path                  鍵ファイルのパス
-  chira keys                  鍵ファイルの中身をそのまま表示
+  chira client-id <id>.apps.googleusercontent.com   manifest の oauth2.client_id
+  chira path | keys
+  chira serve [--port N]      ブリッジを立てる（拡張が pull する）
+  chira pull                  ブリッジから keys.json へ（= sync）
+  chira push                  keys.json をブリッジへ（GDrive ミラーとして）
+  chira sync                  意味は「GDrive が正」= pull と同じ
 
-鍵ファイル（平文 JSON）: ${KEYS_PATH}
-読込: popup → 箱 → 鍵を読む`);
+鍵ファイル（平文 JSON）: ${KEYS_PATH}`);
 }
 
 function read() {
@@ -44,7 +50,7 @@ function read() {
 function write(obj) {
   mkdirSync(dirname(KEYS_PATH), { recursive: true });
   writeFileSync(KEYS_PATH, JSON.stringify(obj, null, 2) + "\n", "utf8");
-  console.log(`saved: ${KEYS_PATH}`);
+  return obj;
 }
 
 function setPath(obj, path, value) {
@@ -62,6 +68,86 @@ function getPath(obj, path) {
   return path.split(".").reduce((a, k) => (a == null ? a : a[k]), obj);
 }
 
+// ---------- ブリッジ state（GDrive ミラー） ----------
+function toState() {
+  const keys = read();
+  return {
+    rev: Number(keys.rev || 0),
+    source: "gdrive",
+    box: keys.box || "gdrive",
+    gasUrl: keys.gdrive?.url || "",
+    keys
+  };
+}
+
+function fromState(state) {
+  const cur = read();
+  const next = {
+    ...cur,
+    ...(state.keys || {}),
+    box: state.box || "gdrive",
+    rev: Number(state.rev ?? cur.rev ?? 0),
+    source: "gdrive"
+  };
+  if (state.gasUrl) next.gdrive = { ...(next.gdrive || {}), url: state.gasUrl };
+  return write(next);
+}
+
+async function pull() {
+  const res = await fetch(`http://127.0.0.1:${PORT}/state`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`bridge ${res.status}`);
+  fromState(await res.json());
+  console.log(`pulled (GDrive が正): ${KEYS_PATH}`);
+}
+
+async function push() {
+  const body = JSON.stringify(toState());
+  const res = await fetch(`http://127.0.0.1:${PORT}/state`, {
+    method: "PUT",
+    headers: { "content-type": "application/json" },
+    body
+  });
+  if (!res.ok) throw new Error(`bridge ${res.status}`);
+  console.log("pushed（GDrive ミラーとして）");
+}
+
+function serve(port) {
+  const server = createServer((req, res) => {
+    const send = (code, obj) => {
+      res.writeHead(code, { "content-type": "application/json; charset=utf-8" });
+      res.end(JSON.stringify(obj));
+    };
+
+    if (req.url?.startsWith("/state") && req.method === "GET") {
+      return send(200, toState());
+    }
+
+    if (req.url?.startsWith("/state") && (req.method === "PUT" || req.method === "POST")) {
+      let raw = "";
+      req.on("data", (c) => { raw += c; });
+      req.on("end", () => {
+        try {
+          const state = JSON.parse(raw || "{}");
+          const next = fromState({ ...state, rev: Number(toState().rev) + 1 });
+          send(200, { ok: true, rev: next.rev });
+        } catch (e) {
+          send(400, { ok: false, error: String(e.message || e) });
+        }
+      });
+      return;
+    }
+
+    send(404, { ok: false });
+  });
+
+  server.listen(port, "127.0.0.1", () => {
+    console.log(`bridge: http://127.0.0.1:${port}/state  (GDrive が正)`);
+    console.log(`keys: ${KEYS_PATH}`);
+  });
+  return server;
+}
+
+// ---------- コマンド ----------
 const [cmd, ...rest] = process.argv.slice(2);
 
 switch (cmd) {
@@ -73,6 +159,7 @@ switch (cmd) {
       process.exit(1);
     }
     write(setPath(read(), key, value));
+    console.log(`saved: ${KEYS_PATH}`);
     break;
   }
   case "get": {
@@ -101,6 +188,7 @@ switch (cmd) {
       process.exit(1);
     }
     write(setPath(read(), "box", id));
+    console.log(`box -> ${id}`);
     break;
   }
   case "path":
@@ -109,15 +197,19 @@ switch (cmd) {
   case "keys":
     console.log(JSON.stringify(read(), null, 2));
     break;
-  case "sync": {
-    const sub = rest[0];
-    if (!["pull", "push"].includes(sub)) {
-      console.error("使い方: chira sync <pull|push>（未実装: 箱の同期は拡張側で行う）");
-      process.exit(1);
-    }
-    console.error(`[stub] ${sub}: 同期は未実装。箱の設定だけ先に済ませる。`);
-    process.exit(1);
+  case "serve": {
+    const i = rest.indexOf("--port");
+    const port = i >= 0 ? Number(rest[i + 1]) : PORT;
+    serve(port);
+    break;
   }
+  case "pull":
+  case "sync":
+    pull().catch((e) => { console.error(e.message); process.exit(1); });
+    break;
+  case "push":
+    push().catch((e) => { console.error(e.message); process.exit(1); });
+    break;
   default:
     usage();
     if (cmd) process.exit(1);
