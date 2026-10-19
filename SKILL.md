@@ -52,7 +52,7 @@ bash tools/sync.sh          # extension/ → <LOAD> へ rsync
 - 過去記事を `sidepanel/log.html` に分離し、各メモに「プロンプトへ」コピー button を付ける。
 - popup の保存先が `note`（単数）で sidepanel の `notes`（配列）と不一致。統一が必要。
 - GAS 同期は `scripts/cli.js` が stub。`gasUrl` / `defaultBox` の書き込み経路も未実装。
-- gh リンク先 URL 未確定（`popup/app.js` の `GH_URL`）。
+（解決済み）gh リンク = https://github.com/bonsai/kami-copi
 
 ## 禁止
 

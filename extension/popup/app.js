@@ -8,7 +8,7 @@ const GAS_URL_KEY = "gasUrl";
 const DEBOUNCE_MS = 400;
 
 // gh リンク先（repo 決定後に設定。空なら非表示）
-const GH_URL = "";
+const GH_URL = "https://github.com/bonsai/kami-copi";
 
 // 絵文字のみで通知（title にテキストを残す）
 const MSG = {

@@ -38,7 +38,7 @@ kami sync pull | push
 ## 現在地
 
 - popup v2 再構成 完了: toggle 集約（sidepanel から撤去）、CLI 案内、過去記事ボタン、下部 status（絵文字ブリンク）、フッターにブランド + gh 枠。
-- 未確定: gh リンク URL（`popup/app.js` の `GH_URL` が空のため非表示）、GAS 同期（CLI は stub）。
+- 未確定: （解決済み）gh リンクを有効化、GAS 同期（CLI は stub）。
 - 未着手: `sidepanel/log.html` 分離と「プロンプトへ」コピー button、popup/sidepanel の保存キー統一（`note` vs `notes`）。
 - 未検証: Chrome 実機での再読み込み後の表示確認。
 
