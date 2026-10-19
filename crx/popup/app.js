@@ -1,44 +1,35 @@
-// chira-ura v2 — popup: コマンド（動詞のみ）/ 箱 / クリップボード積み
-import { copy } from "../scripts/clipboard.js";
+// chira-ura v2 — popup: コマンド（書く/読む/箱/イシュー/履歴）
 import { createFlasher } from "../scripts/flash.js";
-import { pushStack, popStack, stackDepth } from "../scripts/stack.js";
 import { boxName, getBox, setBox, mergeKeys, getKeys, KEYS_KEY, BOX_KEY } from "../scripts/boxes.js";
 import { googleToken, googleAccount, webAuthCode } from "../scripts/auth.js";
 
 const NOTES_KEY = "notes";
-const ACTIVE_KEY = "activeNoteId";
 const AUTO_KEY = "autoSave";
-const GAS_URL_KEY = "gasUrl";
 
-const WRITE_PATH = "sidepanel/index.html";
-const LOG_PATH = "sidepanel/log.html";
-const GH_URL = "https://github.com/bonsai/chira-ura";
+const WRITE_PATH = "sidepanel/write.html";
+const LOG_PATH = "sidepanel/read.html";
+const REPO = "https://github.com/bonsai/chira-ura";
 
 const els = {
   status: document.getElementById("status"),
   cmdWrite: document.getElementById("cmdWrite"),
   cmdRead: document.getElementById("cmdRead"),
-  cmdCopy: document.getElementById("cmdCopy"),
-  cmdPush: document.getElementById("cmdPush"),
-  cmdPop: document.getElementById("cmdPop"),
-  cmdImport: document.getElementById("cmdImport"),
   cmdBox: document.getElementById("cmdBox"),
-  badgeStack: document.getElementById("badgeStack"),
+  cmdIssue: document.getElementById("cmdIssue"),
+  cmdHistory: document.getElementById("cmdHistory"),
   hintBox: document.getElementById("hintBox"),
   boxPanel: document.getElementById("boxPanel"),
-  keyHint: document.getElementById("keyHint"),
+  folderInput: document.getElementById("folderInput"),
   keysFile: document.getElementById("keysFile"),
   jsonlFile: document.getElementById("jsonlFile"),
-  toggleAuto: document.getElementById("toggleAuto"),
-  linkGh: document.getElementById("linkGh")
+  toggleAuto: document.getElementById("toggleAuto")
 };
 
 const flasher = createFlasher(els.status);
 
 let notes = [];
-let activeNoteId = null;
 let autoSave = true;
-let box = "local";
+let box = "gdrive";
 
 // ---------- 表示 ----------
 async function paint() {
@@ -47,42 +38,22 @@ async function paint() {
   document.querySelectorAll(".box").forEach(b => {
     b.classList.toggle("active", b.dataset.box === box);
   });
-  els.badgeStack.textContent = await stackDepth();
 }
 
-// 鍵（gdrive.folder があれば箱を開ける）
 function renderKeys(keys) {
-  const folder = keys?.gdrive?.folder;
-  if (folder) {
-    els.keyHint.textContent = "GDrive を開く";
-    els.keyHint.dataset.url = folder;
-    els.keyHint.classList.add("as-link");
-  } else {
-    els.keyHint.textContent = "chira set gdrive.folderId …";
-    delete els.keyHint.dataset.url;
-    els.keyHint.classList.remove("as-link");
-  }
-}
-
-function activeText() {
-  const note = notes.find(n => n.id === activeNoteId) || notes[0];
-  return note?.content || "";
+  els.folderInput.value = keys?.gdrive?.folderId || keys?.gdrive?.folder || "";
 }
 
 // ---------- 初期化 ----------
 async function init() {
-  const res = await chrome.storage.local.get([
-    NOTES_KEY, ACTIVE_KEY, AUTO_KEY, GAS_URL_KEY
-  ]);
+  const res = await chrome.storage.local.get([NOTES_KEY, AUTO_KEY]);
   notes = res[NOTES_KEY] || [];
-  activeNoteId = res[ACTIVE_KEY] || null;
   autoSave = res[AUTO_KEY] !== false;
   box = await getBox();
 
-  if (GH_URL) {
-    els.linkGh.href = GH_URL;
-    els.linkGh.hidden = false;
-  }
+  els.cmdIssue.href = `${REPO}/issues/new`;
+  els.cmdHistory.href = `${REPO}#readme`;
+
   renderKeys(await getKeys());
   await paint();
 }
@@ -111,48 +82,12 @@ async function openPanel(path) {
 els.cmdWrite.addEventListener("click", () => openPanel(WRITE_PATH));
 els.cmdRead.addEventListener("click", () => openPanel(LOG_PATH));
 
-els.cmdCopy.addEventListener("click", async () => {
-  const text = activeText();
-  if (!text.trim()) return flasher.flash("empty");
-  try {
-    await copy(text);
-    await pushStack(text);
-    flasher.flash("copied");
-    await paint();
-  } catch (_) {
-    flasher.flash("fail");
-  }
-});
-
-els.cmdPush.addEventListener("click", async () => {
-  const text = activeText();
-  if (!text.trim()) return flasher.flash("empty");
-  const depth = await pushStack(text);
-  els.badgeStack.textContent = depth;
-  flasher.flash("stacked");
-});
-
-els.cmdPop.addEventListener("click", async () => {
-  const top = await popStack();
-  if (!top) return flasher.flash("empty");
-  try {
-    await copy(top.text);
-    flasher.flash("popped");
-  } catch (_) {
-    flasher.flash("fail");
-  }
-  els.badgeStack.textContent = await stackDepth();
-});
-
-els.cmdImport.addEventListener("click", () => els.jsonlFile.click());
-
 els.cmdBox.addEventListener("click", () => {
   els.boxPanel.hidden = !els.boxPanel.hidden;
   els.cmdBox.classList.toggle("open", !els.boxPanel.hidden);
 });
 
-// ---------- 箱 ----------
-// 箱を選ぶ = 認証を伴う（トークンは保存しない）
+// ---------- 箱（保存先 + 認証） ----------
 async function authorize(id) {
   if (id === "gdrive") {
     await googleToken(true);
@@ -170,9 +105,9 @@ async function authorize(id) {
     const conf = id === "gh"
       ? ["https://github.com/login/oauth/authorize", "repo"]
       : ["https://account.box.com/api/oauth2/authorize", ""];
-    const { code } = await webAuthCode(id, clientId, conf[0], conf[1]);
+    await webAuthCode(id, clientId, conf[0], conf[1]);
     flasher.note("🔑", `${id}: 認可コード取得（トークン交換はサーバ側）`);
-    return { code };
+    return;
   }
   flasher.flash("saved");
 }
@@ -190,25 +125,17 @@ els.boxPanel.querySelectorAll(".box").forEach(btn => {
   });
 });
 
-// 鍵（CLI が書く keys.json を平文で読込）
-els.keysFile.addEventListener("change", async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  try {
-    const json = JSON.parse(await file.text());
-    const { box: boxFromFile, ...rest } = json;
-    await mergeKeys(rest);
-    if (boxFromFile) box = await setBox(boxFromFile);
-    renderKeys(await getKeys());
-    await paint();
-    flasher.flash("keyed");
-  } catch (_) {
-    flasher.flash("fail");
-  }
-  e.target.value = "";
+// フォルダ指定（箱の場所）
+els.folderInput.addEventListener("change", async () => {
+  const raw = els.folderInput.value.trim();
+  const m = raw.match(/folders\/([A-Za-z0-9_-]+)/);
+  const folderId = m ? m[1] : raw;
+  if (!folderId) return;
+  await mergeKeys({ gdrive: { folderId, ...(m ? { folder: raw } : {}) } });
+  flasher.flash("keyed");
 });
 
-// ---------- 読み込む（JSONL） ----------
+// ファイル（ちょっとしたものを読む）
 els.jsonlFile.addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -239,9 +166,22 @@ els.jsonlFile.addEventListener("change", async (e) => {
   e.target.value = "";
 });
 
-els.keyHint.addEventListener("click", () => {
-  const url = els.keyHint.dataset.url;
-  if (url) chrome.tabs.create({ url });
+// 鍵（CLI が書く keys.json）
+els.keysFile.addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    const json = JSON.parse(await file.text());
+    const { box: boxFromFile, ...rest } = json;
+    await mergeKeys(rest);
+    if (boxFromFile) box = await setBox(boxFromFile);
+    renderKeys(await getKeys());
+    await paint();
+    flasher.flash("keyed");
+  } catch (_) {
+    flasher.flash("fail");
+  }
+  e.target.value = "";
 });
 
 // ---------- 自動保存 ----------
@@ -255,9 +195,8 @@ els.toggleAuto.addEventListener("change", async (e) => {
 chrome.storage.onChanged.addListener(async (changes, area) => {
   if (area !== "local") return;
   if (changes[NOTES_KEY]) notes = changes[NOTES_KEY].newValue || [];
-  if (changes[ACTIVE_KEY]) activeNoteId = changes[ACTIVE_KEY].newValue || null;
   if (changes[AUTO_KEY]) autoSave = changes[AUTO_KEY].newValue !== false;
-  if (changes[BOX_KEY]) box = changes[BOX_KEY].newValue || "local";
+  if (changes[BOX_KEY]) box = changes[BOX_KEY].newValue || "gdrive";
   if (changes[KEYS_KEY]) renderKeys(changes[KEYS_KEY].newValue || {});
   await paint();
 });

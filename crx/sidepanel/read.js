@@ -1,7 +1,6 @@
 // chira-ura v2 — sidepanel: 過去記事を読む（読み専用）
 import { copy } from "../scripts/clipboard.js";
 import { createFlasher } from "../scripts/flash.js";
-import { pushStack } from "../scripts/stack.js";
 
 const NOTES_KEY = "notes";
 
@@ -85,7 +84,6 @@ async function copyMemo(id) {
   try {
     // 前置きを付けない＝そのままプロンプトに流せる。積みキューにも入れる。
     await copy(n.content);
-    await pushStack(n.content);
     flasher.flash("copied");
   } catch (_) {
     flasher.flash("fail");

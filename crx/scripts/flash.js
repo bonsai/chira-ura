@@ -7,8 +7,6 @@ export const MSG = {
   copied:   { e: "📋", t: "クリップボード保存済み" },
   dirty:    { e: "✏️", t: "未保存" },
   imported: { e: "🗂", t: "読み込みました" },
-  stacked:  { e: "🗃", t: "積みました" },
-  popped:   { e: "📤", t: "取り出しました" },
   box:      { e: "📦", t: "箱を変更しました" },
   keyed:    { e: "🔑", t: "鍵を読み込みました" },
   gas:      { e: "⚠️", t: "CLI で GAS URL を設定してください" },

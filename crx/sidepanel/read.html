@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>chira-ura — 書く</title>
+  <title>chira-ura — 過去記事</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="app">
-    <!-- 書く -->
-    <main class="editor">
-      <textarea id="note" placeholder="ここにメモを書く… 自動保存されます"></textarea>
+    <!-- 読む -->
+    <main class="log-wrap">
+      <div class="list" id="noteList"></div>
     </main>
 
     <!-- ステータス（下部・絵文字のみ） -->
@@ -20,11 +20,10 @@
 
     <!-- フッター: 操作のみ（ブランド・リンクは popup に集約） -->
     <footer class="footer">
-      <button class="btn copy" id="btnCopy">コピー</button>
-      <a class="btn ghost" id="btnLog" href="log.html">過去記事</a>
+      <a class="btn ghost" id="btnWrite" href="write.html">書く</a>
     </footer>
   </div>
 
-  <script type="module" src="app.js"></script>
+  <script type="module" src="read.js"></script>
 </body>
 </html>

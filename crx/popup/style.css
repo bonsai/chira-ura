@@ -99,33 +99,39 @@ html, body {
 .box.active { font-weight: 700; }
 .box.active .dot { background: var(--enji); }
 
-.panel-foot {
+.panel-row {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 6px 10px 0;
-  border-top: 1px solid var(--border);
   margin-top: 4px;
+  border-top: 1px solid var(--border);
 }
-.panel-foot .link {
+.row-label {
+  font-size: 0.68rem;
+  color: var(--mute);
+  flex-shrink: 0;
+}
+.panel-row input[type="text"] {
+  flex: 1;
+  min-width: 0;
+  padding: 3px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #fffdf8;
+  color: var(--ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.66rem;
+  outline: none;
+}
+.panel-row input[type="text"]:focus { border-color: var(--enji); }
+.panel-row .link {
   font-size: 0.68rem;
   color: var(--mute);
   text-decoration: underline;
   cursor: pointer;
 }
-.panel-foot .link:hover { color: var(--enji); }
-.panel-foot code.as-link {
-  cursor: pointer;
-  text-decoration: underline;
-}
-.panel-foot code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.64rem;
-  color: var(--mute);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+.panel-row .link:hover { color: var(--enji); }
 
 /* ---------- ステータス行（自動保存 + 絵文字） ---------- */
 .statusline {
@@ -198,3 +204,4 @@ html, body {
   user-select: none;
 }
 .brand span { color: #d8a06a; }
+

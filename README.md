@@ -34,7 +34,7 @@ chira pull | push | sync                          # 同期の意味は「GDrive 
 
 - popup: 動詞コマンド7つ — 書く / 読む / コピー / 積む / 取る / 読み込む / 箱。下部に自動保存スイッチ、status（絵文字のみ）、最下部に gh → brand。
 - 箱パネル: local / GDrive / GitHub / Box。選ぶと認証が走る。`鍵を読む` で keys.json を流し込む。
-- サイドパネル: `index.html` = 書く / `log.html` = 過去記事を読む。
+- サイドパネル: `write.html` = 書く / `read.html` = 過去記事を読む。
 - コピーは内容のみ（前置き無し＝そのままプロンプトに流せる）。積みキューは LIFO・最大50。
 
 ## エージェント
@@ -51,7 +51,7 @@ chira pull | push | sync                          # 同期の意味は「GDrive 
 - v2.3.0-dev: 商標回避で `kami copi` → `chira-ura` に改名（repo / 鍵パス / Chrome 読込先も変更）。
 - popup 動詞コマンド・箱選択・積みキュー・OAuth まで実装。
 - 未確定: Google OAuth の `client_id`（`REPLACE_ME`）、GH/Box のトークン交換、箱への実際の保存。
-- 未検証: Chrome 実機での再読み込み後の表示、`sidePanel.setOptions` で log.html が開くか。
+- 未検証: Chrome 実機での再読み込み後の表示、`sidePanel.setOptions` で read.html が開くか。
 
 ## ログ
 
