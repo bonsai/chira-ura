@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>chira-ura / チラ裏</title>
+<meta name="description" content="書いたら自動保存。メモとコピーだけの軽量 Chrome 拡張。箱はローカル / GDrive / GitHub / Box。" />
+<style>
+  :root{
+    --washi:#faf7f0; --sumi:#2c241e; --enji:#8b0000;
+    --ink:#3a322a; --border:#e3dcc9; --mute:#8a8071;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--washi);color:var(--ink);
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo",system-ui,sans-serif;
+    line-height:1.75;-webkit-font-smoothing:antialiased}
+  a{color:var(--enji)}
+  .wrap{max-width:680px;margin:0 auto;padding:48px 24px 64px}
+  header .brand{font-size:.82rem;font-weight:800;letter-spacing:.18em;color:#c2b8a4}
+  header .brand span{color:#d8a06a}
+  h1{font-size:2rem;margin:.4em 0 .2em;letter-spacing:.04em}
+  h1 small{display:block;font-size:.9rem;font-weight:400;color:var(--mute);letter-spacing:.1em;margin-top:.3em}
+  .lead{font-size:1rem;color:#5b5248;margin:1.2em 0 2em}
+  .rule{border:none;border-top:1px solid var(--border);margin:2.4em 0}
+  h2{font-size:.78rem;letter-spacing:.16em;color:var(--mute);font-weight:700;margin:0 0 .8em}
+  ul.points{list-style:none;padding:0;margin:0}
+  ul.points li{padding:.5em 0;border-bottom:1px solid var(--border);font-size:.92rem}
+  ul.points li:last-child{border-bottom:none}
+  .keys{display:flex;gap:6px;flex-wrap:wrap;margin:.6em 0 0}
+  .keys span{font-size:.78rem;padding:.25em .7em;border:1px solid var(--border);border-radius:20px;color:#5b5248}
+  pre{background:#f2ecdd;border-radius:8px;padding:14px 16px;overflow-x:auto;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.82rem;line-height:1.7}
+  .cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:1em}
+  .btn{display:inline-flex;align-items:center;padding:9px 16px;border-radius:6px;
+    font-size:.86rem;font-weight:700;text-decoration:none;border:1px solid var(--enji);
+    background:var(--enji);color:#fffaf0}
+  .btn.ghost{background:transparent;color:var(--sumi);border-color:var(--border);font-weight:500}
+  footer{margin-top:3.2em;padding-top:1.2em;border-top:1px solid var(--border);
+    font-size:.75rem;color:var(--mute);display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  footer .sp{margin-left:auto}
+  footer img{width:14px;height:14px;opacity:.6;vertical-align:-2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">chira<span>ura</span></div>
+    <h1>チラ裏<small>chira-ura</small></h1>
+    <p class="lead">書いたら自動保存。メモとコピーだけの軽量 Chrome 拡張。<br>
+      設定画面はありません。書く・読む・コピるだけ。</p>
+    <div class="keys">
+      <span>自動保存</span><span>箱: ローカル / GDrive / GitHub / Box</span><span>OAuth</span><span>MV3</span>
+    </div>
+  </header>
+
+  <hr class="rule" />
+
+  <section>
+    <h2>できること</h2>
+    <ul class="points">
+      <li>サイドパネルで書く。入力は自動保存（トグルで停止可）。</li>
+      <li>過去記事を読む。カードを開いて本文、コピーは本文だけ（前置き無し＝そのままプロンプトに流せる）。</li>
+      <li>箱を選ぶ。ローカル / Google Drive / GitHub / Box。認証は OAuth で、トークンは保存しない。</li>
+      <li>CLI と同期。意味はひとつ「GDrive が正」。CLI が配り、拡張は取りに行くだけ。</li>
+    </ul>
+  </section>
+
+  <hr class="rule" />
+
+  <section>
+    <h2>インストール</h2>
+    <div class="cta">
+      <a class="btn" href="https://github.com/bonsai/chira-ura/releases/latest">Release から zip</a>
+      <a class="btn ghost" href="https://github.com/bonsai/chira-ura">ソース</a>
+    </div>
+    <pre>1. zip を展開
+2. chrome://extensions → デベロッパーモード ON
+3. 「パッケージ化されていない拡張機能を読み込む」→ 展開したフォルダを指定</pre>
+  </section>
+
+  <hr class="rule" />
+
+  <section>
+    <h2>CLI</h2>
+    <pre>chira client-id &lt;id&gt;.apps.googleusercontent.com   # OAuth クライアント
+chira set gdrive.folderId &lt;id&gt;                    # 箱フォルダ
+chira box gdrive                                  # 既定の箱
+chira serve                                       # ブリッジ（拡張が取りに来る）
+chira pull | push | sync                          # 同期＝GDrive が正</pre>
+  </section>
+
+  <footer>
+    <a href="https://github.com/bonsai/chira-ura">GitHub</a>
+    <a href="https://github.com/bonsai/chira-ura/releases">Release</a>
+    <a href="https://github.com/bonsai/chira-ura/blob/main/dev/dev.history.md">開発履歴</a>
+    <a href="https://github.com/bonsai/chira-ura/blob/main/SKILL.md">SKILL</a>
+    <span class="sp">&copy; chira-ura</span>
+    <img src="crx/icons/icon.svg" alt="" />
+  </footer>
+
+</div>
+</body>
+</html>
