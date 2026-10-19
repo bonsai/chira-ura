@@ -2,10 +2,15 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-10-19 / v2.5.3-dev — doc/ を dev/ に改名
+
+- 指示: doc から dev に変更。
+- 変更: `doc/` → `dev/`（dev.history.md, ui.yaml, user.review.json）。参照を全置換。
+
 ## 2026-10-19 / v2.5.2-dev — repo を doc / crx / cli の3構成に
 
 - 指示: doc crx cli の構成にする。
-- 変更: `cli/`（cli.js, package.json, sync.sh）/ `crx/`（拡張のみ）/ `doc/`（dev.history.md, ui.yaml, user.review.json）。
+- 変更: `cli/`（cli.js, package.json, sync.sh）/ `crx/`（拡張のみ）/ `dev/`（dev.history.md, ui.yaml, user.review.json）。
   `SKILL.md` と `README.md` は skill 検出と GitHub の入口なのでルート据え置き。
   `cli.js` の manifest 参照を `../crx/manifest.json` に変更。
 - 同期手順は `bash cli/sync.sh`。

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# crx/ → Chrome の unpacked 読込先へ反映（repo: doc/ crx/ cli/）
+# crx/ → Chrome の unpacked 読込先へ反映（repo: dev/ crx/ cli/）
 set -euo pipefail
 
 SRC="$(cd "$(dirname "$0")/.." && pwd)/crx"
