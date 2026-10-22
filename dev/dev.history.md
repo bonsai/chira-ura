@@ -2,6 +2,20 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-10-22 / v0.1.4-dev — CLI に SQLite（~/.chira/ura.db）。拡張と同じ JSON
+
+- 指示: make cli（Windows で `chira` が動くように）/ make .chira/ura.db / make cli by js and json as same as crx。
+- 変更:
+  - `cli/install.ps1`（Windows 版インストール。`~/.local/bin/chira.cmd` を PATH へ）と `cli/install.sh`（POSIX）。
+  - `cli/ura-db.js`（node:sqlite。メモの正 JSON を `~/.chira/ura.db` に持つ。journal=DELETE で 1 ファイル完結 → 端末間では .db をそのままコピーできる）。
+  - `crx/scripts/model.js`（メモの型。拡張と CLI が共用。deriveTitle / parseJsonl / toJsonl / DB_SCHEMA）。
+  - CLI: `chira db path|init|export|import` / `chira notes` / `chira note add|get|rm` /
+    `chira export|import`（JSONL＝箱のファイル形式）/ `chira storage export|import`（chrome.storage.local 相当）。
+  - canonical の出力は sync-db と同じ形（schema.sql + <table>.jsonl）。同じ .db を端末間でやり取りできる。
+  - `crx/sidepanel/write.js` と `crx/popup/app.js` は model.js を使うようにした（挙動は同じ）。
+  - `dev/chira-ura.puml`（構成図 5 枚。plantuml.jar は ~/.crx に置く）。
+- 未実施: 拡張 ↔ SQLite の自動同期（今は JSONL / canonical 経由の受け渡し）。
+
 ## 2026-10-19 / v0.1.3-dev — CLI を OAuth 経由に
 
 - 指示: cli スキル oauth に経由して / box フォルダ / アカウント。

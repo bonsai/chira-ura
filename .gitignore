@@ -3,3 +3,4 @@ node_modules/
 dist/
 *.zip
 keys.json
+dev/plantuml.jar

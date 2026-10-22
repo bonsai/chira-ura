@@ -24,16 +24,21 @@ crx/                    拡張の実体（Chrome に読ませるのはここ）
   sidepanel/read.html   過去記事を読む（展開・コピー）
   background/           ブリッジ pull（GDrive が正）+ 初期データ
   scripts/              auth.js / boxes.js / bridge.js / flash.js / clipboard.js
+    model.js            メモの型（拡張と CLI が共用。deriveTitle / parseJsonl / toJsonl / DB_SCHEMA）
   storage/db.js         chrome.storage.local ラッパ
 cli/                    設定・同期 CLIENT（bin: chira。`bash cli/install.sh` で PATH へ）
   cli.js                set / get / box / client-id / path / keys / serve / pull / push / sync
+                         + db / notes / note / export / import / storage（メモ）
+  ura-db.js             ~/.chira/ura.db（node:sqlite。メモの正 JSON）
   install.sh            ~/.local/bin/chira に symlink（skill から `chira` を直接叩く）
+  install.ps1           Windows 版。~/.local/bin/chira.cmd を PATH へ
   sync.sh               crx/ → <LOAD> へ流し込む
   package.json
 dev/                    開発資料
   dev.history.md        指示と変更の履歴（新しいものが上）
   ui.yaml               見た目・要素（実装の正）
   ux.yaml               振る舞い・遷移・状態・手動確認
+  chira-ura.puml        構成図（PlantUML）
   user.review.json      初期の ultra_minimal 決定
 SKILL.md / README.md    ルート据え置き（skill 検出と GitHub の入口）
 ```
@@ -75,6 +80,25 @@ chira serve                # ブリッジ（拡張が 5 分毎に pull）
 - CLI も拡張と同じ OAuth クライアント（`chira client-id`）= `oauth.clientId` を使う。
 - client_secret は `chira set oauth.clientSecret <secret>`（desktop client のもの。0600 でローカルのみ）。
 - トークンは repo に置かない。`~/.config/chira-ura/` のみ。
+
+## メモ（CLI）
+
+拡張と同じ JSON（`{id, title, content, updatedAt}`）を SQLite に持つ。DB は `~/.chira/ura.db`（`CHIRA_DB` で変更可）。
+
+```bash
+chira db init            # DB を作る（~/.chira/ura.db）
+chira notes              # 一覧（新しい順）
+chira note add "本文"     # 追加（タイトルは本文1行目から）
+chira export             # notes → JSONL（箱のファイル形式と同じ）
+chira import file.jsonl  # JSONL → notes（同じ id は新しい updatedAt を採用）
+chira storage export     # chrome.storage.local 相当の JSON
+chira db export <dir>    # canonical（schema.sql + notes.jsonl + meta.jsonl）
+chira db import <dir>    # canonical から読み込む
+```
+
+- 同じ .db を端末間でやり取りできる（journal=DELETE なので 1 ファイルで完結）。
+- canonical の形は sync-db と同じ（`schema.sql` + `<table>.jsonl`）。
+- 拡張との自動同期は未実施。受け渡しは JSONL / canonical 経由。
 
 ## 認証・同期
 

@@ -12,6 +12,11 @@ import { execFile } from "node:child_process";
 import { homedir } from "node:os";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  DB_PATH, openDb, listNotes, getNote, addNote, removeNote,
+  getMeta, setMeta, exportJsonl, importJsonl,
+  exportStorage, importStorage, exportCanonical, importCanonical
+} from "./ura-db.js";
 
 const KEYS_PATH = process.env.CHIRA_KEYS
   || join(homedir(), ".config", "chira-ura", "keys.json");
@@ -157,7 +162,21 @@ function usage() {
   chira push                  keys.json をブリッジへ（GDrive ミラーとして）
   chira sync                  意味は「GDrive が正」= pull と同じ
 
-鍵ファイル（平文 JSON）: ${KEYS_PATH}`);
+  メモ（拡張と同じ JSON。SQLite は ~/.chira/ura.db）
+  chira db path | init        DB の場所 / 作る
+  chira db export <dir>       canonical（schema.sql + notes.jsonl + meta.jsonl）
+  chira db import <dir>       canonical から読み込む
+  chira notes [--json] [語]  メモ一覧（新しい順）
+  chira note add <本文...>    メモを書く（タイトルは本文1行目から）
+  chira note get <id>         メモを JSON で
+  chira note rm <id>          メモを消す
+  chira export [file.jsonl]   メモを JSONL で（箱のファイル形式と同じ）
+  chira import <file.jsonl>   JSONL を読み込む
+  chira storage export [file] chrome.storage.local 相当の JSON
+  chira storage import <file> その JSON を読み込む
+
+鍵ファイル（平文 JSON）: ${KEYS_PATH}
+DB: ${DB_PATH}`);
 }
 
 function read() {
@@ -189,6 +208,26 @@ function setPath(obj, path, value) {
 
 function getPath(obj, path) {
   return path.split(".").reduce((a, k) => (a == null ? a : a[k]), obj);
+}
+
+/** meta の既定値（拡張の storage と同じキー） */
+function initMeta(db) {
+  const keys = read();
+  if (getMeta(db, "box", null) === null) setMeta(db, "box", keys.box || "local");
+  if (getMeta(db, "autoSave", null) === null) setMeta(db, "autoSave", true);
+  if (getMeta(db, "autoSync", null) === null) setMeta(db, "autoSync", true);
+  if (getMeta(db, "keys", null) === null) setMeta(db, "keys", keys);
+  if (getMeta(db, "schemaVersion", null) === null) setMeta(db, "schemaVersion", 1);
+}
+
+/** keys.json へ浅くマージ（拡張の mergeKeys と同じ） */
+function mergeKeysJson(partial) {
+  const cur = read();
+  const next = { ...cur };
+  for (const [k, v] of Object.entries(partial || {})) {
+    next[k] = (v && typeof v === "object") ? { ...(cur[k] || {}), ...v } : v;
+  }
+  return write(next);
 }
 
 // ---------- ブリッジ state（GDrive ミラー） ----------
@@ -347,6 +386,118 @@ switch (cmd) {
   case "push":
     push().catch((e) => { console.error(e.message); process.exit(1); });
     break;
+
+  // ---------- メモ（拡張と同じ JSON。SQLite は ~/.chira/ura.db） ----------
+  case "db": {
+    const sub = rest[0];
+    const { db, path } = openDb();
+    if (!sub || sub === "path") {
+      console.log(path);
+    } else if (sub === "init") {
+      initMeta(db);
+      console.log(`db: ${path}`);
+    } else if (sub === "export") {
+      const dir = resolve(rest[1] || join(path, "..", "canonical"));
+      exportCanonical(db, dir);
+      console.log(`exported: ${dir}`);
+    } else if (sub === "import") {
+      if (!rest[1]) { console.error("使い方: chira db import <dir>"); process.exit(1); }
+      const r = importCanonical(db, resolve(rest[1]));
+      console.log(`imported: ${r.total} rows (${r.files} files)`);
+    } else {
+      console.error("使い方: chira db path|init|export|import");
+      process.exit(1);
+    }
+    db.close();
+    break;
+  }
+  case "notes": {
+    const asJson = rest.includes("--json");
+    const q = rest.filter((a) => a !== "--json").join(" ");
+    const { db } = openDb();
+    const notes = listNotes(db, q);
+    if (asJson) {
+      console.log(JSON.stringify(notes, null, 2));
+    } else if (!notes.length) {
+      console.log("メモなし");
+    } else {
+      for (const n of notes) {
+        console.log(`${n.id}\t${new Date(n.updatedAt).toISOString()}\t${n.title}`);
+      }
+    }
+    db.close();
+    break;
+  }
+  case "note": {
+    const sub = rest[0];
+    const { db } = openDb();
+    if (sub === "add") {
+      let content = rest.slice(1).join(" ");
+      if (!content) content = readFileSync(0, "utf8");
+      if (!content.trim()) { console.error("使い方: chira note add <本文>"); process.exit(1); }
+      console.log(addNote(db, content).id);
+    } else if (sub === "get") {
+      const n = rest[1] ? getNote(db, rest[1]) : null;
+      if (!n) { console.error(`見つからない: ${rest[1] || ""}`); process.exit(1); }
+      console.log(JSON.stringify(n, null, 2));
+    } else if (sub === "rm") {
+      if (!rest[1]) { console.error("使い方: chira note rm <id>"); process.exit(1); }
+      console.log(removeNote(db, rest[1]) ? "removed" : "見つからない");
+    } else {
+      console.error("使い方: chira note add|get|rm");
+      process.exit(1);
+    }
+    db.close();
+    break;
+  }
+  case "export": {
+    const { db } = openDb();
+    const text = exportJsonl(db);
+    const file = rest[0];
+    if (file) {
+      writeFileSync(resolve(file), text, "utf8");
+      console.log(`exported: ${resolve(file)}`);
+    } else {
+      process.stdout.write(text);
+    }
+    db.close();
+    break;
+  }
+  case "import": {
+    if (!rest[0]) { console.error("使い方: chira import <file.jsonl>"); process.exit(1); }
+    const text = readFileSync(resolve(rest[0]), "utf8");
+    const { db } = openDb();
+    const r = importJsonl(db, text);
+    console.log(`imported: ${r.changed}/${r.total}`);
+    db.close();
+    break;
+  }
+  case "storage": {
+    const sub = rest[0];
+    const { db } = openDb();
+    if (sub === "export") {
+      const text = JSON.stringify(exportStorage(db), null, 2) + "\n";
+      const file = rest[1];
+      if (file) {
+        writeFileSync(resolve(file), text, "utf8");
+        console.log(`exported: ${resolve(file)}`);
+      } else {
+        process.stdout.write(text);
+      }
+    } else if (sub === "import") {
+      if (!rest[1]) { console.error("使い方: chira storage import <file.json>"); process.exit(1); }
+      const snap = JSON.parse(readFileSync(resolve(rest[1]), "utf8"));
+      const r = importStorage(db, snap);
+      if (snap.keys && Object.keys(snap.keys).length) mergeKeysJson(snap.keys);
+      if (snap.box) setMeta(db, "box", snap.box);
+      console.log(`imported: ${r.changed}/${r.total} notes`);
+    } else {
+      console.error("使い方: chira storage export|import");
+      process.exit(1);
+    }
+    db.close();
+    break;
+  }
   default:
     usage();
     if (cmd) process.exit(1);

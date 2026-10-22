@@ -1,0 +1,208 @@
+@startuml chira-ura-overview
+' ============================================================
+' chira-ura / チラ裏 — 全体構成
+' 正: GDrive（箱）。拡張は pull だけ。メモの正 JSON は CLI と拡張で同じ。
+' ============================================================
+title chira-ura / チラ裏 — 全体構成
+
+skinparam defaultFontName Meiryo
+skinparam shadowing false
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+skinparam linetype ortho
+
+actor 利用者 as U
+
+package "Chrome 拡張 (MV3)" as EXT {
+  component "popup\n箱を設定する / 読む / 書く" as POPUP
+  component "sidepanel write.html\n（書く）" as WRITE
+  component "sidepanel read.html\n（読む）" as READ
+  component "background service-worker.js\n（5分 alarm / sync-now）" as BG
+  component "scripts/\nauth / boxes / bridge / drive\nclipboard / flash" as SCRIPTS
+  component "scripts/model.js\nメモの型（CLI と共用）" as MODEL
+  database "chrome.storage.local\nnotes / activeNoteId / autoSave\nautoSync / box / keys / gasUrl" as CS
+}
+
+package "CLI (node cli.js)" as CLI {
+  component "chira auth / box / set\n（設定・OAuth）" as CLICFG
+  component "chira serve\n（ブリッジ :8787）" as SERVE
+  component "chira notes / export / import\n（メモの出入）" as CLIDOC
+  component "chira db export / import\n（canonical）" as CLICANON
+}
+
+database "~/.chira/ura.db\nSQLite（メモの正 JSON）" as URA
+database "~/.config/chira-ura/keys.json\n非秘密のみ" as KEYS
+database "~/.config/chira-ura/token.json\nOAuth / 0600" as TOKEN
+component "localhost:8787 /state\nブリッジ" as BRIDGE
+cloud "GDrive / Drive API\n（正）" as GD
+cloud "GitHub / Box" as OTHER
+
+U --> POPUP
+POPUP --> WRITE : 書く
+POPUP --> READ : 読む
+POPUP --> SCRIPTS : 箱・認証・JSONL 読込
+WRITE --> CS : notes を保存
+READ --> CS : notes を読む
+BG --> CS
+SCRIPTS --> CS
+SCRIPTS --> MODEL
+WRITE --> MODEL : deriveTitle
+CLIDOC --> MODEL
+MODEL --> URA : 同じ JSON
+
+BG --> BRIDGE : 5分ごとに GET /state
+BRIDGE --> SERVE : ミラーを配る
+SERVE --> KEYS : GDrive ミラーを読む
+CLICFG --> KEYS : 設定を書く
+CLICFG --> TOKEN : OAuth トークン
+KEYS --> CS : bridge / keys.json で流し込む
+SCRIPTS --> GD : フォルダ解決（Drive API）
+CS --> GD : 箱が gdrive
+CS --> OTHER : 箱が gh / box
+CLIDOC --> URA
+CLICANON --> URA
+URA --> CLIDOC : メモをやり取り
+
+note bottom of BRIDGE
+  同期の意味はひとつ: 「GDrive が正」
+  拡張から push はしない
+end note
+@enduml
+
+
+@startuml chira-ura-write
+' ============================================================
+' 書く — 自動保存（600ms debounce）とコピー（本文のみ）
+' ============================================================
+title 書く — 自動保存とコピー
+
+skinparam defaultFontName Meiryo
+skinparam shadowing false
+
+actor 利用者 as U
+participant "popup" as P
+participant "sidepanel\nwrite.html" as W
+participant "chrome.storage.local" as S
+participant "clipboard" as C
+
+U -> P : 書く
+P -> W : sidePanel.setOptions → open
+P --> U : popup を閉じる
+U -> W : 本文を入力
+W -> W : deriveTitle（本文1行目から30字）
+W -> W : upsert（notes / activeNoteId）
+W -> W : 600ms debounce
+W -> S : notes を保存
+S --> W : onChanged（status=📝）
+U -> W : コピー
+W -> S : 自動保存 off ならここで保存
+W -> C : 本文のみ（前置きなし）
+C --> U : クリップボード（status=📋）
+
+note right of W
+  自動保存 on: 入力 → 保存
+  自動保存 off: ✏️ のまま。コピーで保存
+end note
+@enduml
+
+
+@startuml chira-ura-sync
+' ============================================================
+' 同期 — 「GDrive が正」。拡張は pull だけ、push はしない
+' ============================================================
+title 同期 — 意味は「GDrive が正」
+
+skinparam defaultFontName Meiryo
+skinparam shadowing false
+
+participant "GDrive（正）" as GD
+participant "CLI\nchira serve" as S
+participant "localhost:8787\n/state" as B
+participant "background\n5分 alarm" as BG
+database "chrome.storage.local" as CS
+
+S -> GD : 設定・箱・フォルダを反映
+S -> B : ミラーの state を配る\n(keys / box / gasUrl / rev)
+BG -> B : GET /state
+B --> BG : state
+BG -> CS : keys / box / gasUrl / bridgeRev を反映
+CS --> S : （拡張からは push しない）
+
+note over BG, CS
+  bridge 未起動は無音でスキップ
+  （ローカル動作は止めない）
+end note
+@enduml
+
+
+@startuml chira-ura-auth
+' ============================================================
+' 箱と認証 — OAuth。トークンは平文 JSON に置かない
+' ============================================================
+title 箱と認証 — OAuth
+
+skinparam defaultFontName Meiryo
+skinparam shadowing false
+
+actor 利用者 as U
+participant "popup\n箱を設定する" as P
+participant "chrome.identity" as ID
+participant "Google / GitHub / Box" as OA
+participant "CLI\nchira auth" as C
+database "keys.json / token.json" as K
+
+U -> P : 箱 = gdrive
+P -> ID : getAuthToken（無言）
+alt トークンが無い
+  ID --> P : ⚠️（同意画面を案内）
+  U -> P : 同じ箱をもう一度
+  P -> ID : getAuthToken（interactive）
+  ID -> OA : 同意画面
+  OA --> ID : code
+  ID --> P : トークン（メモリ上。保存しない）
+else 2度目（同じ箱）
+  ID -> OA : 同意画面（interactive）
+  OA --> ID : code
+end
+P --> P : status=🔑
+
+U -> C : chira auth
+C -> OA : OAuth（PKCE + ループバック 127.0.0.1:8799）
+OA --> C : code
+C -> K : token.json（0600）
+C -> K : keys.json（client_id など非秘密）
+
+note over K
+  秘密はローカルのみ
+  repo には置かない
+end note
+@enduml
+
+
+@startuml chira-ura-data
+' ============================================================
+' メモのデータ — 拡張と同じ JSON を SQLite と JSONL でやり取り
+' ============================================================
+title メモのデータ — 同じ JSON を SQLite / JSONL でやり取り
+
+skinparam defaultFontName Meiryo
+skinparam shadowing false
+
+participant "拡張\nchrome.storage.local" as E
+participant "CLI\nchira notes / export / import" as C
+database "~/.chira/ura.db\nSQLite" as URA
+participant "JSONL\n箱のファイル形式（1行1JSON）" as JSONL
+
+E -> C : export（notes → JSONL）
+C -> URA : import（notes テーブルへ）
+URA -> C : notes（SELECT *）
+C -> E : import（同じ id は新しい updatedAt を採用）
+
+note right of URA
+  notes ( id, title, content, updatedAt )
+  meta ( key, value )
+end note
+
+E -[#gray,dashed]-> JSONL : ファイル選択で読込（popup）
+JSONL -[#gray,dashed]-> C : export / import
+@enduml

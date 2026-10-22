@@ -1,6 +1,7 @@
 // chira-ura v2 — sidepanel: 書く（保存とコピーだけ）
 import { copy } from "../scripts/clipboard.js";
 import { createFlasher } from "../scripts/flash.js";
+import { deriveTitle } from "../scripts/model.js";
 
 const NOTES_KEY = "notes";
 const ACTIVE_KEY = "activeNoteId";
@@ -41,12 +42,6 @@ async function init() {
 // ---------- データ ----------
 function getNote(id) {
   return notes.find(n => n.id === id);
-}
-
-// タイトルは本文の1行目から導出（UI を増やさない）
-function deriveTitle(content) {
-  const line = (content || "").split("\n").map(s => s.trim()).find(Boolean) || "";
-  return line.slice(0, 30) || "無題";
 }
 
 function upsertActive(content) {

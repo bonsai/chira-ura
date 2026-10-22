@@ -1,6 +1,7 @@
 // chira-ura v2 — popup: コマンド（書く/読む/箱/イシュー/履歴）
 import { createFlasher } from "../scripts/flash.js";
 import { boxName, getBox, setBox, mergeKeys, getKeys, KEYS_KEY, BOX_KEY } from "../scripts/boxes.js";
+import { parseJsonl } from "../scripts/model.js";
 import { googleToken, googleTokenSilent, googleAccount, webAuthCode } from "../scripts/auth.js";
 import { resolveFolder } from "../scripts/drive.js";
 
@@ -158,24 +159,12 @@ els.jsonlFile.addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if (!file) return;
   const text = await file.text();
-  let imported = 0;
-
-  for (const line of text.split("\n")) {
-    if (!line.trim()) continue;
-    try {
-      const obj = JSON.parse(line);
-      if (obj.content === undefined) continue;
-      notes.unshift({
-        id: obj.id || "note-" + Date.now() + "-" + imported,
-        title: obj.title || "無題",
-        content: obj.content,
-        updatedAt: obj.updatedAt || Date.now()
-      });
-      imported++;
-    } catch (_) { /* 壊れた行は捨てる */ }
-  }
+  // 同じ JSON の解析（壊れた行は捨てる / content 無しは捨てる）
+  const parsed = parseJsonl(text);
+  const imported = parsed.length;
 
   if (imported > 0) {
+    notes.unshift(...parsed);
     await chrome.storage.local.set({ [NOTES_KEY]: notes });
     flasher.flash("imported");
   } else {

@@ -21,7 +21,8 @@
 3. popup の `書く` でサイドパネルを開いて書き、`コピー` でクリップボードへ
 
 ```bash
-bash cli/install.sh                              # chira を PATH へ
+bash cli/install.sh                              # chira を PATH へ（POSIX）
+powershell -NoProfile -ExecutionPolicy Bypass -File cli\install.ps1   # Windows 版
 chira auth                                       # OAuth（ブラウザ同意 → token.json 0600）
 chira box gdrive                                 # 箱を CLI から指定
 chira client-id <id>.apps.googleusercontent.com   # manifest の oauth2.client_id
@@ -32,6 +33,19 @@ chira path                                        # 鍵ファイル（平文 JSO
 chira serve                                       # ブリッジ（拡張が 5 分毎に pull）
 chira pull | push | sync                          # 同期の意味は「GDrive が正」
 ```
+
+メモ（拡張と同じ JSON。SQLite は `~/.chira/ura.db`）:
+
+```bash
+chira db init                                     # DB を作る
+chira notes                                       # 一覧（新しい順）
+chira note add "本文"                              # 追加
+chira export | chira import                       # JSONL（箱のファイル形式と同じ）
+chira storage export                              # chrome.storage.local 相当の JSON
+chira db export <dir> | chira db import <dir>     # canonical（sync-db と同じ形）
+```
+
+同じ `.db` を端末間でそのままコピーできる（journal=DELETE で 1 ファイル完結）。
 
 トークンは保存しない。Google は `chrome.identity.getAuthToken`、GH/Box は `launchWebAuthFlow`（コード取得まで）。
 
@@ -52,6 +66,8 @@ chira pull | push | sync                          # 同期の意味は「GDrive 
 
 ## 現在地
 
+- v0.1.4-dev: CLI に SQLite（`~/.chira/ura.db`）。拡張と同じ JSON（`model.js` を共用）。
+  `chira db|notes|note|export|import|storage`。canonical は sync-db と同じ形。
 - v0.1.3-dev: `chira auth`（OAuth ループバック + PKCE、token.json 0600）と `chira token`/`logout`。sync.sh は読込先を自動検出。
 - v0.1.2-dev: 箱を CLI から指定（`chira box`）。箱選択は同意画面を飛ばして無言トークン、2 度押しで同意。`cli/install.sh` 追加。
 - v2.5.3-dev: repo を `dev/ crx/ cli/` 構成に（`dev/` は旧 `doc/`）。
