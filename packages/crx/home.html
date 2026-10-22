@@ -50,24 +50,21 @@
     <hr />
 
     <section>
-      <h2>🐙 GitHub Issue 起票</h2>
-      <form id="ghForm">
-        <input id="ghTitle" type="text" placeholder="タイトル" required /><br/>
-        <textarea id="ghBody" rows="3" placeholder="本文（マークダウン可）"></textarea><br/>
-        <button type="submit" class="btn">投稿する</button>
-      </form>
+      <h2>📖 読む（Wiki 表示）</h2>
+      <div id="wikiPane" style="border:1px solid #ccc; padding:8px; min-height:120px; font-family:monospace; font-size:0.85rem; background:#fff;"></div>
+      <p class="muted">box <code>wiki</code> から読み込んだメモを表示</p>
     </section>
 
     <hr />
 
     <section>
-      <h2>📖 読む（Wiki 表示）</h2>
-      <div id="wikiPane" style="border:1px solid #ccc; padding:8px; min-height:120px; font-family:monospace; font-size:0.85rem; background:#fff;"></div>
-      <p class="muted">file://C:\Users\0501JP\wiki をメインペインに表示</p>
+      <h2>🐙 GitHub Issue</h2>
+      <p><a href="https://github.com/bonsai/chira-ura/issues" target="_blank">https://github.com/bonsai/chira-ura/issues</a></p>
     </section>
 
     <footer>
-      <a href="../sidepanel/read.html">過去記事へ →</a>
+      <a href="../sidepanel/read.html" class="btn ghost">📖 読む（box: wiki/ura）</a>
+      <a href="https://github.com/bonsai/chira-ura/issues" target="_blank" class="btn ghost">🐙 Issue</a>
     </footer>
   </div>
 
@@ -81,15 +78,6 @@
     });
     document.getElementById("tglSE").addEventListener("change", e => {
       document.getElementById("lblSE").textContent = e.target.checked ? "ON" : "OFF";
-    });
-
-    // GitHub issue form
-    document.getElementById("ghForm").addEventListener("submit", async e => {
-      e.preventDefault();
-      const title = document.getElementById("ghTitle").value;
-      const body = document.getElementById("ghBody").value;
-      const url = `https://github.com/bonsai/chira-ura/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
-      chrome.tabs.create({ url });
     });
 
     // Load wiki file reference (display as read-only text since direct file:// access is restricted)

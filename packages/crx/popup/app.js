@@ -1,4 +1,5 @@
 // chira-ura v2 — popup: 3 コマンド（設定 / 読む / 書く）
+// box は wiki 固定
 
 import { createFlasher } from "../scripts/flash.js";
 import { boxName, getBox, setBox, mergeKeys, getKeys, KEYS_KEY, BOX_KEY } from "../scripts/boxes.js";
@@ -36,7 +37,7 @@ const flasher = createFlasher(els.status);
 let notes = [];
 let autoSave = true;
 let autoSync = true;
-let box = "gdrive";
+let box = "wiki"; // fixed
 
 // ---------- 表示 ----------
 async function paint() {
@@ -44,6 +45,9 @@ async function paint() {
   document.querySelectorAll(".box").forEach(b => {
     b.classList.toggle("active", b.dataset.box === box);
   });
+
+  // 読むボタン: box=wiki のときのみ有効（常に有効）
+  els.cmdRead.disabled = box !== "wiki";
 }
 
 function renderKeys(keys) {
@@ -86,7 +90,6 @@ async function openPanel(path) {
 }
 
 // ---------- コマンド ----------
-els.cmdRead.addEventListener("click", () => openPanel(LOG_PATH));
 els.cmdWrite.addEventListener("click", () => openPanel(WRITE_PATH));
 
 els.cmdSetting.addEventListener("click", () => openPanel(HOME_PATH));
