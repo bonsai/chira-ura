@@ -1,0 +1,35 @@
+{
+  "generatedAt": "2026-10-22T04:03:10.215Z",
+  "repo": "C:\\Users\\0501JP\\.crx\\chira-ura",
+  "remote": "https://github.com/bonsai/chira-ura",
+  "branch": "feat/keep-takeout-import",
+  "loadDir": "C:/Users/0501JP/.crx/chira-ura-crx",
+  "wiki": "C:/Users/0501JP/wiki",
+  "paths": {
+    "crx": "C:\\Users\\0501JP\\.crx\\chira-ura\\crx",
+    "cli": "C:\\Users\\0501JP\\.crx\\chira-ura\\cli",
+    "dev": "C:\\Users\\0501JP\\.crx\\chira-ura\\dev",
+    "sync": "cli/sync.sh",
+    "installPs1": "cli/install.ps1",
+    "installSh": "cli/install.sh",
+    "manifest": "C:\\Users\\0501JP\\.crx\\chira-ura\\crx\\manifest.json",
+    "uraDb": "C:/Users/0501JP/.crx/chira-ura-crx/ura.db",
+    "topology": "chiraura.topology.json"
+  },
+  "counts": {
+    "crxFiles": 19,
+    "cliFiles": 7,
+    "devFiles": 12,
+    "wikiFiles": 1
+  },
+  "deps": {
+    "runtime": "node:sqlite",
+    "sync": "rsync",
+    "plantuml": "java -jar dev/plantuml.jar"
+  },
+  "structure": [
+    "crx",
+    "cli",
+    "dev"
+  ]
+}
