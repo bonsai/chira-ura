@@ -4,3 +4,5 @@ dist/
 *.zip
 keys.json
 dev/plantuml.jar
+ura.db
+canonical/

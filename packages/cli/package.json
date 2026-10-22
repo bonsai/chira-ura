@@ -1,0 +1,12 @@
+{
+  "name": "chira-ura-cli",
+  "version": "2.0.0",
+  "description": "chira-ura 設定CLI",
+  "type": "module",
+  "bin": {
+    "chira": "cli.js"
+  },
+  "scripts": {
+    "set": "node cli.js"
+  }
+}

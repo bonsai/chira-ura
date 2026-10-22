@@ -1,19 +1,20 @@
 {
-  "generatedAt": "2026-10-22T04:03:10.215Z",
-  "repo": "C:\\Users\\0501JP\\.crx\\chira-ura",
+  "generatedAt": "2026-10-22T05:35:00.000Z",
+  "repo": "/home/bons/chira-ura",
   "remote": "https://github.com/bonsai/chira-ura",
   "branch": "feat/keep-takeout-import",
-  "loadDir": "C:/Users/0501JP/.crx/chira-ura-crx",
-  "wiki": "C:/Users/0501JP/wiki",
+  "loadDir": "/home/bons/chira-ura/dist/chira-ura-crx",
+  "wiki": "/home/bons/wiki",
   "paths": {
-    "crx": "C:\\Users\\0501JP\\.crx\\chira-ura\\crx",
-    "cli": "C:\\Users\\0501JP\\.crx\\chira-ura\\cli",
-    "dev": "C:\\Users\\0501JP\\.crx\\chira-ura\\dev",
-    "sync": "cli/sync.sh",
-    "installPs1": "cli/install.ps1",
-    "installSh": "cli/install.sh",
-    "manifest": "C:\\Users\\0501JP\\.crx\\chira-ura\\crx\\manifest.json",
-    "uraDb": "C:/Users/0501JP/.crx/chira-ura-crx/ura.db",
+    "crx": "/home/bons/chira-ura/packages/crx",
+    "cli": "/home/bons/chira-ura/packages/cli",
+    "dev": "/home/bons/chira-ura/dev",
+    "dist": "/home/bons/chira-ura/dist",
+    "sync": "packages/cli/sync.sh",
+    "installPs1": "packages/cli/install.ps1",
+    "installSh": "packages/cli/install.sh",
+    "manifest": "/home/bons/chira-ura/packages/crx/manifest.json",
+    "uraDb": "/home/bons/chira-ura/dist/chira-ura-crx/ura.db",
     "topology": "chiraura.topology.json"
   },
   "counts": {
@@ -28,8 +29,9 @@
     "plantuml": "java -jar dev/plantuml.jar"
   },
   "structure": [
-    "crx",
-    "cli",
-    "dev"
+    "packages/cli",
+    "packages/crx",
+    "dev",
+    "dist/chira-ura-crx"
   ]
 }

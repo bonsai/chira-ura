@@ -4,7 +4,7 @@
 
 旧名 `kami copi`（`kamicopi.net` と衝突するため改名）。
 
-構成: `crx/`（拡張）/ `cli/`（設定・同期クライアント）/ `dev/`（履歴・UI/UX 仕様）。
+構成（モノレポ）: `packages/crx/`（拡張）/ `packages/cli/`（設定・同期クライアント）/ `dev/`（履歴・UI/UX 仕様）。`dist/chira-ura-crx/` は Chrome の unpacked 読込先（生成物）。
 
 ## スタック
 
@@ -16,13 +16,13 @@
 
 ## 使い方
 
-1. `bash cli/sync.sh` で `crx/` を Chrome の unpacked 読込先へコピー
-2. `chrome://extensions` →「パッケージ化されていない拡張機能を読み込む」→ `.crx/chira-ura-crx` を指定
+1. `bash packages/cli/sync.sh` で `packages/crx/` を Chrome の unpacked 読込先へコピー
+2. `chrome://extensions` →「パッケージ化されていない拡張機能を読み込む」→ `dist/chira-ura-crx` を指定
 3. popup の `書く` でサイドパネルを開いて書き、`コピー` でクリップボードへ
 
 ```bash
-bash cli/install.sh                              # chira を PATH へ（POSIX）
-powershell -NoProfile -ExecutionPolicy Bypass -File cli\install.ps1   # Windows 版
+bash packages/cli/install.sh                              # chira を PATH へ（POSIX）
+powershell -NoProfile -ExecutionPolicy Bypass -File packages\cli\install.ps1   # Windows 版
 chira auth                                       # OAuth（ブラウザ同意 → token.json 0600）
 chira box gdrive                                 # 箱を CLI から指定
 chira client-id <id>.apps.googleusercontent.com   # manifest の oauth2.client_id
@@ -69,8 +69,8 @@ Keep の `textContent` + `lists` + `annotations` → `content`、`userEditedTime
 
 ## エージェント
 
-- 編集は `crx/` と `cli/` のみ。Chrome の読込先ディレクトリ（`CHIRA_LOAD_DIR`）はキャッシュなので直接編集しない。
-- 反映は `bash cli/sync.sh` → 拡張の再読み込み。
+- 編集は `packages/crx/` と `packages/cli/` のみ。Chrome の読込先ディレクトリ（`CHIRA_LOAD_DIR` / `dist/chira-ura-crx`）はキャッシュなので直接編集しない。
+- 反映は `bash packages/cli/sync.sh` → 拡張の再読み込み。
 - version は変更単位で細かく上げる（`version_name` に `-dev`）。変更は `dev/dev.history.md` に追記。
 - 権限追加・設定 UI の復活は禁止。認証は OAuth のみ（トークンを平文に置かない）。
 - 識別子（gh URL / OAuth client / 箱フォルダ / 箱名）は勝手に決めない。番号付き候補を出して選ばせる。
@@ -82,7 +82,7 @@ Keep の `textContent` + `lists` + `annotations` → `content`、`userEditedTime
   `chira db|notes|note|export|import|storage`。canonical は sync-db と同じ形。
 - v0.1.3-dev: `chira auth`（OAuth ループバック + PKCE、token.json 0600）と `chira token`/`logout`。sync.sh は読込先を自動検出。
 - v0.1.2-dev: 箱を CLI から指定（`chira box`）。箱選択は同意画面を飛ばして無言トークン、2 度押しで同意。`cli/install.sh` 追加。
-- v2.5.3-dev: repo を `dev/ crx/ cli/` 構成に（`dev/` は旧 `doc/`）。
+- v2.5.3-dev: repo を `dev/ crx/ cli/` 構成に（`dev/` は旧 `doc/`）。→ 現在はモノレポ化（`packages/crx` `packages/cli` `dev` `dist`）。
 - popup は 3 コマンド + ver/ロゴ。コピー・積む・取る・イシューは削除、読込は箱へ統合。
 - 未確定: Google OAuth の `client_id`（`REPLACE_ME`）、GH/Box のトークン交換、箱への実際の保存。
 - 未検証: Chrome 実機での再読み込み後の表示、`sidePanel.setOptions` で read.html が開くか。
