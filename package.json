@@ -15,5 +15,6 @@
   },
   "devDependencies": {},
   "keywords": ["chrome-extension", "memo", "cli"],
-  "license": "MIT"
+  "license": "MIT",
+  "type": "module"
 }
