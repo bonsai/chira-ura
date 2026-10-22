@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>chira-ura / ホーム（設定）</title>
+  <style>
+    :root { --washi: #faf7f0; --ink: #3a322a; --enji: #8b0000; --mute: #8a8071; --border: #e3dcc9; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 12px; background: var(--washi); color: var(--ink); font-family: sans-serif; font-size: 0.85rem; }
+    h1 { font-size: 1.1rem; margin-bottom: 0.8em; }
+    h2 { font-size: 0.8rem; color: var(--mute); letter-spacing: 0.1em; margin-top: 1.2em; }
+    .btn { display: inline-block; padding: 6px 12px; border: 1px solid var(--enji); border-radius: 6px; background: var(--enji); color: #fff; text-decoration: none; font-size: 0.85rem; cursor: pointer; }
+    .btn:hover { background: #a01a1a; }
+    .switch { display: inline-flex; align-items: center; gap: 6px; }
+    input[type="checkbox"] { width: 16px; height: 16px; }
+    .muted { color: var(--mute); font-size: 0.8rem; }
+    #wikiPane { border: 1px solid var(--border); padding: 8px; min-height: 120px; background: #fff; font-family: monospace; font-size: 0.8rem; line-height: 1.4; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>⚙ 設定 / 📋 ヘルプ</h1>
+    </header>
+
+    <section>
+      <h2>保存先（箱）</h2>
+      <button class="btn" id="btnBox">📦 保存先を選択</button>
+    </section>
+
+    <section>
+      <h2>自動保存</h2>
+      <label class="switch"><input id="tglAuto" type="checkbox" checked /><span class="knob"></span></label>
+      <span id="lblAuto">ON</span>
+    </section>
+
+    <section>
+      <h2>絵文字ステータス</h2>
+      <label class="switch"><input id="tglEmoji" type="checkbox" checked /><span class="knob"></span></label>
+      <span id="lblEmoji">ON</span>
+    </section>
+
+    <section>
+      <h2>SE（サウンドエフェクト）</h2>
+      <label class="switch"><input id="tglSE" type="checkbox" checked /><span class="knob"></span></label>
+      <span id="lblSE">ON</span>
+    </section>
+
+    <hr />
+
+    <section>
+      <h2>🐙 GitHub Issue 起票</h2>
+      <form id="ghForm">
+        <input id="ghTitle" type="text" placeholder="タイトル" required /><br/>
+        <textarea id="ghBody" rows="3" placeholder="本文（マークダウン可）"></textarea><br/>
+        <button type="submit" class="btn">投稿する</button>
+      </form>
+    </section>
+
+    <hr />
+
+    <section>
+      <h2>📖 読む（Wiki 表示）</h2>
+      <div id="wikiPane" style="border:1px solid #ccc; padding:8px; min-height:120px; font-family:monospace; font-size:0.85rem; background:#fff;"></div>
+      <p class="muted">file://C:\Users\0501JP\wiki をメインペインに表示</p>
+    </section>
+
+    <footer>
+      <a href="../sidepanel/read.html">過去記事へ →</a>
+    </footer>
+  </div>
+
+  <script type="module">
+    // Toggles
+    document.getElementById("tglAuto").addEventListener("change", e => {
+      document.getElementById("lblAuto").textContent = e.target.checked ? "ON" : "OFF";
+    });
+    document.getElementById("tglEmoji").addEventListener("change", e => {
+      document.getElementById("lblEmoji").textContent = e.target.checked ? "ON" : "OFF";
+    });
+    document.getElementById("tglSE").addEventListener("change", e => {
+      document.getElementById("lblSE").textContent = e.target.checked ? "ON" : "OFF";
+    });
+
+    // GitHub issue form
+    document.getElementById("ghForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const title = document.getElementById("ghTitle").value;
+      const body = document.getElementById("ghBody").value;
+      const url = `https://github.com/bonsai/chira-ura/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
+      chrome.tabs.create({ url });
+    });
+
+    // Load wiki file reference (display as read-only text since direct file:// access is restricted)
+    document.getElementById("wikiPane").textContent = "file://C:\\Users\\0501JP\\wiki\\ura\n\n---\nwiki の内容は直接表示できません（file:// 制限）。\nCLI で chira wiki sync して表示してください。";
+  </script>
+</body>
+</html>

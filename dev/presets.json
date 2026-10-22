@@ -1,0 +1,5 @@
+[
+  { "name": "repo-data",    "path": "/home/bons/chira-ura/data" },
+  { "name": "repo-dist",    "path": "/home/bons/chira-ura/dist/chira-ura-crx" },
+  { "name": "wsl-localhost","path": "\\\\wsl.localhost\\\\Ubuntu\\\\home\\\\bons\\\\chira-ura\\\\data" }
+]

@@ -10,7 +10,8 @@
     "dev": "echo 'Packages: cli (chira-ura-cli), crx (chira-ura extension)'",
     "sync": "bash packages/cli/sync.sh",
     "install:posix": "bash packages/cli/install.sh",
-    "install:windows": "pwsh -File packages/cli/install.ps1"
+    "install:windows": "pwsh -File packages/cli/install.ps1",
+    "tui": "node packages/cli/tui.js"
   },
   "devDependencies": {},
   "keywords": ["chrome-extension", "memo", "cli"],

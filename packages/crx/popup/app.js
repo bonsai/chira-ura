@@ -1,4 +1,5 @@
-// chira-ura v2 — popup: コマンド（書く/読む/箱/イシュー/履歴）
+// chira-ura v2 — popup: 3 コマンド（設定 / 読む / 書く）
+
 import { createFlasher } from "../scripts/flash.js";
 import { boxName, getBox, setBox, mergeKeys, getKeys, KEYS_KEY, BOX_KEY } from "../scripts/boxes.js";
 import { parseJsonl } from "../scripts/model.js";
@@ -10,18 +11,18 @@ const AUTO_KEY = "autoSave";
 
 const WRITE_PATH = "sidepanel/write.html";
 const LOG_PATH = "sidepanel/read.html";
+const HOME_PATH = "home.html";
 const REPO = "https://github.com/bonsai/chira-ura";
 const SITE = "https://bonsai.github.io/chira-ura/";
 const HISTORY = REPO + "/blob/main/dev/dev.history.md";
 
 const els = {
   status: document.getElementById("status"),
-  cmdWrite: document.getElementById("cmdWrite"),
+  cmdSetting: document.getElementById("cmdSetting"),
   cmdRead: document.getElementById("cmdRead"),
-  cmdBox: document.getElementById("cmdBox"),
-  linkVer: document.getElementById("linkVer"),
-  linkLogo: document.getElementById("linkLogo"),
-  hintBox: document.getElementById("hintBox"),
+  cmdWrite: document.getElementById("cmdWrite"),
+  cmdPlus: document.getElementById("cmdPlus"),
+  statusFooter: document.getElementById("statusFooter"),
   boxPanel: document.getElementById("boxPanel"),
   folderInput: document.getElementById("folderInput"),
   keysFile: document.getElementById("keysFile"),
@@ -39,9 +40,7 @@ let box = "gdrive";
 
 // ---------- 表示 ----------
 async function paint() {
-  els.toggleAuto.checked = autoSave;
-  els.toggleSync.checked = autoSync;
-  els.hintBox.textContent = boxName(box);
+  if (els.hintBox) els.hintBox.textContent = boxName(box);
   document.querySelectorAll(".box").forEach(b => {
     b.classList.toggle("active", b.dataset.box === box);
   });
@@ -60,9 +59,7 @@ async function init() {
   box = await getBox();
 
   const m = chrome.runtime.getManifest();
-  els.linkVer.textContent = `ver ${m.version_name || m.version}`;
-  els.linkVer.href = HISTORY;
-  els.linkLogo.href = SITE;
+  els.statusFooter.textContent = `ver ${m.version_name || m.version}`;
 
   renderKeys(await getKeys());
   await paint();
@@ -92,9 +89,11 @@ async function openPanel(path) {
 els.cmdRead.addEventListener("click", () => openPanel(LOG_PATH));
 els.cmdWrite.addEventListener("click", () => openPanel(WRITE_PATH));
 
-els.cmdBox.addEventListener("click", () => {
-  els.boxPanel.hidden = !els.boxPanel.hidden;
-  els.cmdBox.classList.toggle("open", !els.boxPanel.hidden);
+els.cmdSetting.addEventListener("click", () => openPanel(HOME_PATH));
+
+els.cmdPlus.addEventListener("click", () => {
+  chrome.tabs.create({ url: REPO });
+  window.close();
 });
 
 // ---------- 箱（保存先 + 認証） ----------
@@ -132,7 +131,6 @@ els.boxPanel.querySelectorAll(".box").forEach(btn => {
     try {
       box = await setBox(btn.dataset.box);
       await paint();
-      // 1 度目は無言（同意画面を飛ばす）。同じ箱の 2 度目で同意を出す。
       await authorize(box, { interactive: same });
     } catch (e) {
       flasher.note("🚫", e?.message || "認証に失敗");
@@ -159,7 +157,6 @@ els.jsonlFile.addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if (!file) return;
   const text = await file.text();
-  // 同じ JSON の解析（壊れた行は捨てる / content 無しは捨てる）
   const parsed = parseJsonl(text);
   const imported = parsed.length;
 
