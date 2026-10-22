@@ -2,6 +2,13 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-10-22 / v0.1.5-dev — NEW は書くページだけ
+
+- 指示: popup に「＋」は不要。新規作成ボタンは「書く」ページだけに置く。
+- 変更: `crx/sidepanel/write.html` に `＋ NEW` を追加。押すと空の編集状態になり、書き始めると別メモとして保存する。既存メモは保持。
+- popup は従来どおり「箱 / 読む / 書く」のみ。
+
+
 ## 2026-10-22 / v0.1.4-dev — CLI に SQLite（~/.chira/ura.db）。拡張と同じ JSON
 
 - 指示: make cli（Windows で `chira` が動くように）/ make .chira/ura.db / make cli by js and json as same as crx。
