@@ -1,4 +1,4 @@
-// chira-ura CLI — メモの正 JSON を SQLite（Chrome の読込先 / chira-ura-crx/ura.db）に持つ
+// chira-ura CLI — メモの正 JSON を SQLite（~/.chira/ura.db）に持つ
 //
 // 拡張（chrome.storage.local）と同じ JSON（id/title/content/updatedAt）を使う。
 // だから export した JSONL / canonical を、そのまま拡張に読み込める。
@@ -6,22 +6,32 @@
 // そのままコピーしてやり取りできる。
 
 import { DatabaseSync } from "node:sqlite";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, existsSync, readFileSync, writeFileSync, readdirSync } from "node:fs";
+import { homedir } from "node:os";
 import { join, dirname } from "node:path";
 import { DB_SCHEMA, makeNote, noteJson, parseJsonl, parseJsonLines, toJsonl } from "../crx/scripts/model.js";
 
-/**
- * 読込先（cli/sync.sh と同じ）
- *   CHIRA_LOAD_DIR を使用（必要）
- */
-export function loadDir() {
-  const dir = process.env.CHIRA_LOAD_DIR;
-  if (dir) return dir;
-  throw new Error("CHIRA_LOAD_DIR を設定してください");
-}
+// DB の置き先: CHIRA_DB > CHIRA_LOAD_DIR/ura.db > ~/.chira/ura.db
+//   CHIRA_DB にディレクトリを渡された場合は、その中の ura.db を参照する。
+const defaultDbPath = () => {
+  if (process.env.CHIRA_DB) {
+    const p = process.env.CHIRA_DB;
+    // 既存ディレクトリなら ura.db を指す（拡張の読込先など）
+    try {
+      if (existsSync(p) && !p.endsWith(".db")) return join(p, "ura.db");
+    } catch {}
+    return p;
+  }
+  if (process.env.CHIRA_LOAD_DIR) return join(process.env.CHIRA_LOAD_DIR, "ura.db");
+  return join(homedir(), ".chira", "ura.db");
+};
 
-// DB は読込先ディレクトリ内の ura.db。CHIRA_DB で別の場所にも置ける。
-export const DB_PATH = process.env.CHIRA_DB || join(loadDir(), "ura.db");
+export const DB_PATH = defaultDbPath();
+
+/** 読込先（cli/sync.sh と同じ）。未設定なら既定の ~/.chira を返す。 */
+export function loadDir() {
+  return process.env.CHIRA_LOAD_DIR || join(homedir(), ".chira");
+}
 
 /** DB を開く（無ければ作る）。パスは任意。 */
 export function openDb(path = DB_PATH) {
