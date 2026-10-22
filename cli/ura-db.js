@@ -6,12 +6,28 @@
 // そのままコピーしてやり取りできる。
 
 import { DatabaseSync } from "node:sqlite";
-import { mkdirSync, existsSync, readFileSync, writeFileSync, readdirSync } from "node:fs";
+import { mkdirSync, existsSync, statSync, readFileSync, writeFileSync, readdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, dirname } from "node:path";
 import { DB_SCHEMA, makeNote, noteJson, parseJsonl, parseJsonLines, toJsonl } from "../crx/scripts/model.js";
 
-export const DB_PATH = process.env.CHIRA_DB || join(homedir(), ".chira", "ura.db");
+function configuredDbPath() {
+  const explicit = process.env.CHIRA_DB;
+  if (explicit) {
+    // TUI/preset callers may pass the storage directory instead of the DB file.
+    try {
+      if (statSync(explicit).isDirectory()) return join(explicit, "ura.db");
+    } catch {
+      // A missing path is treated as an explicit DB file path.
+    }
+    return explicit;
+  }
+  const loadDir = process.env.CHIRA_LOAD_DIR;
+  if (loadDir) return join(loadDir, "ura.db");
+  return join(homedir(), ".chira", "ura.db");
+}
+
+export const DB_PATH = configuredDbPath();
 
 /** DB を開く（無ければ作る）。パスは任意。 */
 export function openDb(path = DB_PATH) {
