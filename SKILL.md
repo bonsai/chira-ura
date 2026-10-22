@@ -10,7 +10,7 @@ description: >
 
 # chira-ura — 書いてコピるだけのメモ拡張
 
-変数: `<REPO>=~/.skills/chira-ura`, `<LOAD>=<Chrome の unpacked 読込先>`（`CHIRA_LOAD_DIR` で指定。既定は `~/.crx/chira-ura-crx`）
+変数: `<REPO>=<任意のリポジトリ・パス>`, `<LOAD>=<Chrome の unpacked 読込先>`（`CHIRA_LOAD_DIR` で指定）
 
 旧名 `kami copi` は `kamicopi.net` と衝突するため 2026-10-19 に改名。
 

@@ -32,7 +32,7 @@
     `chira export|import`（JSONL＝箱のファイル形式）/ `chira storage export|import`（chrome.storage.local 相当）。
   - canonical の出力は sync-db と同じ形（schema.sql + <table>.jsonl）。同じ .db を端末間でやり取りできる。
   - `crx/sidepanel/write.js` と `crx/popup/app.js` は model.js を使うようにした（挙動は同じ）。
-  - `dev/chira-ura.puml`（構成図 5 枚。plantuml.jar は ~/.crx に置く）。
+  - `dev/chira-ura.puml`（構成図 5 枚。plantuml.jar は環境変数 `PLANTUML_JAR` で指定）。
 - 未実施: 拡張 ↔ SQLite の自動同期（今は JSONL / canonical 経由の受け渡し）。
 
 ## 2026-10-19 / v0.1.3-dev — CLI を OAuth 経由に
@@ -40,7 +40,7 @@
 - 指示: cli スキル oauth に経由して / box フォルダ / アカウント。
 - 変更: `chira auth`（PKCE + ループバック 127.0.0.1:8799）→ `~/.config/chira-ura/token.json`（0600）。
   `chira token`（期限切れは refresh）/ `chira logout`。CLI は拡張と同じ `client_id`（manifest か `oauth.clientId`）を使う。
-  `cli/sync.sh` は読込先を `CHIRA_LOAD_DIR` → `~/.crx` → `/mnt/*/Users/*/.crx` の順で自動検出（個人パスを書かない）。
+  `cli/sync.sh` は読込先を `CHIRA_LOAD_DIR` の順で探索（環境変数 `CHIRA_LOAD_DIR` で指定）
   ローカル keys.json に gdrive.folder / folderId / account / gh.account を設定（repo には入れない）。
 
 ## 2026-10-19 / v0.1.2-dev — 箱を CLI から指定 / OAuth を飛ばす / CLI を PATH へ
@@ -117,7 +117,7 @@
 - 指示: `http://kamicopi.net/` と衝突＝商標違反なので名を変える。新名 `chira-ura`。
 - 変更: manifest `name` → `chira-ura / チラ裏`、brand 表記 → `chiraura`、CLI のコマンド名 `kami` → `chira`、
   鍵ファイル `~/.config/kami-copi/keys.json` → `~/.config/chira-ura/keys.json`、
-  Chrome 読込先 `~/.crx/kami-copi-crx` → `~/.crx/chira-ura-crx`、repo `bonsai/kami-copi` → `bonsai/chira-ura`。
+  Chrome 読込先を改名、repo `bonsai/kami-copi` → `bonsai/chira-ura`。
 - 注意: 読込先が変わったので拡張 ID が変わる。旧 ID の `chrome.storage.local` は引き継がれない。
   `chrome://extensions` で旧エントリを削除し、`chira-ura-crx` を読み込み直す。
 
@@ -166,5 +166,5 @@
 ## 運用
 
 - version は変更単位で細かく上げる。`version_name` に `-dev` を付ける。
-- 実体は `crx/`。`~/.crx/chira-ura-crx` はキャッシュ（直接編集しない）。
+- 実体は `packages/crx/`。読込先 `dist/chira-ura-crx` はキャッシュ（直接編集しない）。
 - 反映は `bash cli/sync.sh` → `chrome://extensions` で再読み込み。

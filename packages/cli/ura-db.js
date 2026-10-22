@@ -6,31 +6,21 @@
 // そのままコピーしてやり取りできる。
 
 import { DatabaseSync } from "node:sqlite";
-import { mkdirSync, existsSync, readFileSync, writeFileSync, readdirSync } from "node:fs";
-import { homedir } from "node:os";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { DB_SCHEMA, makeNote, noteJson, parseJsonl, parseJsonLines, toJsonl } from "../crx/scripts/model.js";
 
 /**
- * Chrome の unpacked 読込先（cli/sync.sh と同じ探索順）
- *   CHIRA_LOAD_DIR > ~/.crx/chira-ura-crx > Windows 側 ~/.crx（WSL など）
+ * 読込先（cli/sync.sh と同じ）
+ *   CHIRA_LOAD_DIR を使用（必要）
  */
 export function loadDir() {
-  if (process.env.CHIRA_LOAD_DIR) return process.env.CHIRA_LOAD_DIR;
-  const home = join(homedir(), ".crx", "chira-ura-crx");
-  if (existsSync(home)) return home;
-  if (process.platform !== "win32") {
-    try {
-      for (const drive of readdirSync("/mnt")) {
-        const hit = join("/mnt", drive, "Users", homedir().split("/").pop() || "", ".crx", "chira-ura-crx");
-        if (existsSync(hit)) return hit;
-      }
-    } catch { /* /mnt が無ければ既定 */ }
-  }
-  return home;
+  const dir = process.env.CHIRA_LOAD_DIR;
+  if (dir) return dir;
+  throw new Error("CHIRA_LOAD_DIR を設定してください");
 }
 
-// DB は Chrome の読込先（~/.crx/chira-ura-crx/ura.db）。CHIRA_DB で別の場所にも置ける。
+// DB は読込先ディレクトリ内の ura.db。CHIRA_DB で別の場所にも置ける。
 export const DB_PATH = process.env.CHIRA_DB || join(loadDir(), "ura.db");
 
 /** DB を開く（無ければ作る）。パスは任意。 */
