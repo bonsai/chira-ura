@@ -190,9 +190,11 @@ skinparam shadowing false
 
 participant "拡張\nchrome.storage.local" as E
 participant "CLI\nchira notes / export / import" as C
+participant "Keep Takeout\nchira keep import" as K
 database "~/.chira/ura.db\nSQLite" as URA
 participant "JSONL\n箱のファイル形式（1行1JSON）" as JSONL
 
+K -> C : import（Takeout → 同じ JSON）
 E -> C : export（notes → JSONL）
 C -> URA : import（notes テーブルへ）
 URA -> C : notes（SELECT *）

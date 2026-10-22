@@ -47,6 +47,17 @@ chira db export <dir> | chira db import <dir>     # canonical（sync-db と同�
 
 同じ `.db` を端末間でそのままコピーできる（journal=DELETE で 1 ファイル完結）。
 
+Google Keep Takeout からの取り込み（ローカル zip / 展開ディレクトリ / `Notes.json` / `Notes.html`）:
+
+```bash
+chira keep list ~/Downloads/takeout-xxx.zip      # 中身だけ見る
+chira keep import ~/Downloads/takeout-xxx.zip    # 取り込む（--trash でゴミ箱も）
+chira export notes.jsonl                          # 拡張へ渡す JSONL（拡張と同じ JSON）
+```
+
+Keep の `textContent` + `lists` + `annotations` → `content`、`userEditedTimestampUsec` → `updatedAt`。
+同じ id は上書きなので、取り込み直しても重複しない。
+
 トークンは保存しない。Google は `chrome.identity.getAuthToken`、GH/Box は `launchWebAuthFlow`（コード取得まで）。
 
 ## UI
@@ -66,6 +77,7 @@ chira db export <dir> | chira db import <dir>     # canonical（sync-db と同�
 
 ## 現在地
 
+- v0.1.5-dev: Google Keep Takeout からの取り込み（`chira keep import`）。`dev/index.html` で構成図が見れる。
 - v0.1.4-dev: CLI に SQLite（`~/.chira/ura.db`）。拡張と同じ JSON（`model.js` を共用）。
   `chira db|notes|note|export|import|storage`。canonical は sync-db と同じ形。
 - v0.1.3-dev: `chira auth`（OAuth ループバック + PKCE、token.json 0600）と `chira token`/`logout`。sync.sh は読込先を自動検出。
@@ -77,6 +89,7 @@ chira db export <dir> | chira db import <dir>     # canonical（sync-db と同�
 
 ## ログ
 
+- 2026-10-22 v0.1.5-dev `chira keep import`（Google Keep Takeout）/ 構成図のページ（`dev/index.html`）
 - 2026-10-19 v2.5.3-dev `doc/` → `dev/`
 - 2026-10-19 v2.5.2-dev `doc crx cli` 構成
 - 2026-10-19 v2.5.1-dev sidepanel を write/read に改名

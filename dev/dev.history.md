@@ -2,6 +2,25 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-10-22 / v0.1.5-dev — Google Keep Takeout からの取り込み / 構成図のページ
+
+- 指示: add feat branch : import from google keep takeout / make dev/index.html for view svgs then linked from repo root。
+- ブランチ: `feat/keep-takeout-import`（main から切る。issue #1）。
+- 変更:
+  - `cli/keep.js`（Takeout 読み出し。zip は最小実装の reader で store/deflate 対応。
+    `Notes.json` = ラベル無し、`Notes.html` = ラベル付き）。Keep の µs / ms / RFC3339 を ms に寄せる。
+  - `cli/cli.js`: `chira keep list <path>`（見本市）/` chira keep import <path> [--trash] [--jsonl <file>]`。
+    取り込んだメモは `~/.chira/ura.db` に入り、`chira export` で拡張に渡せる。
+  - `dev/index.html`（構成図を見るページ。5 枚の SVG と puml ソースを並べる）。root の `index.html` からリンク。
+  - manifest を 0.1.5 / `0.1.5-dev` に。
+- 変換（拡張と同じ JSON）:
+  - `id` → `id` / `title` → `title`（無ければ本文1行目から導出）
+  - `textContent` + `lists` + `annotations` → `content`（`lists` は `- [x] 項目`）
+  - `userEditedTimestampUsec` → `updatedAt`（µs → ms。`updateTime` / `createTime` へフォールバック）
+  - `trashed` は既定で除く（`--trash` で含める）/ `attachments` は入れない（ローカルパスのため）
+- 検証: 疑似 Takeout（µs 時刻・ゴミ箱・チェックリスト・リンク・タイトル無し・ラベル付き HTML）で
+  件数・導出タイトル・ms 変換・再取り込みで重複しないことを確認。
+
 ## 2026-10-22 / v0.1.4-dev — CLI に SQLite（~/.chira/ura.db）。拡張と同じ JSON
 
 - 指示: make cli（Windows で `chira` が動くように）/ make .chira/ura.db / make cli by js and json as same as crx。

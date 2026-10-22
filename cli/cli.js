@@ -17,6 +17,8 @@ import {
   getMeta, setMeta, exportJsonl, importJsonl,
   exportStorage, importStorage, exportCanonical, importCanonical
 } from "./ura-db.js";
+import { toJsonl } from "../crx/scripts/model.js";
+import { readKeepTakeout } from "./keep.js";
 
 const KEYS_PATH = process.env.CHIRA_KEYS
   || join(homedir(), ".config", "chira-ura", "keys.json");
@@ -174,6 +176,10 @@ function usage() {
   chira import <file.jsonl>   JSONL を読み込む
   chira storage export [file] chrome.storage.local 相当の JSON
   chira storage import <file> その JSON を読み込む
+
+  Google Keep Takeout（ローカル zip / 展開ディレクトリ / Notes.json / Notes.html）
+  chira keep list <path>       中身だけ見る（取り込まない）
+  chira keep import <path>     取り込む（--trash でゴミ箱も。--jsonl <file> で JSONL も）
 
 鍵ファイル（平文 JSON）: ${KEYS_PATH}
 DB: ${DB_PATH}`);
@@ -494,6 +500,71 @@ switch (cmd) {
     } else {
       console.error("使い方: chira storage export|import");
       process.exit(1);
+    }
+    db.close();
+    break;
+  }
+  // ---------- Google Keep Takeout ----------
+  case "keep": {
+    const sub = rest[0];
+    const flags = { trash: false, json: false, jsonl: null };
+    const pos = [];
+    for (let i = 1; i < rest.length; i++) {
+      const a = rest[i];
+      if (a === "--trash") flags.trash = true;
+      else if (a === "--json") flags.json = true;
+      else if (a === "--jsonl") flags.jsonl = rest[++i] || null;
+      else pos.push(a);
+    }
+    const target = pos[0];
+    if (!target) {
+      console.error(`使い方: chira keep ${sub === "list" ? "list" : "import"} <path> [--trash] [--jsonl <file>]`);
+      process.exit(1);
+    }
+    let result;
+    try {
+      result = readKeepTakeout(resolve(target), { includeTrash: flags.trash });
+    } catch (e) {
+      console.error(e.message);
+      process.exit(1);
+    }
+    const { notes, sources, skipped } = result;
+    const where = sources.length ? sources.join(", ") : "(なし)";
+
+    if (sub === "list") {
+      if (flags.json) {
+        console.log(JSON.stringify(notes, null, 2));
+      } else if (!notes.length) {
+        console.log("メモなし");
+      } else {
+        for (const n of notes) {
+          const at = n.updatedAt ? new Date(n.updatedAt).toISOString() : "-";
+          console.log(`${n.id}\t${at}\t${n.title}`);
+        }
+      }
+      console.error(`件数: ${notes.length}（ソース: ${where}）`);
+      if (skipped) console.error(`ゴミ箱は除いた: ${skipped}（--trash で含める）`);
+      break;
+    }
+
+    if (sub !== "import") {
+      console.error("使い方: chira keep list|import <path>");
+      process.exit(1);
+    }
+
+    const { db } = openDb();
+    // 時刻が無いメモ（Notes.html など）は、同じ内容的し直しても時刻が動かないようにする
+    const prepared = notes.map((n) => {
+      if (n.updatedAt) return n;
+      const cur = getNote(db, n.id);
+      return cur && cur.content === n.content ? { ...n, updatedAt: cur.updatedAt } : n;
+    });
+    const r = importJsonl(db, toJsonl(prepared));
+    console.log(`imported: ${r.changed}/${r.total} notes（ソース: ${where}）`);
+    if (skipped) console.log(`ゴミ箱は除いた: ${skipped}（--trash で含める）`);
+    if (flags.jsonl) {
+      writeFileSync(resolve(flags.jsonl), toJsonl(notes), "utf8");
+      console.log(`jsonl: ${resolve(flags.jsonl)}`);
     }
     db.close();
     break;

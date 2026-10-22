@@ -29,13 +29,16 @@ crx/                    拡張の実体（Chrome に読ませるのはここ）
 cli/                    設定・同期 CLIENT（bin: chira。`bash cli/install.sh` で PATH へ）
   cli.js                set / get / box / client-id / path / keys / serve / pull / push / sync
                          + db / notes / note / export / import / storage（メモ）
+                         + keep（Google Keep Takeout からの取り込み）
   ura-db.js             ~/.chira/ura.db（node:sqlite。メモの正 JSON）
+  keep.js               Takeout 読み出し（zip / 展開dir / Notes.json / Notes.html）
   install.sh            ~/.local/bin/chira に symlink（skill から `chira` を直接叩く）
   install.ps1           Windows 版。~/.local/bin/chira.cmd を PATH へ
   sync.sh               crx/ → <LOAD> へ流し込む
   package.json
 dev/                    開発資料
   dev.history.md        指示と変更の履歴（新しいものが上）
+  index.html            構成図を見るページ（root の index.html からリンク）
   ui.yaml               見た目・要素（実装の正）
   ux.yaml               振る舞い・遷移・状態・手動確認
   chira-ura.puml        構成図（PlantUML）
@@ -99,6 +102,21 @@ chira db import <dir>    # canonical から読み込む
 - 同じ .db を端末間でやり取りできる（journal=DELETE なので 1 ファイルで完結）。
 - canonical の形は sync-db と同じ（`schema.sql` + `<table>.jsonl`）。
 - 拡張との自動同期は未実施。受け渡しは JSONL / canonical 経由。
+
+## Google Keep Takeout
+
+```bash
+chira keep list <path>       # 中身だけ見る（取り込まない）
+chira keep import <path>     # 取り込む（--trash でゴミ箱も。--jsonl <file> で JSONL も）
+```
+
+- 入力は `takeout-*.zip` / 展開ディレクトリ / `Notes.json` / `Notes.html` のどれでも。
+  zip は最小実装の reader（store / deflate）。Takeout はローカル zip だけ。トークン・鍵は扱わない。
+- 変換: `id` → `id`、`title` → `title`（無ければ本文1行目から導出）、
+  `textContent` + `lists`（`- [x] 項目`）+ `annotations` → `content`、
+  `userEditedTimestampUsec`（µs）→ `updatedAt`（ms）。
+- `trashed` は既定で除く（`--trash` で含める）。`attachments` はローカルパスのため入れない。
+- 同じ id は上書き。取り込み直しても重複しない。
 
 ## 認証・同期
 
