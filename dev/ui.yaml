@@ -1,6 +1,6 @@
 # chira-ura UI 仕様（実装の正）
 # 変更したら実装（crx/）と同時に更新する。ここに無い UI は足さない。
-version: 0.1.3-dev
+version: 0.1.5-dev
 updated: 2026-10-19
 
 brand:
@@ -62,7 +62,7 @@ popup:                                 # crx/popup/{index.html,app.js,style.css}
 sidepanel_write:                       # crx/sidepanel/write.html
   title: "chira-ura — 書く"
   body: "textarea (full height, autosave debounce 600ms)"
-  footer: [コピー (primary), 過去記事 (ghost -> read.html)]
+  footer: [＋ NEW (ghost, create blank memo), コピー (primary), 過去記事 (ghost -> read.html)]
   brand: none
   gh: none
 
