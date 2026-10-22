@@ -11,7 +11,8 @@ const DEBOUNCE_MS = 600;
 const els = {
   note: document.getElementById("note"),
   status: document.getElementById("status"),
-  btnCopy: document.getElementById("btnCopy")
+  btnCopy: document.getElementById("btnCopy"),
+  btnNew: document.getElementById("btnNew")
 };
 
 const flasher = createFlasher(els.status);
@@ -28,7 +29,7 @@ async function init() {
   activeNoteId = res[ACTIVE_KEY] || null;
   autoSave = res[AUTO_KEY] !== false;
 
-  const note = activeNoteId ? getNote(activeNoteId) : notes[0];
+  const note = res[ACTIVE_KEY] === "__new__" ? null : (activeNoteId ? getNote(activeNoteId) : notes[0]);
   if (note) {
     activeNoteId = note.id;
     els.note.value = note.content;
@@ -84,6 +85,16 @@ function queueSave() {
 
 // ---------- イベント ----------
 els.note.addEventListener("input", queueSave);
+
+// 新規メモ。既存メモは残し、書き始めた時点で新しい ID を発行する。
+els.btnNew.addEventListener("click", async () => {
+  clearTimeout(timer);
+  activeNoteId = null;
+  els.note.value = "";
+  await chrome.storage.local.set({ [ACTIVE_KEY]: "__new__" });
+  flasher.idle(null);
+  els.note.focus();
+});
 
 els.btnCopy.addEventListener("click", async () => {
   const text = els.note.value;
