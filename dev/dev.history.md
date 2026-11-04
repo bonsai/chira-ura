@@ -2,6 +2,17 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-04 / v0.1.6-dev — クラウド化の設計（CF / wiki / MCP）
+
+- 指示: chira-ura をデスクトップ／モバイルから使う。保存は REST API でクラウドへ自動で。保存先は Cloudflare（FE API＋仮保存のみ）と GitHub bonsai/wiki/raw（正）。オフラインでも書き、復帰したらまとめて push。pi-coding からは MCP で使う。設計まで Muse、実装はローカル、デプロイは CF。
+- 変更: 統合設計書 `dev/cloud-design.md` を追加（設計のみ、実装は未着手）。
+  - 定義: インプットは4種類（PWA / crx / CLI / API）、DBの正はひとつ（bonsai/wiki）。形式はメモ JSON 1つ
+  - リズム: ローカル即保存 → 1分毎に CF キャッシュへ送信（タイムスタンプ名、新規ファイル）→ 書き終わったら 1時間毎に wiki/raw へ 1コミット
+  - CF の役割は FE API 提供と仮保存のみ（Workers + KV + Cron）。Keep は保存先にしない（API が無い、Takeout 取り込みのみ）
+  - 後半生: wiki で寝かせる → 読み込んで検討 → 思い出す → つなげる（weave / orochi 式 Issue 化）
+  - MCP: FE API と同じ Worker の `/mcp`。書く側はキャッシュ止まり、読む側は wiki 読み取り専用
+- 未決定: ファイル拡張子（.txt 推奨）、読み戻しの定期便、Worker 名
+
 ## 2026-10-22 / v0.1.5-dev — NEW は書くページだけ
 
 - 指示: popup に「＋」は不要。新規作成ボタンは「書く」ページだけに置く。
