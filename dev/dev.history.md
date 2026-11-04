@@ -2,6 +2,15 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-04 / v0.1.7-dev — 入口1は crx の HTML をローカル起動（オフラインメモ）
+
+- 指示: crx の HTML をローカルで起動してオフラインメモにする。
+- 変更: `dev/cloud-design.md` に §4.5 を追加（設計のみ）。入口1を「新規 PWA」から「既存 crx HTML の localhost 起動」に差し替え。
+  - 実コード調査: write/read ページの chrome.* 依存は chrome.storage.local（get/set/onChanged、キー notes / activeNoteId / autoSave）のみ。他は background 側
+  - ES module のため file:// では動かない → `chira serve`（127.0.0.1:8787）が crx/ を静的配信し、`http://127.0.0.1:8787/sidepanel/write.html` を開く
+  - storage shim（localStorage 裏の互換層）を1枚足せば拡張なし・オフラインで書ける。localStorage は下書き置き場で正ではない
+  - 未決定に追加: localStorage から先（SQLite / CF）の取り込み経路
+
 ## 2026-11-04 / v0.1.6-dev — クラウド化の設計（CF / wiki / MCP）
 
 - 指示: chira-ura をデスクトップ／モバイルから使う。保存は REST API でクラウドへ自動で。保存先は Cloudflare（FE API＋仮保存のみ）と GitHub bonsai/wiki/raw（正）。オフラインでも書き、復帰したらまとめて push。pi-coding からは MCP で使う。設計まで Muse、実装はローカル、デプロイは CF。

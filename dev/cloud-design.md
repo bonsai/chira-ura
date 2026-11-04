@@ -1,6 +1,6 @@
 # チラ裏エコシステム設計書 — クラウド化（CF / wiki / MCP）
 
-版: v0.1.6-dev 設計 / 日付: 2026-11-04
+版: v0.1.7-dev 設計 / 日付: 2026-11-04
 分担: **設計は Muse（この文書まで）。実装はローカル（pi-coding / CLI）。デプロイ先は Cloudflare。**
 この文書が正。チャット側の検討文書（定義・解説）はこの文書に統合済み。
 
@@ -15,7 +15,7 @@
 ## 2. 原則（5つ）
 
 1. **インプットは4種類、DBの正はひとつ**
-   入口: PWA / crx / CLI / API。正（最終的に正しいとみなす DB）は bonsai/wiki ただ1か所。他（CF キャッシュ、端末ローカル、SQLite）はすべて写し・下書き・中継で、消えても正から作り直せる。正本を二重化しない
+   入口: ローカルページ（crx HTML 兼用）/ crx / CLI / API。正（最終的に正しいとみなす DB）は bonsai/wiki ただ1か所。他（CF キャッシュ、端末ローカル、SQLite）はすべて写し・下書き・中継で、消えても正から作り直せる。正本を二重化しない
 2. **形式は1つ**: 全入口が同じメモ JSON `{id, title, content, updatedAt}` を使う。title は本文1行目から導出（`crx/scripts/model.js` 共用）
 3. **書く時は考えない**: 捕捉は ultra_minimal。分類・整理・連結を書く画面に持ち込まない。コピーは本文のみ
 4. **raw は生のまま寝かせる**: 正に入ったファイルは書き換えて整理しない。整理とは、正を読んで新しい連結（entries / ideas / リンク / Issue）を作ること
@@ -25,7 +25,7 @@
 
 | 要素 | 役割 | 実体 |
 |---|---|---|
-| PWA | 入口1: モバイル／PC で白紙に書き殴る | 単一 HTML + Service Worker（Workers から配信） |
+| ローカルページ | 入口1: PC で白紙に書き殴る（オフライン） | crx の sidepanel HTML をそのまま localhost で開く（§4.5）。別途 PWA は作らない |
 | crx | 入口2: ブラウザ作業中のメモ | 既存の Chrome 拡張サイドパネル |
 | CLI | 入口3: ターミナル／スクリプト | 既存の `chira`（SQLite は下書き置き場） |
 | API | 入口4: プログラム／エージェント | CF Workers の FE API |
@@ -47,6 +47,27 @@
 - 「閉じた」判定: 新規開始／ページを閉じた（sendBeacon）／10分無更新 のいずれか
 - 書き込みは 下書き → キャッシュ → 正 の一方通行。失敗時はキャッシュに残し翌時リトライ（同名上書きで冪等）
 - オフライン時: ローカルに積むだけ。復帰後に 1分送信が再開し、遅れて正へ届く
+
+## 4.5 ローカル起動（オフラインメモ）
+
+入口1の実体。新規に PWA を作らず、**既存の crx の HTML（`crx/sidepanel/write.html` / `read.html`）をローカルでそのまま開いて**オフラインメモとして使う。同じ HTML が「拡張のサイドパネル」と「ローカルページ」の2つの顔を持つ。
+
+実コード調査（2026-11-04、main 実物）で確認した前提:
+
+- 書く／読むページの `chrome.*` 依存は **`chrome.storage.local`（get / set / onChanged）だけ**。他 API は background 側のみ
+- 使うキーは `notes` / `activeNoteId` / `autoSave` の3つ。値の形式はメモ JSON そのまま（model.js の契約通り）
+- JS は相対 import の ES module。**`file://` では module の CORS で動かない** → 必ず `http://localhost` で開く（localhost は secure context なので clipboard も効く）
+
+必要な実装は2点だけ:
+
+1. **storage shim**（`crx/scripts/storage-shim.js`、module より前に読み込む通常スクリプト）: `chrome.storage` が無い環境では、同名キーで **localStorage を裏に持つ互換オブジェクト**を `window.chrome.storage.local` として差し込む。`onChanged` は同一ページ内の set では自前で発火、他タブとは `storage` イベントで同期。拡張環境では何もしない（実物が優先）
+2. **静的配信**: `chira serve`（既存、127.0.0.1:8787 — host_permissions 済み）が `crx/` を静的配信する。開く URL は `http://127.0.0.1:8787/sidepanel/write.html`
+
+この形の性質:
+
+- オフラインでも localhost と localStorage は動く → 捕捉は常時可能。**localStorage は下書き置き場（outbox）であり、正ではない**（原則1）
+- モバイルはこの形では賄わない。モバイル入口が要る段階で、同じ HTML + shim を CF から配信すればそのままブラウザで開ける（配信元が違うだけで中身は同一）。作るかどうかは未決定のまま残す
+- ローカルページの localStorage から先（SQLite 取り込み／CF 送信）の経路は §10 の未決定4
 
 ## 5. FE API（Cloudflare Workers）
 
@@ -71,7 +92,7 @@
   → つなげる（entries / ideas / concepts へ織る。形になれば orochi 式に Issue 化）
 ```
 
-- PWA / crx に読み戻し・整理機能は足さない（原則3）
+- ローカルページ / crx に読み戻し・整理機能は足さない（原則3）
 - トリガーは当面手動（チャットで呼ぶ）。定期便は未決定
 
 ## 7. MCP（pi-coding 連携）
@@ -94,7 +115,7 @@
 ## 9. 実装ステップ（ローカル側）
 
 1. Worker: FE API（§5）+ KV + Cron（時間毎 push）を実装し Cloudflare へデプロイ。secret 2点（API トークン、GitHub トークン）を投入
-2. PWA: 単一 HTML（白紙エディタ、ローカル保存、1分送信、closed 送信、Service Worker）を実装し Worker から配信
+2. ローカル起動: storage shim（§4.5）を実装し、`chira serve` に `crx/` の静的配信を足す。拡張なし・オフラインで write.html が書けることを確認する（入口1の完成はここまで）
 3. crx: 既存 sidepanel の保存に加え、1分送信を `/inbox` へ向ける（現行の localhost ブリッジ pull は置き換え）
 4. CLI: `chira sync`（ローカル DB の未送信分を `/inbox` へ送る）を追加
 5. MCP: `/mcp` と §7 のツールを実装し、pi-coding に登録して通し確認
@@ -104,3 +125,4 @@
 1. ファイル拡張子: `.txt`（推奨、本書の前提）/ `.md`
 2. 読み戻しの定期便を持つかどうか
 3. Worker 名・KV namespace 名（デプロイ時に確定し、repo には書かない運用でも可）
+4. ローカルページ（§4.5）の localStorage から先の経路: `chira serve` が POST で受けて SQLite へ入れる / export・import で寄せる / CF へ直接送る（§5 の送信をブラウザから行う）
