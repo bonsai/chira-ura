@@ -13,6 +13,34 @@
   - ADR-001 (`dev/adr-001-rs-vs-cs.md`) を Accepted に更新。
   - ルール更新: `README.md` と `SKILL.md` の編集対象に `rs/` を追加。
 
+## 2026-11-04 / v0.1.8-dev — CLI `chira sync`（SQLite の未送信分 → /inbox）
+
+- 指示: CLI `chira sync`（SQLite の未送信分 → /inbox）。設計: `dev/cloud-design.md` §9-4。
+  - `~/.chira/ura.db` の未送信メモをメモ JSON のまま `PUT /inbox/<name>` へ送る
+  - 送信済みの管理を meta 側に持つ（canonical export の形式を壊さない）
+  - オフライン時は静かに失敗し、次回実行で送る
+  - 受け入れ条件: CLI で追加したメモが `/inbox` に届く、再実行しても重複しない（同名上書きで冪等）
+- 変更:
+  - `cli/ura-db.js`: `getInboxSyncMeta(db)`, `markNoteSynced(db, id, syncedAt)`, `getUnsyncedNotes(db)` を追加。送信履歴は meta テーブル（キー `sync.inbox`）に記録し、canonical export / import のフォーマット・テーブル定義を壊さない。
+  - `cli/cli.js`: `syncInbox(db, options)` を実装。`process.env.CHIRA_API_URL` や `keys.json` の `cloud.url` / `cloud.token` / `CHIRA_TOKEN` を参照し、各メモを `PUT /inbox/<id>.txt` へメモ JSON として送信。オフラインや通信エラー時は静かにスキップ。`chira sync` コマンドで実行可能（`chira sync pull` で旧 localhost ブリッジ pull）。
+  - `test/sync.test.js`: `node --test` で /inbox への PUT 送信、meta 記録、canonical 整合性、冪等性、オフライン時の静かな失敗をテスト。
+
+## 2026-11-05 / v0.1.8-dev — crx 1分送信（sidepanel → /inbox、ブリッジ pull の置き換え）
+
+- 指示: crx 1分送信（sidepanel → /inbox、ブリッジ pull の置き換え）。設計: dev/cloud-design.md §4・§9-3。依存: FE API の issue。親: #5。
+- 変更:
+  - セッション開始時にファイル名を確定（タイムスタンプ `YYYYMMDD_HHMMSS.txt`、`crx/scripts/inbox.js` の `formatSessionName`）。
+  - 保存デバウンス（600ms）+ 1分毎チェック（`checkAndSyncInbox`）で、変更分を `PUT /inbox/<name>` へ全文化・同名上書きで送信。
+  - closed 送信トリガー:
+    1. NEW 押下時（`btnNew` で現セッションを `closed: true` 送信後、新セッション名発行）。
+    2. ページを閉じる時（`pagehide` イベントで `sendBeacon` または `keepalive: true` の PUT 送信）。
+    3. 10分無更新時（無操作タイマーで `closed: true` 送信）。
+  - オフライン時は `chrome.storage.local` の `inboxPending` に未送信分を保持し、オンライン復帰時（`online` イベント）や次回の1分チェックで再送。
+  - 送信先 URL とトークンは設定値（`chrome.storage.local` の `inboxUrl` / `inboxToken` または `keys.inbox`）として保持し、実値は repo に書かない。
+  - 現行の localhost ブリッジ pull（`background/service-worker.js`）との関係:
+    - 決定: クラウド化方針（`dev/cloud-design.md` §9-3）に基づき、メモ送信は `/inbox` への push を正とする。常時 5分 alarm による localhost ブリッジ pull はデフォルト無効化（置き換え）。
+    - 既存環境との後方互換性のため、`keys.bridgeEnabled` または `bridgeEnabled` 設定が明示的に `true` の場合のみ localhost ブリッジ pull を実行する併用オプトイン形式とする。
+
 ## 2026-11-05 / v0.1.8-dev — Cloudflare Worker FE API（/inbox・KV キャッシュ・トークン認証）
 
 - 指示: Cloudflare Worker FE API（/inbox・KV キャッシュ・トークン認証）。親: #5。
