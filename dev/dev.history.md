@@ -2,6 +2,15 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-05 / v0.1.8-dev — Cron 時間毎バッチ（closed → bonsai/wiki raw へ 1コミット）
+
+- 指示: Cron Triggers（毎時）で KV の closed ファイル全件を対象にし、GitHub API で bonsai/wiki（private / master）の raw/<MM>/ へ 1コミット で push。成功分だけ KV から削除し、失敗分は残し翌時リトライ。GitHub トークンは Worker の secret（GITHUB_TOKEN）にのみ置く。
+- 変更: `worker/` 配下に Cloudflare Worker バッチ処理を実装。
+  - `worker/wrangler.json`: cron `0 * * * *`、KV `INBOX`
+  - `worker/src/wiki-push.js`: Git Database API による 1 コミット作成・push ロジック（Tree / Commit / Ref PATCH）、月別ディレクトリ振り分け（`raw/<MM>/<filename>`）、成功時のみ KV 削除、失敗時 KV 残留によるリトライ性担保
+  - `worker/src/index.js`: `scheduled` ハンドラー、FE API ルーティング（PUT/GET /inbox, GET /count, POST /cron/flush）
+  - `worker/test/batch.test.js`: closed のみ対象・1コミット push・KV 削除・失敗時残留の単体テスト
+
 ## 2026-11-04 / v0.1.7-dev — 入口1は crx の HTML をローカル起動（オフラインメモ）
 
 - 指示: crx の HTML をローカルで起動してオフラインメモにする。
