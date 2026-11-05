@@ -80,6 +80,14 @@
 | GET | `/count` | 件数と最終受信（死活確認用） |
 | Cron | 毎時 | closed 全件 → GitHub API で bonsai/wiki へ 1コミット → 成功分を KV から削除 |
 
+- Worker コード配置: `worker/`（`worker/src/index.js`, `worker/wrangler.json`, `worker/package.json`）
+- トークン設定手順（実値は repo に含めない）:
+  ```bash
+  # Worker ディレクトリでシークレットを登録
+  cd worker
+  npx wrangler secret put CHIRA_TOKEN
+  # プロンプトでトークン値を入力
+  ```
 - GitHub トークンは Worker の secret にのみ置く（fine-grained、対象は bonsai/wiki のみ）
 - KV の TTL は 7日目安。正は wiki とローカルなので、キャッシュが消えても復旧可能
 

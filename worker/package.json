@@ -1,0 +1,10 @@
+{
+  "name": "chira-ura-worker",
+  "version": "0.1.8",
+  "description": "Cloudflare Worker FE API for chira-ura",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/"
+  }
+}
