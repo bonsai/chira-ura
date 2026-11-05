@@ -2,6 +2,18 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-04 / v0.1.8-dev — CLI `chira sync`（SQLite の未送信分 → /inbox）
+
+- 指示: CLI `chira sync`（SQLite の未送信分 → /inbox）。設計: `dev/cloud-design.md` §9-4。
+  - `~/.chira/ura.db` の未送信メモをメモ JSON のまま `PUT /inbox/<name>` へ送る
+  - 送信済みの管理を meta 側に持つ（canonical export の形式を壊さない）
+  - オフライン時は静かに失敗し、次回実行で送る
+  - 受け入れ条件: CLI で追加したメモが `/inbox` に届く、再実行しても重複しない（同名上書きで冪等）
+- 変更:
+  - `cli/ura-db.js`: `getInboxSyncMeta(db)`, `markNoteSynced(db, id, syncedAt)`, `getUnsyncedNotes(db)` を追加。送信履歴は meta テーブル（キー `sync.inbox`）に記録し、canonical export / import のフォーマット・テーブル定義を壊さない。
+  - `cli/cli.js`: `syncInbox(db, options)` を実装。`process.env.CHIRA_API_URL` や `keys.json` の `cloud.url` / `cloud.token` / `CHIRA_TOKEN` を参照し、各メモを `PUT /inbox/<id>.txt` へメモ JSON として送信。オフラインや通信エラー時は静かにスキップ。`chira sync` コマンドで実行可能（`chira sync pull` で旧 localhost ブリッジ pull）。
+  - `test/sync.test.js`: `node --test` で /inbox への PUT 送信、meta 記録、canonical 整合性、冪等性、オフライン時の静かな失敗をテスト。
+
 ## 2026-11-05 / v0.1.8-dev — crx 1分送信（sidepanel → /inbox、ブリッジ pull の置き換え）
 
 - 指示: crx 1分送信（sidepanel → /inbox、ブリッジ pull の置き換え）。設計: dev/cloud-design.md §4・§9-3。依存: FE API の issue。親: #5。
