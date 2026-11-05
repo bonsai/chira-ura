@@ -4,3 +4,6 @@ dist/
 *.zip
 keys.json
 dev/plantuml.jar
+target/
+**/target/
+Cargo.lock
