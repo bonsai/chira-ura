@@ -23,8 +23,6 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "chira-ura",
         options,
-        Box::new(move |cc| {
-            Ok(Box::new(app::ChiraApp::new(cc, start_instant, bench_mode)))
-        }),
+        Box::new(move |cc| Ok(Box::new(app::ChiraApp::new(cc, start_instant, bench_mode)))),
     )
 }

@@ -96,7 +96,8 @@ mod tests {
     use std::thread;
 
     fn temp_test_dir(name: &str) -> PathBuf {
-        let path = std::env::temp_dir().join(format!("chira_test_sync_{}_{}", name, uuid::Uuid::new_v4()));
+        let path =
+            std::env::temp_dir().join(format!("chira_test_sync_{}_{}", name, uuid::Uuid::new_v4()));
         let _ = fs::create_dir_all(&path);
         path
     }
@@ -150,7 +151,10 @@ mod tests {
         let note = Note::new("同期テストメモ");
         outbox.save_note(&note).unwrap();
 
-        let client = SyncClient::new(format!("http://127.0.0.1:{}", port), Some("test-token".to_string()));
+        let client = SyncClient::new(
+            format!("http://127.0.0.1:{}", port),
+            Some("test-token".to_string()),
+        );
         let res = client.sync_outbox(&outbox);
         assert_eq!(res, SyncResult::Synced(1));
 
