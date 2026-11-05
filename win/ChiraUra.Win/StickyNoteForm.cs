@@ -122,6 +122,8 @@ public class StickyNoteForm : Form
         _textBox = new TextBox
         {
             Multiline = true,
+            AcceptsReturn = true,
+            MaxLength = int.MaxValue,
             Dock = DockStyle.Fill,
             BorderStyle = BorderStyle.None,
             BackColor = Color.FromArgb(254, 252, 232),
@@ -173,11 +175,14 @@ public class StickyNoteForm : Form
             // Local save is synchronous and guaranteed
             _repository.UpsertNote(_currentNote);
 
-            // Trigger non-blocking cloud send or fast send
+            // Trigger non-blocking cloud send or fast send off the UI synchronization context
             try
             {
-                using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
-                _syncService.SaveAndSyncAsync(_currentNote, closed: true, cts.Token).GetAwaiter().GetResult();
+                Task.Run(async () =>
+                {
+                    using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
+                    await _syncService.SaveAndSyncAsync(_currentNote, closed: true, cts.Token).ConfigureAwait(false);
+                }).Wait(TimeSpan.FromMilliseconds(500));
             }
             catch
             {

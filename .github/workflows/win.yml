@@ -1,0 +1,31 @@
+name: Windows Client (win)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "win/**"
+      - ".github/workflows/win.yml"
+  pull_request:
+    paths:
+      - "win/**"
+      - ".github/workflows/win.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+
+      - name: Restore dependencies
+        run: dotnet restore win/ChiraUra.sln
+
+      - name: Build
+        run: dotnet build win/ChiraUra.sln --no-restore
+
+      - name: Test
+        run: dotnet test win/ChiraUra.sln --no-build --verbosity normal

@@ -35,7 +35,6 @@ public class ChiraApiClient
 
     public async Task<bool> SendInboxAsync(string name, Note note, bool closed = false, CancellationToken ct = default)
     {
-        var requestUrl = $"{_baseUrl}/inbox/{Uri.EscapeDataString(name)}";
         var payload = new InboxPayload
         {
             Title = note.Title,
@@ -43,7 +42,12 @@ public class ChiraApiClient
             UpdatedAt = note.UpdatedAt,
             Closed = closed
         };
+        return await SendInboxPayloadAsync(name, payload, ct).ConfigureAwait(false);
+    }
 
+    public async Task<bool> SendInboxPayloadAsync(string name, InboxPayload payload, CancellationToken ct = default)
+    {
+        var requestUrl = $"{_baseUrl}/inbox/{Uri.EscapeDataString(name)}";
         var json = JsonSerializer.Serialize(payload);
         using var request = new HttpRequestMessage(HttpMethod.Put, requestUrl)
         {
@@ -58,7 +62,7 @@ public class ChiraApiClient
 
         try
         {
-            var response = await _httpClient.SendAsync(request, ct);
+            var response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
         catch

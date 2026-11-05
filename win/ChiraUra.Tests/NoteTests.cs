@@ -137,12 +137,27 @@ public class SyncServiceTests : IDisposable
         using var doc = JsonDocument.Parse(capturedBody!);
         Assert.Equal("Hello World", doc.RootElement.GetProperty("title").GetString());
         Assert.True(doc.RootElement.GetProperty("closed").GetBoolean());
+
+        var pending = _repository.GetPendingOutbox();
+        Assert.Empty(pending);
     }
 
     [Fact]
-    public async Task SyncService_FallsBackToLocal_WhenApiFails()
+    public async Task SyncService_FallsBackToOutbox_WhenApiFails_AndFlushesWhenBackOnline()
     {
-        var handler = new MockHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.InternalServerError));
+        var shouldSucceed = false;
+        var handler = new MockHttpMessageHandler(_ =>
+        {
+            if (shouldSucceed)
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("{\"ok\":true}")
+                };
+            }
+            return new HttpResponseMessage(HttpStatusCode.InternalServerError);
+        });
+
         var httpClient = new HttpClient(handler);
         var apiClient = new ChiraApiClient(httpClient, "http://api.local:8787", "token");
         var sync = new SyncService(_repository, apiClient);
@@ -151,8 +166,19 @@ public class SyncServiceTests : IDisposable
         var success = await sync.SaveAndSyncAsync(note, closed: false);
 
         Assert.False(success);
-        // Note is still saved in SQLite
+        // Note is saved in SQLite
         Assert.NotNull(_repository.GetNote(note.Id));
+
+        // Enqueued in outbox
+        var pending = _repository.GetPendingOutbox();
+        Assert.Single(pending);
+        Assert.Equal(note.Id, pending[0].NoteId);
+
+        // When connection is restored, flushing outbox succeeds and empties queue
+        shouldSucceed = true;
+        var flushed = await sync.FlushOutboxAsync();
+        Assert.Equal(1, flushed);
+        Assert.Empty(_repository.GetPendingOutbox());
     }
 
     public void Dispose()
