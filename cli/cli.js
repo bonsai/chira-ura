@@ -5,12 +5,12 @@
 // 同期の意味はひとつ: 「GDrive が正」。CLI は GDrive を映したミラーを配り、
 // 拡張はそれを pull するだけ。拡張側の値を正にしない。
 
-import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync, existsSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { createHash, randomBytes } from "node:crypto";
 import { execFile } from "node:child_process";
 import { homedir } from "node:os";
-import { join, dirname, resolve } from "node:path";
+import { join, dirname, resolve, extname } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   DB_PATH, openDb, listNotes, getNote, addNote, removeNote,
@@ -21,9 +21,24 @@ import {
 const KEYS_PATH = process.env.CHIRA_KEYS
   || join(homedir(), ".config", "chira-ura", "keys.json");
 
-const MANIFEST = resolve(dirname(fileURLToPath(import.meta.url)), "..", "crx", "manifest.json");
+const CRX_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "..", "crx");
+const MANIFEST = resolve(CRX_DIR, "manifest.json");
 const BOXES = ["local", "gdrive", "gh", "box"];
 const PORT = Number(process.env.CHIRA_PORT || 8787);
+
+const MIME_TYPES = {
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".mjs": "text/javascript; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".ico": "image/x-icon",
+  ".txt": "text/plain; charset=utf-8"
+};
 
 // ---------- OAuth（CLI も同じクライアントを使う） ----------
 const TOKEN_PATH = join(dirname(KEYS_PATH), "token.json");
@@ -275,35 +290,82 @@ async function push() {
 
 function serve(port) {
   const server = createServer((req, res) => {
-    const send = (code, obj) => {
+    const sendJson = (code, obj) => {
       res.writeHead(code, { "content-type": "application/json; charset=utf-8" });
       res.end(JSON.stringify(obj));
     };
 
-    if (req.url?.startsWith("/state") && req.method === "GET") {
-      return send(200, toState());
+    const parsedUrl = new URL(req.url, `http://${req.headers.host || "127.0.0.1"}`);
+    const pathname = parsedUrl.pathname;
+
+    if (pathname === "/state" || pathname.startsWith("/state/")) {
+      if (req.method === "GET") {
+        return sendJson(200, toState());
+      }
+      if (req.method === "PUT" || req.method === "POST") {
+        let raw = "";
+        req.on("data", (c) => { raw += c; });
+        req.on("end", () => {
+          try {
+            const state = JSON.parse(raw || "{}");
+            const next = fromState({ ...state, rev: Number(toState().rev) + 1 });
+            sendJson(200, { ok: true, rev: next.rev });
+          } catch (e) {
+            sendJson(400, { ok: false, error: String(e.message || e) });
+          }
+        });
+        return;
+      }
+      return sendJson(405, { ok: false, error: "method not allowed" });
     }
 
-    if (req.url?.startsWith("/state") && (req.method === "PUT" || req.method === "POST")) {
-      let raw = "";
-      req.on("data", (c) => { raw += c; });
-      req.on("end", () => {
+    // 静的配信（crx 配下のファイル）
+    if (req.method === "GET" || req.method === "HEAD") {
+      let rawPath = req.url.split("?")[0];
+      if (rawPath.endsWith("/")) rawPath += "index.html";
+      let decodedPath;
+      try {
+        decodedPath = decodeURIComponent(rawPath);
+      } catch (_) {
+        res.writeHead(400, { "content-type": "text/plain; charset=utf-8" });
+        return res.end("Bad Request");
+      }
+      const filePath = resolve(CRX_DIR, "." + (decodedPath.startsWith("/") ? decodedPath : "/" + decodedPath));
+
+      // パストラバーサル防止（CRX_DIR 配下であること）
+      const allowedPrefix = CRX_DIR + "/";
+      if (filePath !== CRX_DIR && !filePath.startsWith(allowedPrefix)) {
+        res.writeHead(403, { "content-type": "text/plain; charset=utf-8" });
+        return res.end("Forbidden");
+      }
+
+      if (existsSync(filePath)) {
         try {
-          const state = JSON.parse(raw || "{}");
-          const next = fromState({ ...state, rev: Number(toState().rev) + 1 });
-          send(200, { ok: true, rev: next.rev });
-        } catch (e) {
-          send(400, { ok: false, error: String(e.message || e) });
+          const stat = statSync(filePath);
+          if (stat.isFile()) {
+            const ext = extname(filePath).toLowerCase();
+            const contentType = MIME_TYPES[ext] || "application/octet-stream";
+            res.writeHead(200, {
+              "content-type": contentType,
+              "content-length": stat.size
+            });
+            if (req.method === "HEAD") return res.end();
+            return res.end(readFileSync(filePath));
+          }
+        } catch (_) {
+          // エラー時は 500 へフォールスルー
+          res.writeHead(500, { "content-type": "text/plain; charset=utf-8" });
+          return res.end("Internal Server Error");
         }
-      });
-      return;
+      }
     }
 
-    send(404, { ok: false });
+    sendJson(404, { ok: false, error: "Not Found" });
   });
 
   server.listen(port, "127.0.0.1", () => {
     console.log(`bridge: http://127.0.0.1:${port}/state  (GDrive が正)`);
+    console.log(`static: http://127.0.0.1:${port}/sidepanel/write.html`);
     console.log(`keys: ${KEYS_PATH}`);
   });
   return server;
