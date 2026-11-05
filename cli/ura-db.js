@@ -108,6 +108,27 @@ export function metaRows(db) {
   return db.prepare("SELECT key, value FROM meta ORDER BY key").all();
 }
 
+// ---------- /inbox 送信管理（meta 側に持ち canonical を壊さない） ----------
+export function getInboxSyncMeta(db) {
+  const val = getMeta(db, "sync.inbox", {});
+  return val && typeof val === "object" ? val : {};
+}
+
+export function markNoteSynced(db, id, syncedAt = Date.now()) {
+  const cur = getInboxSyncMeta(db);
+  cur[id] = syncedAt;
+  setMeta(db, "sync.inbox", cur);
+}
+
+export function getUnsyncedNotes(db) {
+  const syncMeta = getInboxSyncMeta(db);
+  const notes = listNotes(db);
+  return notes.filter((n) => {
+    const lastSynced = Number(syncMeta[n.id] || 0);
+    return n.updatedAt > lastSynced;
+  });
+}
+
 // ---------- 拡張と同じ JSON の出し入れ ----------
 /** notes → JSONL（箱のファイル形式） */
 export function exportJsonl(db) {

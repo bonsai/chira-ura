@@ -4,7 +4,7 @@
 
 旧名 `kami copi`（`kamicopi.net` と衝突するため改名）。
 
-構成: `crx/`（拡張）/ `cli/`（設定・同期クライアント）/ `dev/`（履歴・UI/UX 仕様）。
+構成: `crx/`（拡張）/ `cli/`（設定・同期クライアント）/ `rs/`（Rust GUI クライアント）/ `dev/`（履歴・UI/UX 仕様）。
 
 ## スタック
 
@@ -31,7 +31,10 @@ chira set auth.gh.clientId <id>                   # GitHub OAuth
 chira box gdrive                                  # 既定の箱
 chira path                                        # 鍵ファイル（平文 JSON・非秘密のみ）
 chira serve                                       # ブリッジ（拡張が 5 分毎に pull）
-chira pull | push | sync                          # 同期の意味は「GDrive が正」
+chira pull | push                                 # ブリッジ同期（GDrive が正）
+chira sync                                        # 未送信メモ（SQLite）を /inbox へ送る
+chira set cloud.url https://<worker>.workers.dev  # 送信先 FE API
+chira set cloud.token <token>                     # API トークン
 ```
 
 メモ（拡張と同じ JSON。SQLite は `~/.chira/ura.db`）:
@@ -58,7 +61,7 @@ chira db export <dir> | chira db import <dir>     # canonical（sync-db と同�
 
 ## エージェント
 
-- 編集は `crx/` と `cli/` のみ。Chrome の読込先ディレクトリ（`CHIRA_LOAD_DIR`）はキャッシュなので直接編集しない。
+- 編集は `crx/`, `cli/`, `rs/` のみ。Chrome の読込先ディレクトリ（`CHIRA_LOAD_DIR`）はキャッシュなので直接編集しない。
 - 反映は `bash cli/sync.sh` → 拡張の再読み込み。
 - version は変更単位で細かく上げる（`version_name` に `-dev`）。変更は `dev/dev.history.md` に追記。
 - 権限追加・設定 UI の復活は禁止。認証は OAuth のみ（トークンを平文に置かない）。
