@@ -2,6 +2,17 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-05 / v0.1.8-dev — Rust GUI クライアント（egui）— 爆速メモ（付箋）
+
+- 指示: Rust の GUI クライアント。ADR-001 の第一候補（Rust）を実装する。#12 (C#/.NET) の対案。
+- 変更:
+  - `rs/` を追加し、Rust + egui (`eframe` 0.29) による爆速付箋メモ GUI クライアントを実装。
+  - 1画面付箋 UI: 起動即フォーカス、テキスト入力即ローカル outbox (`~/.chira/outbox/<id>.json`) 保存。
+  - 送信: outbox → FE API (`PUT /inbox/<id>.txt`) 送信（Bearer 認証、設定/環境変数から読み出し）。オフライン時も outbox に残り、次回起動/手動で再送。
+  - 計測: コールドスタート→入力可能時間の実測値 ~122ms (< 300ms 達成) を `dev/benchmarks.md` に記録。
+  - ADR-001 (`dev/adr-001-rs-vs-cs.md`) を Accepted に更新。
+  - ルール更新: `README.md` と `SKILL.md` の編集対象に `rs/` を追加。
+
 ## 2026-11-04 / v0.1.7-dev — 入口1は crx の HTML をローカル起動（オフラインメモ）
 
 - 指示: crx の HTML をローカルで起動してオフラインメモにする。
