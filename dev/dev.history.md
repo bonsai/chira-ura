@@ -18,6 +18,27 @@
     - 決定: クラウド化方針（`dev/cloud-design.md` §9-3）に基づき、メモ送信は `/inbox` への push を正とする。常時 5分 alarm による localhost ブリッジ pull はデフォルト無効化（置き換え）。
     - 既存環境との後方互換性のため、`keys.bridgeEnabled` または `bridgeEnabled` 設定が明示的に `true` の場合のみ localhost ブリッジ pull を実行する併用オプトイン形式とする。
 
+## 2026-11-05 / v0.1.8-dev — Cloudflare Worker FE API（/inbox・KV キャッシュ・トークン認証）
+
+- 指示: Cloudflare Worker FE API（/inbox・KV キャッシュ・トークン認証）。親: #5。
+- 変更: `worker/` 配下に Cloudflare Worker プロジェクトを追加（`worker/src/index.js`, `worker/wrangler.json`, `worker/package.json`）。
+  - エンドポイント:
+    - `PUT /inbox/<name>`: body の content + updatedAt + closed を KV に保存（同名上書き・TTL 7日）。title は content 1行目から導出
+    - `GET /inbox`: キャッシュ一覧（name, title, updatedAt, closed）
+    - `GET /count`: 件数（count）と最終受信時刻（lastReceivedAt、死活確認用）
+  - 認証: `Authorization: Bearer <token>` または `X-Chira-Token: <token>`。未指定・不正時は 401 Unauthorized
+  - 秘密情報: 実値は repo に含めず `wrangler secret put CHIRA_TOKEN` で投入
+  - テスト: `node --test`（`worker/test/worker.test.js`）で認証・KV 操作・タイトル抽出を検証
+
+## 2026-11-04 / v0.1.8-dev — storage shim + chira serve 静的配信（crx HTML のローカル起動・オフラインメモ）
+
+- 指示: storage shim + `chira serve` 静的配信（crx HTML のローカル起動・オフラインメモ）。dev/cloud-design.md §4.5 入口1の実装。
+- 変更:
+  - `crx/scripts/storage-shim.js` を追加: chrome.storage が無い環境でのみ、window.chrome.storage.local 互換を localStorage 裏で提供（対象キー: notes / activeNoteId / autoSave）。同一ページ内の set で自前発火、他タブとは window.storage イベントで同期。拡張環境では実物が優先され shim は無効。
+  - `crx/sidepanel/write.html` および `read.html` に `<script src="../scripts/storage-shim.js"></script>` を追加（module より前）。
+  - `cli/cli.js`: `chira serve` に `crx/` ディレクトリ配下の静的ファイル配信機能を追加（MIMEタイプ判定、パストラバーサル防止）。`http://127.0.0.1:8787/sidepanel/write.html` でブラウザから開けるようにした。
+  - `test/storage-shim.test.js` および `test/serve.test.js` を追加し、Node.js 組み込みテスト（node --test）および実ブラウザでの保存・リロードを検証。
+
 ## 2026-11-04 / v0.1.7-dev — 入口1は crx の HTML をローカル起動（オフラインメモ）
 
 - 指示: crx の HTML をローカルで起動してオフラインメモにする。
