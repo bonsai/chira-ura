@@ -2,6 +2,15 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-04 / v0.1.8-dev — storage shim + chira serve 静的配信（crx HTML のローカル起動・オフラインメモ）
+
+- 指示: storage shim + `chira serve` 静的配信（crx HTML のローカル起動・オフラインメモ）。dev/cloud-design.md §4.5 入口1の実装。
+- 変更:
+  - `crx/scripts/storage-shim.js` を追加: chrome.storage が無い環境でのみ、window.chrome.storage.local 互換を localStorage 裏で提供（対象キー: notes / activeNoteId / autoSave）。同一ページ内の set で自前発火、他タブとは window.storage イベントで同期。拡張環境では実物が優先され shim は無効。
+  - `crx/sidepanel/write.html` および `read.html` に `<script src="../scripts/storage-shim.js"></script>` を追加（module より前）。
+  - `cli/cli.js`: `chira serve` に `crx/` ディレクトリ配下の静的ファイル配信機能を追加（MIMEタイプ判定、パストラバーサル防止）。`http://127.0.0.1:8787/sidepanel/write.html` でブラウザから開けるようにした。
+  - `test/storage-shim.test.js` および `test/serve.test.js` を追加し、Node.js 組み込みテスト（node --test）および実ブラウザでの保存・リロードを検証。
+
 ## 2026-11-04 / v0.1.7-dev — 入口1は crx の HTML をローカル起動（オフラインメモ）
 
 - 指示: crx の HTML をローカルで起動してオフラインメモにする。
