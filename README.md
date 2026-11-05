@@ -31,7 +31,10 @@ chira set auth.gh.clientId <id>                   # GitHub OAuth
 chira box gdrive                                  # 既定の箱
 chira path                                        # 鍵ファイル（平文 JSON・非秘密のみ）
 chira serve                                       # ブリッジ（拡張が 5 分毎に pull）
-chira pull | push | sync                          # 同期の意味は「GDrive が正」
+chira pull | push                                 # ブリッジ同期（GDrive が正）
+chira sync                                        # 未送信メモ（SQLite）を /inbox へ送る
+chira set cloud.url https://<worker>.workers.dev  # 送信先 FE API
+chira set cloud.token <token>                     # API トークン
 ```
 
 メモ（拡張と同じ JSON。SQLite は `~/.chira/ura.db`）:

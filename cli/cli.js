@@ -15,7 +15,8 @@ import { fileURLToPath } from "node:url";
 import {
   DB_PATH, openDb, listNotes, getNote, addNote, removeNote,
   getMeta, setMeta, exportJsonl, importJsonl,
-  exportStorage, importStorage, exportCanonical, importCanonical
+  exportStorage, importStorage, exportCanonical, importCanonical,
+  getUnsyncedNotes, markNoteSynced
 } from "./ura-db.js";
 
 const KEYS_PATH = process.env.CHIRA_KEYS
@@ -160,7 +161,8 @@ function usage() {
   chira serve [--port N]      ブリッジを立てる（拡張が pull する）
   chira pull                  ブリッジから keys.json へ（= sync）
   chira push                  keys.json をブリッジへ（GDrive ミラーとして）
-  chira sync                  意味は「GDrive が正」= pull と同じ
+  chira sync                  未送信メモ（SQLite）を /inbox へ送る
+  chira sync pull             ブリッジから keys.json へ（旧 chira pull）
 
   メモ（拡張と同じ JSON。SQLite は ~/.chira/ura.db）
   chira db path | init        DB の場所 / 作る
@@ -309,9 +311,61 @@ function serve(port) {
   return server;
 }
 
+// ---------- /inbox 同期（Cloudflare FE API） ----------
+export async function syncInbox(db, options = {}) {
+  const keys = read();
+  const rawUrl = options.apiUrl || process.env.CHIRA_API_URL || keys.cloud?.url;
+  const token = options.token || process.env.CHIRA_TOKEN || keys.cloud?.token;
+
+  if (!rawUrl) {
+    if (options.verbose) console.warn("cloud.url 未設定（オフライン扱い・スキップ）");
+    return { ok: false, sent: 0, reason: "no_url" };
+  }
+
+  const baseUrl = rawUrl.replace(/\/+$/, "");
+  const unsynced = getUnsyncedNotes(db);
+  if (!unsynced.length) {
+    return { ok: true, sent: 0 };
+  }
+
+  let sent = 0;
+  for (const note of unsynced) {
+    const filename = `${note.id}.txt`;
+    const targetUrl = `${baseUrl}/inbox/${encodeURIComponent(filename)}`;
+    const headers = { "content-type": "application/json" };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+      headers["X-Chira-Token"] = token;
+    }
+    const body = JSON.stringify(note);
+
+    try {
+      const res = await fetch(targetUrl, {
+        method: "PUT",
+        headers,
+        body
+      });
+      if (!res.ok) {
+        // オフラインや HTTP エラー時は静かに失敗し次回実行で送る
+        if (options.verbose) console.warn(`PUT /inbox/${filename} 失敗 (${res.status})`);
+        return { ok: false, sent, reason: `http_${res.status}` };
+      }
+      markNoteSynced(db, note.id, note.updatedAt);
+      sent++;
+    } catch (e) {
+      // ネットワーク切断・DNS 解決失敗等のオフライン時は静かに失敗
+      if (options.verbose) console.warn(`オフラインまたは通信失敗: ${e.message}`);
+      return { ok: false, sent, reason: "network_error" };
+    }
+  }
+
+  return { ok: true, sent };
+}
+
 // ---------- コマンド ----------
 const [cmd, ...rest] = process.argv.slice(2);
 
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
 switch (cmd) {
   case "set": {
     const [key, ...val] = rest;
@@ -380,9 +434,29 @@ switch (cmd) {
     break;
   }
   case "pull":
-  case "sync":
     pull().catch((e) => { console.error(e.message); process.exit(1); });
     break;
+  case "sync": {
+    const sub = rest[0];
+    if (sub === "pull") {
+      pull().catch((e) => { console.error(e.message); process.exit(1); });
+      break;
+    }
+    const { db } = openDb();
+    syncInbox(db, { verbose: rest.includes("-v") || rest.includes("--verbose") })
+      .then((r) => {
+        if (r.sent > 0) {
+          console.log(`synced: ${r.sent} notes -> /inbox`);
+        }
+      })
+      .catch(() => {
+        // オフライン時は静かに終了
+      })
+      .finally(() => {
+        db.close();
+      });
+    break;
+  }
   case "push":
     push().catch((e) => { console.error(e.message); process.exit(1); });
     break;
@@ -501,4 +575,5 @@ switch (cmd) {
   default:
     usage();
     if (cmd) process.exit(1);
+}
 }
