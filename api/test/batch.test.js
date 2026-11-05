@@ -205,5 +205,5 @@ test("Worker HTTP fetch router and scheduled handler", async () => {
   assert.equal(getCountRes.status, 200);
   const countData = await getCountRes.json();
   assert.equal(countData.count, 1);
-  assert.equal(countData.lastReceived, new Date(1730800000000).toISOString());
+  assert.equal(countData.lastReceivedAt, new Date(1730800000000).toISOString());
 });

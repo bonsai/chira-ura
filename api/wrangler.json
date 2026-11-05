@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "chira-ura-worker",
+  "name": "chira-ura-api",
   "main": "src/index.js",
   "compatibility_date": "2024-11-01",
   "compatibility_flags": [

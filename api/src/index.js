@@ -1,11 +1,12 @@
 /**
- * Cloudflare Worker: chira-ura FE API + Cron Hourly Batch
+ * Cloudflare Worker: chira-ura FE API + Cron Hourly Batch + MCP
  *
  * Endpoints:
  * - PUT /inbox/<name>: writes memo { content, updatedAt, closed } into KV (INBOX)
- * - GET /inbox: list cache items (name, title, updatedAt, closed)
- * - GET /count: memo count and last received info
- * - POST /cron/flush: manually trigger flush of closed files to bonsai/wiki (admin/debug)
+ * - GET /inbox: list cache items -> { items, count } (sorted by updatedAt desc)
+ * - GET /count: { count, lastReceivedAt } (ISO string, liveness check)
+ * - POST /mcp: Streamable HTTP MCP endpoint
+ * - POST /cron/flush: manually trigger flush of closed files to bonsai/wiki
  *
  * Scheduled event:
  * - 0 * * * * (hourly): triggers flushClosedFiles(env)
@@ -15,26 +16,24 @@ import { flushClosedFiles, listAllKeys } from "./wiki-push.js";
 import { handleMcpRequest } from "./mcp.js";
 
 /**
- * Checks bearer token / X-Chira-Token if API_TOKEN is set in env.
+ * Checks bearer token / X-Chira-Token against API_TOKEN (or legacy CHIRA_TOKEN).
+ * If neither token is configured, allow (dev / unconfigured mode).
  */
 function isAuthorized(request, env) {
-  if (!env.API_TOKEN) {
-    // If not set, allow for dev / unconfigured mode
+  const token = env.API_TOKEN || env.CHIRA_TOKEN;
+  if (!token) {
     return true;
   }
   const authHeader = request.headers.get("Authorization") || "";
   const chiraHeader = request.headers.get("X-Chira-Token") || "";
 
-  if (chiraHeader && chiraHeader === env.API_TOKEN) {
-    return true;
-  }
+  let tokenProvided = null;
   if (authHeader.startsWith("Bearer ")) {
-    const token = authHeader.slice(7).trim();
-    if (token === env.API_TOKEN) {
-      return true;
-    }
+    tokenProvided = authHeader.slice(7).trim();
+  } else {
+    tokenProvided = chiraHeader.trim();
   }
-  return false;
+  return Boolean(tokenProvided && tokenProvided === token);
 }
 
 function jsonResponse(data, status = 200) {
@@ -47,6 +46,34 @@ function jsonResponse(data, status = 200) {
       "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Chira-Token"
     }
   });
+}
+
+/**
+ * Helper: extract first non-empty line up to 30 chars for a title.
+ */
+export function deriveTitle(content) {
+  const line = (content || "").split("\n").map((s) => s.trim()).find(Boolean) || "";
+  return line.slice(0, 30) || "無題";
+}
+
+/**
+ * Helper: authenticate using Bearer or X-Chira-Token against CHIRA_TOKEN env.
+ */
+export function authenticate(request, env) {
+  const secret = env?.CHIRA_TOKEN;
+  if (!secret) {
+    return false;
+  }
+
+  const authHeader = request.headers.get("Authorization") || "";
+  let token = null;
+  if (authHeader.startsWith("Bearer ")) {
+    token = authHeader.slice(7).trim();
+  } else {
+    token = request.headers.get("X-Chira-Token")?.trim();
+  }
+
+  return Boolean(token && token === secret);
 }
 
 export default {
@@ -131,7 +158,13 @@ export default {
       const expirationTtl = env.KV_TTL ? parseInt(env.KV_TTL, 10) : 7 * 86400;
 
       await kv.put(name, JSON.stringify(record), { expirationTtl });
-      return jsonResponse({ ok: true, name, updatedAt, closed });
+      return jsonResponse({
+        ok: true,
+        name,
+        title: deriveTitle(content),
+        updatedAt,
+        closed
+      });
     }
 
     // GET /inbox
@@ -154,27 +187,27 @@ export default {
           items.push({ name: entry.name, title: "無題", updatedAt: null, closed: false });
         }
       }
+      items.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
       return jsonResponse({ items, count: items.length });
     }
 
     // GET /count
     if (request.method === "GET" && pathname === "/count") {
       const keys = await listAllKeys(kv);
-      let lastReceived = null;
+      let lastReceivedAt = 0;
       for (const entry of keys) {
         const raw = await kv.get(entry.name);
-        if (raw) {
-          try {
-            const parsed = JSON.parse(raw);
-            if (parsed.updatedAt && (!lastReceived || parsed.updatedAt > lastReceived)) {
-              lastReceived = parsed.updatedAt;
-            }
-          } catch {}
-        }
+        if (!raw) continue;
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed.updatedAt && parsed.updatedAt > lastReceivedAt) {
+            lastReceivedAt = parsed.updatedAt;
+          }
+        } catch {}
       }
       return jsonResponse({
         count: keys.length,
-        lastReceived: lastReceived ? new Date(lastReceived).toISOString() : null
+        lastReceivedAt: lastReceivedAt ? new Date(lastReceivedAt).toISOString() : null
       });
     }
 

@@ -11,9 +11,9 @@
   - 認証は FE API と同じトークン
   - pi-coding への登録手順（URL と環境変数 CHIRA_TOKEN の2点）を dev/ に記録
 - 変更:
-  - `worker/src/mcp.js`: MCP 2026-07-28 / Streamable HTTP ルーターと 6 つのツールハンドラーを実装。
-  - `worker/src/index.js`: POST `/mcp` ルーティングを追加（同一認証チェック）。
-  - `worker/test/mcp.test.js`: 認証・ツール呼び出し・KV 書き込み・GitHub API 読み込み / 検索フォールバックの単体テストを追加。
+  - `api/src/mcp.js`: MCP 2026-07-28 / Streamable HTTP ルーターと 6 つのツールハンドラーを実装。
+  - `api/src/index.js`: POST `/mcp` ルーティングを追加（同一認証チェック）。
+  - `api/test/mcp.test.js`: 認証・ツール呼び出し・KV 書き込み・GitHub API 読み込み / 検索フォールバックの単体テストを追加。
   - `dev/mcp-setup.md`: pi-coding / MCP クライアントへの登録手順を記載。
 
 ## 2026-11-05 / v0.1.8-dev — Rust GUI クライアント（egui）— 爆速メモ（付箋）
@@ -58,14 +58,14 @@
 ## 2026-11-05 / v0.1.8-dev — Cloudflare Worker FE API（/inbox・KV キャッシュ・トークン認証）
 
 - 指示: Cloudflare Worker FE API（/inbox・KV キャッシュ・トークン認証）。親: #5。
-- 変更: `worker/` 配下に Cloudflare Worker プロジェクトを追加（`worker/src/index.js`, `worker/wrangler.json`, `worker/package.json`）。
+- 変更: `api/` 配下に Cloudflare Worker プロジェクトを追加（`api/src/index.js`, `api/wrangler.json`, `api/package.json`）。
   - エンドポイント:
     - `PUT /inbox/<name>`: body の content + updatedAt + closed を KV に保存（同名上書き・TTL 7日）。title は content 1行目から導出
     - `GET /inbox`: キャッシュ一覧（name, title, updatedAt, closed）
     - `GET /count`: 件数（count）と最終受信時刻（lastReceivedAt、死活確認用）
   - 認証: `Authorization: Bearer <token>` または `X-Chira-Token: <token>`。未指定・不正時は 401 Unauthorized
   - 秘密情報: 実値は repo に含めず `wrangler secret put CHIRA_TOKEN` で投入
-  - テスト: `node --test`（`worker/test/worker.test.js`）で認証・KV 操作・タイトル抽出を検証
+  - テスト: `node --test`（`api/test/worker.test.js`）で認証・KV 操作・タイトル抽出を検証
 
 ## 2026-11-04 / v0.1.8-dev — storage shim + chira serve 静的配信（crx HTML のローカル起動・オフラインメモ）
 

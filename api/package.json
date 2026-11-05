@@ -1,5 +1,5 @@
 {
-  "name": "chira-ura-worker",
+  "name": "chira-ura-api",
   "version": "0.1.8-dev",
   "description": "chira-ura Cloudflare Worker (FE API + Cron batch to wiki)",
   "type": "module",
