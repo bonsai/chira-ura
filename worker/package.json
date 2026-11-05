@@ -1,0 +1,9 @@
+{
+  "name": "chira-ura-worker",
+  "version": "0.1.8-dev",
+  "description": "chira-ura Cloudflare Worker (FE API + Cron batch to wiki)",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  }
+}

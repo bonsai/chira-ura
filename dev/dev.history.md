@@ -2,6 +2,20 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-05 / v0.1.8-dev — MCP サーバー（/mcp、pi-coding 連携）
+
+- 指示: MCP サーバー（/mcp、pi-coding 連携）。設計 dev/cloud-design.md §7。
+  - FE API と同じ Worker に /mcp（Streamable HTTP）を実装
+  - 書く側ツール: chira_note_add(content) / chira_inbox_list / chira_count
+  - 読む側ツール: chira_wiki_list_raw(month?) / chira_wiki_read(path) / chira_wiki_search(query)
+  - 認証は FE API と同じトークン
+  - pi-coding への登録手順（URL と環境変数 CHIRA_TOKEN の2点）を dev/ に記録
+- 変更:
+  - `worker/src/mcp.js`: MCP 2026-07-28 / Streamable HTTP ルーターと 6 つのツールハンドラーを実装。
+  - `worker/src/index.js`: POST `/mcp` ルーティングを追加（同一認証チェック）。
+  - `worker/test/mcp.test.js`: 認証・ツール呼び出し・KV 書き込み・GitHub API 読み込み / 検索フォールバックの単体テストを追加。
+  - `dev/mcp-setup.md`: pi-coding / MCP クライアントへの登録手順を記載。
+
 ## 2026-11-04 / v0.1.7-dev — 入口1は crx の HTML をローカル起動（オフラインメモ）
 
 - 指示: crx の HTML をローカルで起動してオフラインメモにする。
