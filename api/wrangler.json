@@ -1,0 +1,20 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "chira-ura-api",
+  "main": "src/index.js",
+  "compatibility_date": "2024-11-01",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "triggers": {
+    "crons": [
+      "0 * * * *"
+    ]
+  },
+  "kv_namespaces": [
+    {
+      "binding": "INBOX",
+      "id": "00da03b85db1468fb09675d0ec6e932e"
+    }
+  ]
+}
