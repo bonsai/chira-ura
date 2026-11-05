@@ -138,13 +138,45 @@ mod tests {
 
         let server_thread = thread::spawn(move || {
             if let Ok((mut stream, _)) = listener.accept() {
-                let mut buf = [0u8; 1024];
-                let _ = stream.read(&mut buf);
+                let mut buf = Vec::new();
+                let mut chunk = [0u8; 1024];
+                // Read until we see end of HTTP headers \r\n\r\n
+                while let Ok(n) = stream.read(&mut chunk) {
+                    if n == 0 {
+                        break;
+                    }
+                    buf.extend_from_slice(&chunk[..n]);
+                    if let Some(pos) = buf.windows(4).position(|w| w == b"\r\n\r\n") {
+                        // Check Content-Length to read whole body if present
+                        let headers_str = String::from_utf8_lossy(&buf[..pos]);
+                        let mut content_len = 0;
+                        for line in headers_str.lines() {
+                            if line.to_ascii_lowercase().starts_with("content-length:") {
+                                if let Some(val) = line.split(':').nth(1) {
+                                    content_len = val.trim().parse::<usize>().unwrap_or(0);
+                                }
+                            }
+                        }
+                        let body_read = buf.len() - (pos + 4);
+                        if body_read >= content_len {
+                            break;
+                        }
+                    }
+                }
+
                 let response =
                     "HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nOK";
                 let _ = stream.write_all(response.as_bytes());
                 let _ = stream.flush();
-                let _ = stream.shutdown(std::net::Shutdown::Both);
+                let _ = stream.shutdown(std::net::Shutdown::Write);
+
+                // Drain any trailing bytes until client closes
+                let mut drain = [0u8; 512];
+                while let Ok(n) = stream.read(&mut drain) {
+                    if n == 0 {
+                        break;
+                    }
+                }
             }
             running_clone.store(false, Ordering::SeqCst);
         });
