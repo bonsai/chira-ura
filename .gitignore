@@ -4,3 +4,14 @@ dist/
 *.zip
 keys.json
 dev/plantuml.jar
+bin/
+obj/
+**/bin/
+**/obj/
+win/**/bin/
+win/**/obj/
+*.user
+*.suo
+win/*.user
+win/*/*.user
+win/*/*.csproj.user

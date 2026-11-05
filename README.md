@@ -4,7 +4,7 @@
 
 旧名 `kami copi`（`kamicopi.net` と衝突するため改名）。
 
-構成: `crx/`（拡張）/ `cli/`（設定・同期クライアント）/ `dev/`（履歴・UI/UX 仕様）。
+構成: `crx/`（拡張）/ `cli/`（設定・同期クライアント）/ `win/`（Windows付箋クライアント）/ `dev/`（履歴・UI/UX 仕様）。
 
 ## スタック
 
@@ -13,6 +13,7 @@
 - `chrome.identity`（Google OAuth / GitHub・Box は Web Auth Flow）
 - Google Drive + Apps Script（箱のマスター、拡張の外でデプロイ）
 - Node CLI（`cli/cli.js`、bin: `chira`）
+- Windows クライアント（`win/`、C#/.NET 10 WinForms 付箋メモ）
 
 ## 使い方
 
@@ -46,6 +47,16 @@ chira db export <dir> | chira db import <dir>     # canonical（sync-db と同�
 ```
 
 同じ `.db` を端末間でそのままコピーできる（journal=DELETE で 1 ファイル完結）。
+
+Windows 付箋クライアント（`win/`）:
+
+```bash
+dotnet build win/ChiraUra.sln
+dotnet test win/ChiraUra.sln
+dotnet run --project win/ChiraUra.Win/ChiraUra.Win.csproj
+```
+
+起動が速く、最前面固定・自動保存・閉じる際の FE API（`/inbox/<id>.txt`）送信とローカル SQLite（`~/.chira/ura.db`）永続化に対応。
 
 トークンは保存しない。Google は `chrome.identity.getAuthToken`、GH/Box は `launchWebAuthFlow`（コード取得まで）。
 
