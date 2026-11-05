@@ -2,6 +2,18 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-05 / v0.1.8-dev — Cloudflare Worker FE API（/inbox・KV キャッシュ・トークン認証）
+
+- 指示: Cloudflare Worker FE API（/inbox・KV キャッシュ・トークン認証）。親: #5。
+- 変更: `worker/` 配下に Cloudflare Worker プロジェクトを追加（`worker/src/index.js`, `worker/wrangler.json`, `worker/package.json`）。
+  - エンドポイント:
+    - `PUT /inbox/<name>`: body の content + updatedAt + closed を KV に保存（同名上書き・TTL 7日）。title は content 1行目から導出
+    - `GET /inbox`: キャッシュ一覧（name, title, updatedAt, closed）
+    - `GET /count`: 件数（count）と最終受信時刻（lastReceivedAt、死活確認用）
+  - 認証: `Authorization: Bearer <token>` または `X-Chira-Token: <token>`。未指定・不正時は 401 Unauthorized
+  - 秘密情報: 実値は repo に含めず `wrangler secret put CHIRA_TOKEN` で投入
+  - テスト: `node --test`（`worker/test/worker.test.js`）で認証・KV 操作・タイトル抽出を検証
+
 ## 2026-11-04 / v0.1.7-dev — 入口1は crx の HTML をローカル起動（オフラインメモ）
 
 - 指示: crx の HTML をローカルで起動してオフラインメモにする。
