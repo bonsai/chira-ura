@@ -1,0 +1,34 @@
+name: CLI (node)
+
+# CLI（cli/）とテスト（test/）を gh workflow で検証する。
+# 送信（/inbox, wiki push）は CLI 側に集約。node:sqlite を使うため Node 24 を使う。
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "cli/**"
+      - "crx/scripts/model.js"
+      - "test/**"
+      - ".github/workflows/cli.yml"
+  pull_request:
+    paths:
+      - "cli/**"
+      - "crx/scripts/model.js"
+      - "test/**"
+      - ".github/workflows/cli.yml"
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Run node tests
+        run: node --test test/*.test.js

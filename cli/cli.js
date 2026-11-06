@@ -18,6 +18,7 @@ import {
   exportStorage, importStorage, exportCanonical, importCanonical,
   getUnsyncedNotes, markNoteSynced
 } from "./ura-db.js";
+import { syncWiki } from "./wiki-push.js";
 
 const KEYS_PATH = process.env.CHIRA_KEYS
   || join(homedir(), ".config", "chira-ura", "keys.json");
@@ -178,6 +179,7 @@ function usage() {
   chira push                  keys.json をブリッジへ（GDrive ミラーとして）
   chira sync                  未送信メモ（SQLite）を /inbox へ送る
   chira sync pull             ブリッジから keys.json へ（旧 chira pull）
+  chira wiki                  未送信メモを bonsai/wiki raw/<MM>/ へ（10件ずつ 1 コミット）
 
   メモ（拡張と同じ JSON。SQLite は ~/.chira/ura.db）
   chira db path | init        DB の場所 / 作る
@@ -522,6 +524,20 @@ switch (cmd) {
   case "push":
     push().catch((e) => { console.error(e.message); process.exit(1); });
     break;
+  case "wiki": {
+    const { db } = openDb();
+    syncWiki(db)
+      .then((r) => {
+        if (r.pushed > 0) console.log(`wiki: pushed ${r.pushed} notes (${r.commits} commit(s))`);
+        else if (!r.ok) console.warn(`wiki: skipped (${r.reason}${r.error ? `: ${r.error}` : ""})`);
+      })
+      .catch((e) => {
+        console.error(e.message);
+        process.exitCode = 1;
+      })
+      .finally(() => db.close());
+    break;
+  }
 
   // ---------- メモ（拡張と同じ JSON。SQLite は ~/.chira/ura.db） ----------
   case "db": {
