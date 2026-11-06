@@ -2,6 +2,18 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-06 / v0.1.10-dev — 三層アーキ（dump / weaver / rag）と別レポ
+
+- 指示: 書き殴る層・醸成する層・選び出す層を痎結合に、別レポで。
+- 変更:
+  - `dev/layers.md`: 三層アーキを定義。
+    - 書き殴る（dump）= `bonsai/chira-ura`
+    - 基盤 = `bonsai/wiki`（**貯めるだけ**・不変ストア）
+    - 醸成 = **weaver（織姫）agent** = 再構成・再生成 + メタデータ
+    - 選び出し = **rag** = 読み出す・呼び出せる
+  - 別レポ **`bonsai/weaver`**・**`bonsai/rag`** を作成（private, README のみ）。
+  - `m = wiki,weaver` / `v = rag` / `c = （未定）`。
+
 ## 2026-11-06 / v0.1.9-dev — モバイルクライアント設計 doc
 
 - 指示: doc を書いて issue を作成。
