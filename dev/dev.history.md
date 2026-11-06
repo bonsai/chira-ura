@@ -2,6 +2,18 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-06 / v0.1.8-dev — GUI モノレポ化と API ディレクトリ統合
+
+- 指示: ディレクトリ再編。
+  - Worker → `api/`（旧 `worker/`）
+  - GUI を `gui/` 配下にプラットフォーム別で集約し、`gui/rust`, `gui/win`, `gui/iphone`, `gui/apk` とする
+- 変更:
+  - `worker/` → `api/` にリネーム（PR #18 で main にマージ。FE API + cron + MCP を統合）。
+  - `rs/` → `gui/rust/` にリネーム。`gui/README.md` を追加。
+  - `gui/iphone/`, `gui/apk/` を計画プレースホルダとして追加。
+  - `.github/workflows/rust.yml` の対象パスを `gui/rust/**` に更新。
+  - `README.md`, `SKILL.md`, `dev/benchmarks.md` の参照を `gui/` に更新。
+
 ## 2026-11-05 / v0.1.8-dev — MCP サーバー（/mcp、pi-coding 連携）
 
 - 指示: MCP サーバー（/mcp、pi-coding 連携）。設計 dev/cloud-design.md §7。
@@ -20,12 +32,12 @@
 
 - 指示: Rust の GUI クライアント。ADR-001 の第一候補（Rust）を実装する。#12 (C#/.NET) の対案。
 - 変更:
-  - `rs/` を追加し、Rust + egui (`eframe` 0.29) による爆速付箋メモ GUI クライアントを実装。
+  - `gui/rust/`（当時 `rs/`）を追加し、Rust + egui (`eframe` 0.29) による爆速付箋メモ GUI クライアントを実装。
   - 1画面付箋 UI: 起動即フォーカス、テキスト入力即ローカル outbox (`~/.chira/outbox/<id>.json`) 保存。
   - 送信: outbox → FE API (`PUT /inbox/<id>.txt`) 送信（Bearer 認証、設定/環境変数から読み出し）。オフライン時も outbox に残り、次回起動/手動で再送。
   - 計測: コールドスタート→入力可能時間の実測値 ~122ms (< 300ms 達成) を `dev/benchmarks.md` に記録。
   - ADR-001 (`dev/adr-001-rs-vs-cs.md`) を Accepted に更新。
-  - ルール更新: `README.md` と `SKILL.md` の編集対象に `rs/` を追加。
+  - ルール更新: `README.md` と `SKILL.md` の編集対象に `rs/`（現 `gui/`）を追加。
 
 ## 2026-11-04 / v0.1.8-dev — CLI `chira sync`（SQLite の未送信分 → /inbox）
 
