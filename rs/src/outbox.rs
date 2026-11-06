@@ -30,8 +30,7 @@ impl Outbox {
     /// Save or overwrite note in outbox as canonical JSON file: <id>.json
     pub fn save_note(&self, note: &Note) -> std::io::Result<PathBuf> {
         let path = self.dir.join(format!("{}.json", note.id));
-        let json = serde_json::to_string_pretty(note)
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        let json = serde_json::to_string_pretty(note).map_err(std::io::Error::other)?;
         fs::write(&path, json)?;
         Ok(path)
     }
