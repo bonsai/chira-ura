@@ -2,6 +2,16 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-06 / v0.1.9-dev — CLI `chira wiki`（オフライン蓄積 → bonsai/wiki raw/ へ一括 push）
+
+- 指示: オフラインでタイムスタンプでメモをため、オンラインでまとめて `bonsai/wiki/raw` へ push。**送信は CLI（cli.js）と痎結合でよい。クライアントは保存だけ**。
+- 変更:
+  - `cli/wiki-push.js`: 未送信メモを **10 件ずつ 1 コミット**で `bonsai/wiki` の `raw/<MM>/<timestamp>_<id4>.txt` へ push。GitHub Git Data API（`api/src/wiki-push.js` と同じ手順）。送信済みは meta（`sync.wiki`）で管理し冪等。失敗バッチは未送信として残しリトライ。
+  - `cli/cli.js`: `chira wiki` コマンドを追加。
+  - 認証: `CHIRA_GH_TOKEN` → `GITHUB_TOKEN` → `gh auth token` の順で解決（`gh push`）。
+  - `test/wiki-push.test.js`: バッチ（25件→3コミット）、冪等、失敗時の保持、パス `raw/<MM>/`、トークン解決を検証。
+  - `.github/workflows/cli.yml`: gh workflow で CLI テストを実行。
+
 ## 2026-11-06 / v0.1.8-dev — GUI モノレポ化と API ディレクトリ統合
 
 - 指示: ディレクトリ再編。
