@@ -12,6 +12,18 @@ public class OutboxItem
     public long CreatedAt { get; set; }
 }
 
+public class WikiQueueItem
+{
+    public long Id { get; set; }
+    public string NoteId { get; set; } = string.Empty;
+    public string FileName { get; set; } = string.Empty;
+    public string Content { get; set; } = string.Empty;
+    public long UpdatedAt { get; set; }
+    public int Status { get; set; } // 0 = pending, 1 = pushed
+    public long CreatedAt { get; set; }
+    public long? PushedAt { get; set; }
+}
+
 public class NoteRepository : IDisposable
 {
     private readonly string _dbPath;
@@ -65,7 +77,20 @@ CREATE TABLE IF NOT EXISTS outbox (
   payload   TEXT NOT NULL,
   createdAt INTEGER NOT NULL
 );
-CREATE INDEX IF NOT EXISTS outbox_noteId ON outbox(noteId);";
+CREATE INDEX IF NOT EXISTS outbox_noteId ON outbox(noteId);
+
+CREATE TABLE IF NOT EXISTS wiki_queue (
+  id        INTEGER PRIMARY KEY AUTOINCREMENT,
+  noteId    TEXT NOT NULL,
+  fileName  TEXT NOT NULL,
+  content   TEXT NOT NULL,
+  updatedAt INTEGER NOT NULL,
+  status    INTEGER NOT NULL DEFAULT 0,
+  createdAt INTEGER NOT NULL,
+  pushedAt  INTEGER
+);
+CREATE INDEX IF NOT EXISTS wiki_queue_status_time ON wiki_queue(status, updatedAt, id);
+";
                 cmd.ExecuteNonQuery();
             }
         }
@@ -243,6 +268,119 @@ VALUES (@noteId, @name, @payload, @createdAt);";
             cmd.CommandText = "DELETE FROM outbox WHERE id = @id";
             cmd.Parameters.AddWithValue("@id", outboxId);
             cmd.ExecuteNonQuery();
+        }
+    }
+
+    // ---------- wiki_queue（bonsai/wiki/raw/<MM>/<timestamp>.txt 用オフラインキュー） ----------
+
+    /// <summary>
+    /// メモを wiki 送信用キューに登録（オフライン時もローカル SQLite に確実に蓄積）
+    /// </summary>
+    public long EnqueueWikiMemo(string noteId, string fileName, string content, long updatedAt)
+    {
+        lock (_lock)
+        {
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = @"
+INSERT INTO wiki_queue (noteId, fileName, content, updatedAt, status, createdAt)
+VALUES (@noteId, @fileName, @content, @updatedAt, 0, @createdAt);
+SELECT last_insert_rowid();";
+            cmd.Parameters.AddWithValue("@noteId", noteId);
+            cmd.Parameters.AddWithValue("@fileName", fileName);
+            cmd.Parameters.AddWithValue("@content", content);
+            cmd.Parameters.AddWithValue("@updatedAt", updatedAt);
+            cmd.Parameters.AddWithValue("@createdAt", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+
+            var result = cmd.ExecuteScalar();
+            return Convert.ToInt64(result);
+        }
+    }
+
+    /// <summary>
+    /// 未送信（status = 0）のメモを古い順（FIFO: updatedAt ASC, id ASC）で最大 limit 件取得
+    /// </summary>
+    public List<WikiQueueItem> GetPendingWikiMemos(int limit = 10)
+    {
+        lock (_lock)
+        {
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = @"
+SELECT id, noteId, fileName, content, updatedAt, status, createdAt, pushedAt
+FROM wiki_queue
+WHERE status = 0
+ORDER BY updatedAt ASC, id ASC
+LIMIT @limit";
+            cmd.Parameters.AddWithValue("@limit", limit);
+
+            var list = new List<WikiQueueItem>();
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                list.Add(new WikiQueueItem
+                {
+                    Id = reader.GetInt64(0),
+                    NoteId = reader.GetString(1),
+                    FileName = reader.GetString(2),
+                    Content = reader.GetString(3),
+                    UpdatedAt = reader.GetInt64(4),
+                    Status = reader.GetInt32(5),
+                    CreatedAt = reader.GetInt64(6),
+                    PushedAt = reader.IsDBNull(7) ? null : reader.GetInt64(7)
+                });
+            }
+            return list;
+        }
+    }
+
+    /// <summary>
+    /// 送信成功したキュー項目を送信済み（status = 1）にマーク（再送防止・冪等）
+    /// </summary>
+    public void MarkWikiMemosPushed(IEnumerable<long> ids, long? pushedAt = null)
+    {
+        var idList = ids.ToList();
+        if (idList.Count == 0) return;
+
+        var now = pushedAt ?? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        lock (_lock)
+        {
+            using var tx = _connection.BeginTransaction();
+            using var cmd = _connection.CreateCommand();
+            cmd.Transaction = tx;
+            cmd.CommandText = "UPDATE wiki_queue SET status = 1, pushedAt = @pushedAt WHERE id = @id";
+            var idParam = cmd.Parameters.Add("@id", SqliteType.Integer);
+            cmd.Parameters.AddWithValue("@pushedAt", now);
+
+            foreach (var id in idList)
+            {
+                idParam.Value = id;
+                cmd.ExecuteNonQuery();
+            }
+            tx.Commit();
+        }
+    }
+
+    /// <summary>
+    /// 送信完了した項目を削除する場合
+    /// </summary>
+    public void DeleteWikiMemos(IEnumerable<long> ids)
+    {
+        var idList = ids.ToList();
+        if (idList.Count == 0) return;
+
+        lock (_lock)
+        {
+            using var tx = _connection.BeginTransaction();
+            using var cmd = _connection.CreateCommand();
+            cmd.Transaction = tx;
+            cmd.CommandText = "DELETE FROM wiki_queue WHERE id = @id";
+            var idParam = cmd.Parameters.Add("@id", SqliteType.Integer);
+
+            foreach (var id in idList)
+            {
+                idParam.Value = id;
+                cmd.ExecuteNonQuery();
+            }
+            tx.Commit();
         }
     }
 

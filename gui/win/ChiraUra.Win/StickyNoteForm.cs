@@ -17,6 +17,7 @@ public class StickyNoteForm : Form
     private readonly Label _statusLabel;
     private readonly Button _pinButton;
     private readonly Button _newButton;
+    private readonly Button _syncButton;
     private readonly Button _closeButton;
     private readonly Panel _titleBar;
 
@@ -60,7 +61,7 @@ public class StickyNoteForm : Form
         _titleBar.MouseMove += TitleBar_MouseMove;
         _titleBar.MouseUp += TitleBar_MouseUp;
 
-        // Status Label (shows subtle icon or status)
+        // Status Label (shows subtle icon or status: 📝 local, 💾 synced, ✏️ editing)
         _statusLabel = new Label
         {
             Text = "📝",
@@ -77,12 +78,30 @@ public class StickyNoteForm : Form
             Text = "＋",
             FlatStyle = FlatStyle.Flat,
             Size = new Size(24, 24),
-            Location = new Point(40, 4),
+            Location = new Point(36, 4),
             Cursor = Cursors.Hand
         };
         _newButton.FlatAppearance.BorderSize = 0;
         _newButton.Click += (s, e) => NewNote();
         _titleBar.Controls.Add(_newButton);
+
+        // Sync Button (🔄 manual / online flush trigger)
+        _syncButton = new Button
+        {
+            Text = "🔄",
+            FlatStyle = FlatStyle.Flat,
+            Size = new Size(26, 24),
+            Location = new Point(64, 4),
+            Cursor = Cursors.Hand
+        };
+        _syncButton.FlatAppearance.BorderSize = 0;
+        _syncButton.Click += async (s, e) =>
+        {
+            _statusLabel.Text = "⏳";
+            var result = await _syncService.FlushAllAsync().ConfigureAwait(true);
+            _statusLabel.Text = result.LastError == null ? "💾" : "📝";
+        };
+        _titleBar.Controls.Add(_syncButton);
 
         // Pin Button (📌)
         _pinButton = new Button
@@ -156,37 +175,53 @@ public class StickyNoteForm : Form
             }
         };
 
-        // Immediate focus on text area
+        // Immediate focus on text area and online flush check in background
         Shown += (s, e) =>
         {
             _textBox.Focus();
             _textBox.SelectionStart = _textBox.Text.Length;
+
+            // Background initial flush check on startup/reconnect
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await _syncService.FlushAllAsync().ConfigureAwait(false);
+                }
+                catch { }
+            });
         };
 
-        // Form Closing - sync with closed=true
+        // Form Closing - flush fractions (<10) on exit
         FormClosing += (s, e) =>
         {
             _autoSaveTimer.Stop();
-            // Perform synchronous/fast final flush on close
+
             _currentNote.Content = _textBox.Text;
             _currentNote.Title = Note.DeriveTitle(_currentNote.Content);
             _currentNote.UpdatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
-            // Local save is synchronous and guaranteed
+            // 1. Local save is synchronous and guaranteed (offline accumulation)
             _repository.UpsertNote(_currentNote);
 
-            // Trigger non-blocking cloud send or fast send off the UI synchronization context
+            if (!string.IsNullOrWhiteSpace(_currentNote.Content))
+            {
+                var fileName = SyncService.FormatNoteFileName(_currentNote.UpdatedAt);
+                _repository.EnqueueWikiMemo(_currentNote.Id, fileName, _currentNote.Content, _currentNote.UpdatedAt);
+            }
+
+            // 2. Trigger quick push on closing (fractions flushed)
             try
             {
                 Task.Run(async () =>
                 {
-                    using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
-                    await _syncService.SaveAndSyncAsync(_currentNote, closed: true, cts.Token).ConfigureAwait(false);
-                }).Wait(TimeSpan.FromMilliseconds(500));
+                    using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1000));
+                    await _syncService.FlushAllAsync(cts.Token).ConfigureAwait(false);
+                }).Wait(TimeSpan.FromMilliseconds(1000));
             }
             catch
             {
-                // Fallback to local outbox
+                // Fallback: items remain safely in local SQLite wiki_queue
             }
         };
     }
@@ -210,6 +245,7 @@ public class StickyNoteForm : Form
             _currentNote.Title = Note.DeriveTitle(_currentNote.Content);
             _currentNote.UpdatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
+            // Local save + 10-batch push check
             var synced = await _syncService.SaveAndSyncAsync(_currentNote, closed);
             _isDirty = false;
             _statusLabel.Text = synced ? "💾" : "📝";
