@@ -4,7 +4,7 @@
 
 旧名 `kami copi`（`kamicopi.net` と衝突するため改名）。
 
-構成: `crx/`（拡張）/ `cli/`（設定・同期クライアント）/ `rs/`（Rust GUI クライアント）/ `dev/`（履歴・UI/UX 仕様）。
+構成: `crx/`（拡張）/ `cli/`（設定・同期クライアント）/ `api/`（Cloudflare Worker）/ `gui/`（GUI: `rust/`, `win/`, `iphone/`, `apk/`）/ `dev/`（履歴・UI/UX 仕様）。
 
 ## スタック
 
@@ -61,7 +61,7 @@ chira db export <dir> | chira db import <dir>     # canonical（sync-db と同�
 
 ## エージェント
 
-- 編集は `crx/`, `cli/`, `rs/` のみ。Chrome の読込先ディレクトリ（`CHIRA_LOAD_DIR`）はキャッシュなので直接編集しない。
+- 編集は `crx/`, `cli/`, `gui/` のみ。Chrome の読込先ディレクトリ（`CHIRA_LOAD_DIR`）はキャッシュなので直接編集しない。
 - 反映は `bash cli/sync.sh` → 拡張の再読み込み。
 - version は変更単位で細かく上げる（`version_name` に `-dev`）。変更は `dev/dev.history.md` に追記。
 - 権限追加・設定 UI の復活は禁止。認証は OAuth のみ（トークンを平文に置かない）。

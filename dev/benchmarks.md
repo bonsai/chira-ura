@@ -1,7 +1,7 @@
 # ベンチマーク記録: Rust GUI クライアント (egui)
 
 ## 概要
-- 対象: `rs/` (chira-ura-rs, egui + eframe)
+- 対象: `gui/rust/` (chira-ura-rs, egui + eframe)
 - 目的: ADR-001 (Rust vs C#) の判定基準「コールドスタート→入力可能 < 300ms」および入力遅延の検証
 - 計測環境: Linux x86_64 / Rust 1.94.0 / eframe 0.29 (glow backend)
 
@@ -14,7 +14,7 @@
 #### 計測コマンド
 ```bash
 # release ビルド
-cargo build --release --manifest-path rs/Cargo.toml
+cargo build --release --manifest-path gui/rust/Cargo.toml
 
 # 計測実行
 xvfb-run -a ./target/release/chira-ura-rs --bench
