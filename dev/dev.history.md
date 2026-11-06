@@ -2,32 +2,97 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-06 / v0.1.8-dev — GUI モノレポ化と API ディレクトリ統合
+
+- 指示: ディレクトリ再編。
+  - Worker → `api/`（旧 `worker/`）
+  - GUI を `gui/` 配下にプラットフォーム別で集約し、`gui/rust`, `gui/win`, `gui/iphone`, `gui/apk` とする
+- 変更:
+  - `worker/` → `api/` にリネーム（PR #18 で main にマージ。FE API + cron + MCP を統合）。
+  - `rs/` → `gui/rust/` にリネーム。`gui/README.md` を追加。
+  - `gui/iphone/`, `gui/apk/` を計画プレースホルダとして追加。
+  - `.github/workflows/rust.yml` の対象パスを `gui/rust/**` に更新。
+  - `README.md`, `SKILL.md`, `dev/benchmarks.md` の参照を `gui/` に更新。
+
 ## 2026-11-05 / v0.1.9-dev — Windowsクライアント（C#/.NET）：付箋メモ専用アプリ
 
 - 指示: Windowsクライアント（C#/.NET）：付箋メモ専用アプリ。親: #5。付箋メモを書いて閉じると既存の経路で wiki/raw に届く状態。
-- 変更: `win/` 配下に C# / .NET 10 ソリューション（`win/ChiraUra.sln`）を追加。
-  - `win/ChiraUra.Core/`:
+- 変更: `gui/gui/win/` 配下に C# / .NET 10 ソリューション（`gui/gui/win/ChiraUra.sln`）を追加。
+  - `gui/gui/win/ChiraUra.Core/`:
     - `Note.cs`: メモデータ型 `{ id, title, content, updatedAt }`、本文1行目タイトル導出（`DeriveTitle`）、ID生成
     - `NoteRepository.cs`: SQLite（`~/.chira/ura.db`）の `notes` / `meta` テーブル読み書き（DELETE journal mode、スキーマ互換）
     - `ChiraApiClient.cs`: FE API（`PUT /inbox/<name>`）送信クライアント（`CHIRA_TOKEN` 認証ヘッダ対応）
     - `SyncService.cs`: メモ保存と FE API（`/inbox/<id>.txt`）送信。オフライン時は SQLite に安全に保持されローカル下書きとして機能
-  - `win/ChiraUra.Win/`:
+  - `gui/gui/win/ChiraUra.Win/`:
     - WinForms 付箋メモ UI（`StickyNoteForm.cs`）。コールドスタートから即座にテキスト入力フォーカス、最前面ピン留め（📌）、自動保存、ウィンドウクローズ時の送信
-  - `win/ChiraUra.Tests/`:
+  - `gui/gui/win/ChiraUra.Tests/`:
     - xUnit テスト（`NoteTests.cs`）で Note のタイトル導出・JSON 互換性、SQLite リポジトリ CRUD、SyncService と API クライアント送信・オフラインフォールバックを検証
   - `dev/adr-001-rs-vs-cs.md`: C# / .NET 採用を反映（Accepted）。
+
+## 2026-11-05 / v0.1.8-dev — MCP サーバー（/mcp、pi-coding 連携）
+
+- 指示: MCP サーバー（/mcp、pi-coding 連携）。設計 dev/cloud-design.md §7。
+  - FE API と同じ Worker に /mcp（Streamable HTTP）を実装
+  - 書く側ツール: chira_note_add(content) / chira_inbox_list / chira_count
+  - 読む側ツール: chira_wiki_list_raw(month?) / chira_wiki_read(path) / chira_wiki_search(query)
+  - 認証は FE API と同じトークン
+  - pi-coding への登録手順（URL と環境変数 CHIRA_TOKEN の2点）を dev/ に記録
+- 変更:
+  - `api/src/mcp.js`: MCP 2026-07-28 / Streamable HTTP ルーターと 6 つのツールハンドラーを実装。
+  - `api/src/index.js`: POST `/mcp` ルーティングを追加（同一認証チェック）。
+  - `api/test/mcp.test.js`: 認証・ツール呼び出し・KV 書き込み・GitHub API 読み込み / 検索フォールバックの単体テストを追加。
+  - `dev/mcp-setup.md`: pi-coding / MCP クライアントへの登録手順を記載。
+
+## 2026-11-05 / v0.1.8-dev — Rust GUI クライアント（egui）— 爆速メモ（付箋）
+
+- 指示: Rust の GUI クライアント。ADR-001 の第一候補（Rust）を実装する。#12 (C#/.NET) の対案。
+- 変更:
+  - `gui/rust/`（当時 `rs/`）を追加し、Rust + egui (`eframe` 0.29) による爆速付箋メモ GUI クライアントを実装。
+  - 1画面付箋 UI: 起動即フォーカス、テキスト入力即ローカル outbox (`~/.chira/outbox/<id>.json`) 保存。
+  - 送信: outbox → FE API (`PUT /inbox/<id>.txt`) 送信（Bearer 認証、設定/環境変数から読み出し）。オフライン時も outbox に残り、次回起動/手動で再送。
+  - 計測: コールドスタート→入力可能時間の実測値 ~122ms (< 300ms 達成) を `dev/benchmarks.md` に記録。
+  - ADR-001 (`dev/adr-001-rs-vs-cs.md`) を Accepted に更新。
+  - ルール更新: `README.md` と `SKILL.md` の編集対象に `rs/`（現 `gui/`）を追加。
+
+## 2026-11-04 / v0.1.8-dev — CLI `chira sync`（SQLite の未送信分 → /inbox）
+
+- 指示: CLI `chira sync`（SQLite の未送信分 → /inbox）。設計: `dev/cloud-design.md` §9-4。
+  - `~/.chira/ura.db` の未送信メモをメモ JSON のまま `PUT /inbox/<name>` へ送る
+  - 送信済みの管理を meta 側に持つ（canonical export の形式を壊さない）
+  - オフライン時は静かに失敗し、次回実行で送る
+  - 受け入れ条件: CLI で追加したメモが `/inbox` に届く、再実行しても重複しない（同名上書きで冪等）
+- 変更:
+  - `cli/ura-db.js`: `getInboxSyncMeta(db)`, `markNoteSynced(db, id, syncedAt)`, `getUnsyncedNotes(db)` を追加。送信履歴は meta テーブル（キー `sync.inbox`）に記録し、canonical export / import のフォーマット・テーブル定義を壊さない。
+  - `cli/cli.js`: `syncInbox(db, options)` を実装。`process.env.CHIRA_API_URL` や `keys.json` の `cloud.url` / `cloud.token` / `CHIRA_TOKEN` を参照し、各メモを `PUT /inbox/<id>.txt` へメモ JSON として送信。オフラインや通信エラー時は静かにスキップ。`chira sync` コマンドで実行可能（`chira sync pull` で旧 localhost ブリッジ pull）。
+  - `test/sync.test.js`: `node --test` で /inbox への PUT 送信、meta 記録、canonical 整合性、冪等性、オフライン時の静かな失敗をテスト。
+
+## 2026-11-05 / v0.1.8-dev — crx 1分送信（sidepanel → /inbox、ブリッジ pull の置き換え）
+
+- 指示: crx 1分送信（sidepanel → /inbox、ブリッジ pull の置き換え）。設計: dev/cloud-design.md §4・§9-3。依存: FE API の issue。親: #5。
+- 変更:
+  - セッション開始時にファイル名を確定（タイムスタンプ `YYYYMMDD_HHMMSS.txt`、`crx/scripts/inbox.js` の `formatSessionName`）。
+  - 保存デバウンス（600ms）+ 1分毎チェック（`checkAndSyncInbox`）で、変更分を `PUT /inbox/<name>` へ全文化・同名上書きで送信。
+  - closed 送信トリガー:
+    1. NEW 押下時（`btnNew` で現セッションを `closed: true` 送信後、新セッション名発行）。
+    2. ページを閉じる時（`pagehide` イベントで `sendBeacon` または `keepalive: true` の PUT 送信）。
+    3. 10分無更新時（無操作タイマーで `closed: true` 送信）。
+  - オフライン時は `chrome.storage.local` の `inboxPending` に未送信分を保持し、オンライン復帰時（`online` イベント）や次回の1分チェックで再送。
+  - 送信先 URL とトークンは設定値（`chrome.storage.local` の `inboxUrl` / `inboxToken` または `keys.inbox`）として保持し、実値は repo に書かない。
+  - 現行の localhost ブリッジ pull（`background/service-worker.js`）との関係:
+    - 決定: クラウド化方針（`dev/cloud-design.md` §9-3）に基づき、メモ送信は `/inbox` への push を正とする。常時 5分 alarm による localhost ブリッジ pull はデフォルト無効化（置き換え）。
+    - 既存環境との後方互換性のため、`keys.bridgeEnabled` または `bridgeEnabled` 設定が明示的に `true` の場合のみ localhost ブリッジ pull を実行する併用オプトイン形式とする。
 
 ## 2026-11-05 / v0.1.8-dev — Cloudflare Worker FE API（/inbox・KV キャッシュ・トークン認証）
 
 - 指示: Cloudflare Worker FE API（/inbox・KV キャッシュ・トークン認証）。親: #5。
-- 変更: `worker/` 配下に Cloudflare Worker プロジェクトを追加（`worker/src/index.js`, `worker/wrangler.json`, `worker/package.json`）。
+- 変更: `api/` 配下に Cloudflare Worker プロジェクトを追加（`api/src/index.js`, `api/wrangler.json`, `api/package.json`）。
   - エンドポイント:
     - `PUT /inbox/<name>`: body の content + updatedAt + closed を KV に保存（同名上書き・TTL 7日）。title は content 1行目から導出
     - `GET /inbox`: キャッシュ一覧（name, title, updatedAt, closed）
     - `GET /count`: 件数（count）と最終受信時刻（lastReceivedAt、死活確認用）
   - 認証: `Authorization: Bearer <token>` または `X-Chira-Token: <token>`。未指定・不正時は 401 Unauthorized
   - 秘密情報: 実値は repo に含めず `wrangler secret put CHIRA_TOKEN` で投入
-  - テスト: `node --test`（`worker/test/worker.test.js`）で認証・KV 操作・タイトル抽出を検証
+  - テスト: `node --test`（`api/test/worker.test.js`）で認証・KV 操作・タイトル抽出を検証
 
 ## 2026-11-04 / v0.1.8-dev — storage shim + chira serve 静的配信（crx HTML のローカル起動・オフラインメモ）
 

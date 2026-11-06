@@ -146,14 +146,15 @@ test("worker PUT /inbox/:name saves note to KV and GET /inbox lists it", async (
     env
   );
   assert.equal(listRes.status, 200);
-  const list = await listRes.json();
-  assert.equal(list.length, 2);
-  assert.equal(list[0].name, "20261105_130000.txt");
-  assert.equal(list[0].title, "Second note");
-  assert.equal(list[0].closed, true);
-  assert.equal(list[1].name, "20261105_120000.txt");
-  assert.equal(list[1].title, "First note content");
-  assert.equal(list[1].closed, false);
+  const inboxData = await listRes.json();
+  assert.equal(inboxData.count, 2);
+  assert.equal(inboxData.items.length, 2);
+  assert.equal(inboxData.items[0].name, "20261105_130000.txt");
+  assert.equal(inboxData.items[0].title, "Second note");
+  assert.equal(inboxData.items[0].closed, true);
+  assert.equal(inboxData.items[1].name, "20261105_120000.txt");
+  assert.equal(inboxData.items[1].title, "First note content");
+  assert.equal(inboxData.items[1].closed, false);
 
   // GET /count returns 2 and lastReceivedAt
   const countRes = await worker.fetch(
@@ -163,7 +164,7 @@ test("worker PUT /inbox/:name saves note to KV and GET /inbox lists it", async (
   assert.equal(countRes.status, 200);
   const countData = await countRes.json();
   assert.equal(countData.count, 2);
-  assert.equal(countData.lastReceivedAt, now + 1000);
+  assert.equal(countData.lastReceivedAt, new Date(now + 1000).toISOString());
 
   // Overwrite existing note
   const putRes3 = await worker.fetch(
@@ -185,8 +186,9 @@ test("worker PUT /inbox/:name saves note to KV and GET /inbox lists it", async (
     env
   );
   const list2 = await listRes2.json();
-  assert.equal(list2.length, 2);
-  assert.equal(list2[0].name, "20261105_120000.txt");
-  assert.equal(list2[0].title, "Overwritten title");
-  assert.equal(list2[0].closed, true);
+  assert.equal(list2.count, 2);
+  assert.equal(list2.items.length, 2);
+  assert.equal(list2.items[0].name, "20261105_120000.txt");
+  assert.equal(list2.items[0].title, "Overwritten title");
+  assert.equal(list2.items[0].closed, true);
 });

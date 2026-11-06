@@ -1,6 +1,6 @@
 # ADR-001: Windows クライアントの実装言語 — Rust vs C#
 
-- 状態: **Accepted（C# / .NET 採用）** — 2026-11-05 決定
+- 状態: **Accepted** — 2026-11-05 決定（第一候補: Rust。C# WinForms も Windows クライアントとして併存）
 - 対象: bonsai/chira-ura Issue #12「Windowsクライアント：付箋メモ専用アプリ」
 - 前提: 思想は「DBはひとつ（正は bonsai/wiki の raw/）、UI/クライアントは多様に」。本 ADR は入口の1つの実装言語だけを決める
 
@@ -41,8 +41,9 @@
 
 ## 決定
 
-**C# / .NET（WinForms）を採用。**
-不採用（Rust）の理由: Windows 上での最速立ち上げ・保守性と、TOY 環境（Windows 中心運用）における標準 .NET エコシステムとの親和性を優先。付箋メモ程度の軽量 UI では C# / WinForms で十分な起動速度が得られるため。
+**採択：Rust (egui)**
+- 実測結果に基づき採択。コールドスタートから入力可能までの実測時間は平均約 122ms であり、目標ラインの 300ms を大幅にクリア。GC が存在しないため入力遅延ゼロの体験を達成。単一バイナリ配布が可能。
+- C# / .NET（WinForms）は `gui/win/` に Windows クライアントとして併存（第一候補は Rust）。
 
 ## 影響
 

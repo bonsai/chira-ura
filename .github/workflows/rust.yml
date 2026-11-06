@@ -1,18 +1,18 @@
-name: Rust GUI (rs)
+name: Rust GUI (gui/rust)
 
-# Rust GUI クライアント（rs/, issue #19）を GitHub Actions でビルドする。
+# Rust GUI クライアント（gui/rust/, issue #19）を GitHub Actions でビルドする。
 # ローカルに Rust ツールチェーンが無くても CI で検証できる。
-# rs/Cargo.toml がまだ無い間は build をスキップして成功させる。
+# gui/rust/Cargo.toml がまだ無い間は build をスキップして成功させる。
 
 on:
   push:
     branches: [main]
     paths:
-      - "rs/**"
+      - "gui/rust/**"
       - ".github/workflows/rust.yml"
   pull_request:
     paths:
-      - "rs/**"
+      - "gui/rust/**"
       - ".github/workflows/rust.yml"
   workflow_dispatch:
 
@@ -21,16 +21,16 @@ jobs:
     runs-on: windows-latest
     defaults:
       run:
-        working-directory: rs
+        working-directory: gui/rust
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check for rs/Cargo.toml
+      - name: Check for gui/rust/Cargo.toml
         id: check
         shell: bash
         working-directory: .
         run: |
-          if [ -f rs/Cargo.toml ]; then
+          if [ -f gui/rust/Cargo.toml ]; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
@@ -40,7 +40,7 @@ jobs:
         if: steps.check.outputs.exists == 'false'
         shell: bash
         working-directory: .
-        run: echo "::notice::rs/Cargo.toml not found; skipping Rust build."
+        run: echo "::notice::gui/rust/Cargo.toml not found; skipping Rust build."
 
       - uses: dtolnay/rust-toolchain@stable
         if: steps.check.outputs.exists == 'true'
@@ -50,7 +50,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         if: steps.check.outputs.exists == 'true'
         with:
-          workspaces: rs
+          workspaces: gui/rust
 
       - name: cargo fmt --check
         if: steps.check.outputs.exists == 'true'
@@ -72,6 +72,6 @@ jobs:
         if: steps.check.outputs.exists == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: chira-rs-windows
-          path: rs/target/release/*.exe
+          name: chira-gui-rust-windows
+          path: gui/rust/target/release/*.exe
           if-no-files-found: ignore

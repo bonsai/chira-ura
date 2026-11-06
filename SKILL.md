@@ -34,6 +34,16 @@ cli/                    設定・同期 CLIENT（bin: chira。`bash cli/install.
   install.ps1           Windows 版。~/.local/bin/chira.cmd を PATH へ
   sync.sh               crx/ → <LOAD> へ流し込む
   package.json
+api/                    Cloudflare Worker（FE API / cron / MCP）
+  src/index.js          FE API + cron + MCP ルーティング
+  src/mcp.js            MCP 2026-07-28 / Streamable HTTP
+  src/wiki-push.js      closed → wiki/raw バッチ
+  wrangler.json
+gui/                    プラットフォーム別 GUI（rust / win / iphone / apk）
+  rust/                 Rust GUI クライアント（egui 付箋メモ。WSL/Unix/Windows）
+  win/                  Windows C#/.NET WinForms
+  iphone/               iOS（計画）
+  apk/                  Android（計画）
 dev/                    開発資料
   dev.history.md        指示と変更の履歴（新しいものが上）
   ui.yaml               見た目・要素（実装の正）
