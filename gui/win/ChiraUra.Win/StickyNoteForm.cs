@@ -15,10 +15,9 @@ public class StickyNoteForm : Form
 
     private readonly TextBox _textBox;
     private readonly Label _statusLabel;
-    private readonly Button _pinButton;
     private readonly Button _newButton;
     private readonly Button _closeButton;
-    private readonly Panel _titleBar;
+    private readonly ToolTip _balloon;
 
     private Point _dragStartPoint;
     private bool _isDragging;
@@ -28,97 +27,48 @@ public class StickyNoteForm : Form
         _repository = repository ?? new NoteRepository();
         _syncService = syncService ?? new SyncService(_repository);
 
-        // Load active draft or create a new note
+        // 起動時は「白紙に書ける状態」。前の下書きが空なら再利用、内容があれば新しい白紙を作る。
         var activeNoteId = _repository.GetMeta("activeNoteId");
-        Note? loaded = null;
-        if (!string.IsNullOrEmpty(activeNoteId))
+        Note? loaded = !string.IsNullOrEmpty(activeNoteId) ? _repository.GetNote(activeNoteId) : null;
+        if (loaded != null && string.IsNullOrEmpty(loaded.Content))
         {
-            loaded = _repository.GetNote(activeNoteId);
+            _currentNote = loaded;
+        }
+        else
+        {
+            _currentNote = Note.Create("");
+            _repository.SetMeta("activeNoteId", _currentNote.Id);
+            _repository.UpsertNote(_currentNote);
         }
 
-        _currentNote = loaded ?? Note.Create("");
-        _repository.SetMeta("activeNoteId", _currentNote.Id);
-
-        // Form setup (sticky note style)
+        // 見た目: 枠なし・スマホサイズ・最前面
+        SuspendLayout();
+        AutoScaleMode = AutoScaleMode.None;
         Text = "chira-ura";
         FormBorderStyle = FormBorderStyle.None;
         StartPosition = FormStartPosition.CenterScreen;
-        Size = new Size(320, 360);
-        MinimumSize = new Size(200, 200);
-        BackColor = Color.FromArgb(254, 252, 232); // Light yellow note color (#FEFCE8)
+        ClientSize = new Size(360, 640);          // デフォルト: スマホサイズ
+        MinimumSize = new Size(280, 420);
+        BackColor = Color.FromArgb(254, 252, 232); // 付箋の淡黄色
+        ForeColor = Color.FromArgb(30, 41, 59);
         TopMost = true;
+        KeyPreview = true;
 
-        // Custom Title/Header Bar
-        _titleBar = new Panel
+        // ---- 2 段レイアウト（上: 本文 / 下: フッター）。ヘッダは無し。----
+        var layout = new TableLayoutPanel
         {
-            Dock = DockStyle.Top,
-            Height = 32,
-            BackColor = Color.FromArgb(254, 240, 138), // Slightly darker yellow (#FEF08A)
-            Padding = new Padding(8, 0, 8, 0)
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 2,
+            Margin = new Padding(0),
+            Padding = new Padding(0),
+            BackColor = Color.FromArgb(254, 252, 232)
         };
-        _titleBar.MouseDown += TitleBar_MouseDown;
-        _titleBar.MouseMove += TitleBar_MouseMove;
-        _titleBar.MouseUp += TitleBar_MouseUp;
+        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));   // body
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 64F));    // footer（高め）
 
-        // Status Label (shows subtle icon or status)
-        _statusLabel = new Label
-        {
-            Text = "📝",
-            AutoSize = true,
-            Location = new Point(8, 7),
-            Font = new Font("Segoe UI Emoji", 10F),
-            Cursor = Cursors.Hand
-        };
-        _titleBar.Controls.Add(_statusLabel);
-
-        // New Note Button (+)
-        _newButton = new Button
-        {
-            Text = "＋",
-            FlatStyle = FlatStyle.Flat,
-            Size = new Size(24, 24),
-            Location = new Point(40, 4),
-            Cursor = Cursors.Hand
-        };
-        _newButton.FlatAppearance.BorderSize = 0;
-        _newButton.Click += (s, e) => NewNote();
-        _titleBar.Controls.Add(_newButton);
-
-        // Pin Button (📌)
-        _pinButton = new Button
-        {
-            Text = "📌",
-            FlatStyle = FlatStyle.Flat,
-            Size = new Size(26, 24),
-            Anchor = AnchorStyles.Top | AnchorStyles.Right,
-            Location = new Point(Width - 62, 4),
-            Cursor = Cursors.Hand
-        };
-        _pinButton.FlatAppearance.BorderSize = 0;
-        _pinButton.Click += (s, e) =>
-        {
-            TopMost = !TopMost;
-            _pinButton.Text = TopMost ? "📌" : "📍";
-        };
-        _titleBar.Controls.Add(_pinButton);
-
-        // Close Button (✕)
-        _closeButton = new Button
-        {
-            Text = "✕",
-            FlatStyle = FlatStyle.Flat,
-            Size = new Size(24, 24),
-            Anchor = AnchorStyles.Top | AnchorStyles.Right,
-            Location = new Point(Width - 32, 4),
-            Cursor = Cursors.Hand
-        };
-        _closeButton.FlatAppearance.BorderSize = 0;
-        _closeButton.Click += (s, e) => Close();
-        _titleBar.Controls.Add(_closeButton);
-
-        Controls.Add(_titleBar);
-
-        // Text Area (full editor)
+        // 本文（スクロールバーなし・折り返し）
         _textBox = new TextBox
         {
             Multiline = true,
@@ -128,54 +78,99 @@ public class StickyNoteForm : Form
             BorderStyle = BorderStyle.None,
             BackColor = Color.FromArgb(254, 252, 232),
             ForeColor = Color.FromArgb(30, 41, 59),
-            Font = new Font("Segoe UI", 11F, FontStyle.Regular),
-            ScrollBars = ScrollBars.Vertical,
+            Font = new Font("Segoe UI", 12F, FontStyle.Regular),
+            ScrollBars = ScrollBars.None,
+            WordWrap = true,
+            ImeMode = ImeMode.Hiragana,   // 日本語入力を明示的に有効化（IME ひらがな）
+            Margin = new Padding(10, 10, 10, 0),
             Text = _currentNote.Content
         };
-        _textBox.TextChanged += TextBox_TextChanged;
-        Controls.Add(_textBox);
+        _textBox.TextChanged += TextBox_TextChanged;   // IME 切替後も本文はそのまま入力できる
+        layout.Controls.Add(_textBox, 0, 0);
 
-        // Resize grip support or border line
+        // フッター: 三等分（左: 絵文字ステータス / 中: ＋ / 右: ✕）
+        var footer = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 3,
+            RowCount = 1,
+            Margin = new Padding(0),
+            Padding = new Padding(0),
+            BackColor = Color.FromArgb(254, 240, 138)
+        };
+        footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.34F));
+        footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
+        footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
+        footer.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+
+        // 左: 絵文字ステータス（ドラッグでも動かせる）
+        _statusLabel = new Label
+        {
+            Text = "📝",
+            Dock = DockStyle.Fill,
+            TextAlign = ContentAlignment.MiddleCenter,
+            Font = new Font("Segoe UI Emoji", 20F),
+            BackColor = Color.Transparent,
+            Margin = new Padding(0),
+            Cursor = Cursors.SizeAll
+        };
+        _statusLabel.MouseDown += DragStart;
+        _statusLabel.MouseMove += DragMove;
+        _statusLabel.MouseUp += DragEnd;
+        footer.Controls.Add(_statusLabel, 0, 0);
+
+        // 中: ＋（横長・大きめ）
+        _newButton = MakeFooterButton("＋");
+        _newButton.Click += (s, e) => NewNote();
+        footer.Controls.Add(_newButton, 1, 0);
+
+        // 右: ✕（横長・大きめ）
+        _closeButton = MakeFooterButton("✕");
+        _closeButton.Click += (s, e) => Close();
+        footer.Controls.Add(_closeButton, 2, 0);
+
+        layout.Controls.Add(footer, 0, 1);
+
+        Controls.Add(layout);
+        ResumeLayout(true);
+
+        // 保存したら吹き出しでファイル名を知らせる
+        _balloon = new ToolTip
+        {
+            IsBalloon = true,
+            ShowAlways = true,
+            InitialDelay = 0,
+            ReshowDelay = 0,
+            AutoPopDelay = 2600
+        };
+
+        // 枠線
         Paint += (s, e) =>
         {
             using var pen = new Pen(Color.FromArgb(202, 138, 4), 1);
             e.Graphics.DrawRectangle(pen, 0, 0, Width - 1, Height - 1);
         };
 
-        // Auto-save debounce timer (every 1 second when dirty)
-        _autoSaveTimer = new System.Windows.Forms.Timer
-        {
-            Interval = 1000
-        };
+        // 自動保存（1 秒デバウンス）
+        _autoSaveTimer = new System.Windows.Forms.Timer { Interval = 1000 };
         _autoSaveTimer.Tick += async (s, e) =>
         {
             _autoSaveTimer.Stop();
-            if (_isDirty)
-            {
-                await SaveDraftAsync(closed: false);
-            }
+            if (_isDirty) await SaveDraftAsync(closed: false);
         };
 
-        // Immediate focus on text area
-        Shown += (s, e) =>
-        {
-            _textBox.Focus();
-            _textBox.SelectionStart = _textBox.Text.Length;
-        };
+        // 起動直後から「すぐ書ける」
+        Shown += (s, e) => FocusEditor();
 
-        // Form Closing - sync with closed=true
+        // 終了時: ローカル保存は同期・確実に
         FormClosing += (s, e) =>
         {
             _autoSaveTimer.Stop();
-            // Perform synchronous/fast final flush on close
             _currentNote.Content = _textBox.Text;
             _currentNote.Title = Note.DeriveTitle(_currentNote.Content);
             _currentNote.UpdatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-
-            // Local save is synchronous and guaranteed
             _repository.UpsertNote(_currentNote);
 
-            // Trigger non-blocking cloud send or fast send off the UI synchronization context
             try
             {
                 Task.Run(async () =>
@@ -186,9 +181,32 @@ public class StickyNoteForm : Form
             }
             catch
             {
-                // Fallback to local outbox
+                // オフライン時はローカルに残る
             }
         };
+    }
+
+    private static Button MakeFooterButton(string text)
+    {
+        var button = new Button
+        {
+            Text = text,
+            Dock = DockStyle.Fill,
+            FlatStyle = FlatStyle.Flat,
+            Margin = new Padding(1, 4, 1, 4),
+            Cursor = Cursors.Hand,
+            Font = new Font("Segoe UI", 18F),
+            TabStop = false
+        };
+        button.FlatAppearance.BorderSize = 0;
+        return button;
+    }
+
+    private void FocusEditor()
+    {
+        Activate();
+        _textBox.Focus();
+        _textBox.SelectionStart = _textBox.Text.Length;
     }
 
     private void TextBox_TextChanged(object? sender, EventArgs e)
@@ -213,6 +231,13 @@ public class StickyNoteForm : Form
             var synced = await _syncService.SaveAndSyncAsync(_currentNote, closed);
             _isDirty = false;
             _statusLabel.Text = synced ? "💾" : "📝";
+
+            // 吹き出し: 保存したファイル名を表示
+            var fileName = SyncService.FormatNoteFileName(_currentNote.UpdatedAt);
+            var message = synced
+                ? $"💾 保存しました\n{fileName}"
+                : $"💾 ローカル保存\n{fileName}";
+            _balloon.Show(message, _statusLabel, new Point(_statusLabel.Width / 2, 0), 2600);
         }
         finally
         {
@@ -232,12 +257,12 @@ public class StickyNoteForm : Form
         _repository.UpsertNote(_currentNote);
 
         _textBox.Text = "";
-        _textBox.Focus();
         _isDirty = false;
         _statusLabel.Text = "📝";
+        FocusEditor();
     }
 
-    private void TitleBar_MouseDown(object? sender, MouseEventArgs e)
+    private void DragStart(object? sender, MouseEventArgs e)
     {
         if (e.Button == MouseButtons.Left)
         {
@@ -246,17 +271,15 @@ public class StickyNoteForm : Form
         }
     }
 
-    private void TitleBar_MouseMove(object? sender, MouseEventArgs e)
+    private void DragMove(object? sender, MouseEventArgs e)
     {
         if (_isDragging)
         {
-            var diffX = e.X - _dragStartPoint.X;
-            var diffY = e.Y - _dragStartPoint.Y;
-            Location = new Point(Location.X + diffX, Location.Y + diffY);
+            Location = new Point(Location.X + (e.X - _dragStartPoint.X), Location.Y + (e.Y - _dragStartPoint.Y));
         }
     }
 
-    private void TitleBar_MouseUp(object? sender, MouseEventArgs e)
+    private void DragEnd(object? sender, MouseEventArgs e)
     {
         _isDragging = false;
     }
