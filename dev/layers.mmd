@@ -1,0 +1,52 @@
+%% chira-ura 三層アーキテクチャ（書き殴る / 醸成 / 選び出す）
+%% m = wiki, weaver  /  v = rag, llm  /  c = mcp, cli
+flowchart TB
+  U(("人間"))
+
+  subgraph DUMP["書き殴る層 dump — bonsai/chira-ura"]
+    direction LR
+    CRX["crx<br/>Chrome 拡張"]
+    CLI["cli<br/>chira"]
+    WIN["gui/win<br/>chira.exe"]
+    RUST["gui/rust"]
+    MOB["mobile<br/>(計画)"]
+  end
+
+  WIKI[("bonsai/wiki<br/>貯めるだけ・不変")]
+
+  subgraph M["m = wiki, weaver"]
+    WEAVER["weaver（織姫）<br/>再構成・再生成 + メタデータ"]
+  end
+
+  subgraph V["v = rag, llm"]
+    RAG["rag<br/>索引・検索"]
+    LLM["llm<br/>生成"]
+  end
+
+  subgraph C["c = mcp, cli"]
+    MCP["mcp"]
+    CLIC["cli（読み出し）"]
+  end
+
+  MUSE["Muse / チャット"]
+
+  U --> CRX & CLI & WIN & RUST & MOB
+  CRX & CLI & WIN & RUST & MOB -->|"raw 生メモ（追記のみ）"| WIKI
+  WIKI -->|"raw/"| WEAVER
+  WEAVER -->|"ripe/ + meta"| RAG
+  RAG <--> LLM
+  RAG --> MCP & CLIC
+  MCP --> U
+  CLIC --> U
+  MCP <--> MUSE
+
+  classDef store fill:#fef3c7,stroke:#ca8a04,color:#1e293b;
+  classDef dump fill:#e0f2fe,stroke:#0284c7,color:#0c4a6e;
+  classDef m fill:#fee2e2,stroke:#dc2626,color:#7f1d1d;
+  classDef v fill:#dcfce7,stroke:#16a34a,color:#14532d;
+  classDef c fill:#f3e8ff,stroke:#9333ea,color:#3b0764;
+  class WIKI store;
+  class DUMP dump;
+  class M m;
+  class V v;
+  class C c;

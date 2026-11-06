@@ -32,8 +32,13 @@
 
 ## m / v / c
 - **m = `wiki`, `weaver`** — 蓄積（wiki）と、それを醸成する agent（weaver）
-- **v = `rag`** — 読み出し・呼び出し（retrieval + generation）
-- **c = （未定）** — 提示・操作の層（チャット / Muse / UI）
+- **v = `rag`, `llm`** — 検索（rag）と生成（llm）
+- **c = `mcp`, `cli`** — 呼び出し口（MCP サーバ / CLI）
+
+## 図（UML）
+- `dev/layers.mmd`（Mermaid）
+- `dev/layers.puml`（PlantUML）
+- レンダリングは CI（`.github/workflows/diagrams.yml`）が SVG を生成（`gh workflow`）
 
 ## 各層
 

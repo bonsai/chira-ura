@@ -2,6 +2,14 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-06 / v0.1.10-dev — 三層 UML（Mermaid / PlantUML）と gh wf レンダリング
+
+- 指示: make uml / mmd でも書いて。ビルドは gh workflow で。
+- 変更:
+  - `dev/layers.mmd`（Mermaid）/ `dev/layers.puml`（PlantUML）を追加。
+  - `.github/workflows/diagrams.yml`: `.mmd`→SVG（mermaid-cli）+ `.puml`→SVG（plantuml.jar）を実行し artifact 化。`dev/puppeteer.json` を追加。
+  - `m = wiki, weaver` / `v = rag, llm` / `c = mcp, cli` に確定。
+
 ## 2026-11-06 / v0.1.10-dev — 三層アーキ（dump / weaver / rag）と別レポ
 
 - 指示: 書き殴る層・醸成する層・選び出す層を痎結合に、別レポで。
