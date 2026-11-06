@@ -12,6 +12,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <AssemblyName>chira</AssemblyName>
+    <ApplicationIcon>chira.ico</ApplicationIcon>
   </PropertyGroup>
 
 </Project>

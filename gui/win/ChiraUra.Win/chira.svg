@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="chira">
+  <title>chira</title>
+
+  <!-- 付箋本体（右下を折り返す） -->
+  <path d="M56 24 H200 a24 24 0 0 1 24 24 V168 L168 232 H56 a24 24 0 0 1 -24 -24 V48 a24 24 0 0 1 24 -24 Z"
+        fill="#FEF08A" stroke="#CA8A04" stroke-width="12" stroke-linejoin="round"/>
+
+  <!-- 折り返し -->
+  <path d="M168 232 V192 a24 24 0 0 1 24 -24 H224 Z"
+        fill="#FDE68A" stroke="#CA8A04" stroke-width="12" stroke-linejoin="round"/>
+
+  <!-- メモ罫線 -->
+  <g stroke="#1E293B" stroke-width="14" stroke-linecap="round">
+    <path d="M80 88 H176"/>
+    <path d="M80 128 H152"/>
+    <path d="M80 168 H120"/>
+  </g>
+</svg>

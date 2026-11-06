@@ -14,6 +14,7 @@
   - `gui/win/ChiraUra.Win/StickyNoteForm.cs`: `TableLayoutPanel` で 2 段（本文 / フッター三等分）。ヘッダ撤去、`ScrollBars=None`、`ImeMode=Hiragana`、保存時に ToolTip バルーンでファイル名を表示。
   - `gui/win/ChiraUra.Win/ChiraUra.Win.csproj`: `<AssemblyName>chira</AssemblyName>`（exe 名 `chira.exe`）。
   - `gui/win/ChiraUra.Win/Program.cs`: 未捕捉例外を `~/.chira/chira-crash.log` に記録。
+  - `gui/win/ChiraUra.Win/chira.svg` / `chira.ico`: アプリアイコン（付箋＋折り返し＋罫線）。`<ApplicationIcon>` と Window アイコンに設定。
 
 ## 2026-11-06 / v0.1.9-dev — CLI `chira wiki`（オフライン蓄積 → bonsai/wiki raw/ へ一括 push）
 
