@@ -2,6 +2,19 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-06 / v0.1.9-dev — gui/win UI 刷新（フッター集約・IME・保存通知）
+
+- 指示: Windows 付箋クライアントの UI を作り直す。
+  - 起動で白紙・すぐ書ける / 📝 ステータス / ＋ で次の白紙 / ✕ で終了
+  - ヘッダ廃止、フッターを高くして三等分（📝 ｜ ＋ ｜ ✕）
+  - スクロールバー無し、デフォルトはスマホサイズ（360x640）
+  - 日本語入力を明示（IME ひらがな）
+  - 保存したら吹き出しでファイル名を通知
+- 変更:
+  - `gui/win/ChiraUra.Win/StickyNoteForm.cs`: `TableLayoutPanel` で 2 段（本文 / フッター三等分）。ヘッダ撤去、`ScrollBars=None`、`ImeMode=Hiragana`、保存時に ToolTip バルーンでファイル名を表示。
+  - `gui/win/ChiraUra.Win/ChiraUra.Win.csproj`: `<AssemblyName>chira</AssemblyName>`（exe 名 `chira.exe`）。
+  - `gui/win/ChiraUra.Win/Program.cs`: 未捕捉例外を `~/.chira/chira-crash.log` に記録。
+
 ## 2026-11-06 / v0.1.9-dev — CLI `chira wiki`（オフライン蓄積 → bonsai/wiki raw/ へ一括 push）
 
 - 指示: オフラインでタイムスタンプでメモをため、オンラインでまとめて `bonsai/wiki/raw` へ push。**送信は CLI（cli.js）と痎結合でよい。クライアントは保存だけ**。
