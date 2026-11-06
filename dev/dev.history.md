@@ -2,6 +2,26 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-06 / v0.2.0-dev — Windows GUI：オフライン蓄積（タイムスタンプ）→ 10件ずつ OAuth で bonsai/wiki/raw へ直接 push
+
+- 指示: オフライン蓄積（タイムスタンプ）→ 10件ずつ OAuth で bonsai/wiki/raw へ直接 push。親: #23。
+  - 経路: クライアントから直接 bonsai/wiki/raw へ push（Worker 経由は使わない）
+  - 対象: gui/win（Windows C#/.NET クライアント）
+  - まとめ単位: 未送信分を 10 件ずつ push（各バッチ = 1 コミット。端数はオンライン復帰/終了時/手動で送信）
+  - 認証: OAuth Device Flow（client secret を保持しない、トークンは DPAPI / ITokenStore に保存）
+  - 送信先レイアウト: `bonsai/wiki` `raw/<MM>/<timestamp>.txt`（api/src/wiki-push.js 踏襲）
+  - 冪等・リトライ: 成功分は送信済みにマークされ再送しない。失敗バッチはローカル SQLite（wiki_queue）に残し次回リトライ
+- 変更:
+  - `gui/win/ChiraUra.Core/`:
+    - `WikiGitHubClient.cs`: GitHub Git Data API（ref → commit → tree → commit → patch ref）で 1 コミット一括 push を実装。月ディレクトリ抽出（`raw/<MM>/`）とコミットメッセージ生成（`chore(wiki): add N memo(s) [...]`）に対応。
+    - `GitHubOAuth.cs`: Device Flow（`POST /login/device/code`, `POST /login/oauth/access_token` ポーリング）および Windows DPAPI / ITokenStore トークン保存を実装。
+    - `NoteRepository.cs`: オフライン蓄積用 `wiki_queue` テーブルおよびインデックスを追加。`EnqueueWikiMemo`, `GetPendingWikiMemos`, `MarkWikiMemosPushed`, `DeleteWikiMemos` を追加。
+    - `SyncService.cs`: 未送信キューを 10 件ずつのバッチに分割して 1 コミットずつ push。成功分はマークし、端数（< 10）は FlushAllAsync で送信。失敗時はキューに残し次回リトライ。
+  - `gui/win/ChiraUra.Win/`:
+    - `StickyNoteForm.cs`: 即時ローカル SQLite 保存を徹底し、バックグラウンドでの 10 件バッチ送信・手動同期ボタン（🔄）・アプリ終了時/オンライン復帰時の端数フラッシュを統合。
+  - `gui/win/ChiraUra.Tests/`:
+    - `WikiSyncTests.cs`: 月ディレクトリ抽出、オフライン蓄積順序、Git Data API 1 コミット送信、10件バッチ分割と端数フラッシュ、API 失敗時のキュー保持とリトライ、OAuth Device Flow ポーリングをテスト。
+
 ## 2026-11-06 / v0.1.8-dev — GUI モノレポ化と API ディレクトリ統合
 
 - 指示: ディレクトリ再編。
