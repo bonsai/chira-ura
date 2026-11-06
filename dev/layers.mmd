@@ -30,8 +30,8 @@ flowchart TB
 
   MUSE["Muse / チャット"]
 
-  U --> CRX & CLI & WIN & RUST & MOB
-  CRX & CLI & WIN & RUST & MOB -->|"raw 生メモ（追記のみ）"| WIKI
+  U --> DUMP
+  DUMP -->|"raw 生メモ（追記のみ）"| WIKI
   WIKI -->|"raw/"| WEAVER
   WEAVER -->|"ripe/ + meta"| RAG
   RAG <--> LLM
