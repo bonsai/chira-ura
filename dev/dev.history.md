@@ -2,6 +2,21 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-06 / v0.1.9-dev — オフライン蓄積（タイムスタンプ）→ オンライン時に bonsai/wiki/raw へ一括 push
+
+- 指示: オフライン蓄積（タイムスタンプ）→ オンライン時に bonsai/wiki/raw へ一括 push。
+  - オフライン時: メモをタイムスタンプ付きでローカル（SQLite / outbox）にひたすら蓄積。
+  - オンライン復帰時: 未送信分をまとめて 1 回の push で `bonsai/wiki` の `raw/<MM>/<timestamp>.txt` へ送る。
+  - push 手段: GitHub Git Data API による 1 コミット一括反映。
+  - 冪等: 送信済みは meta（`sync.wiki`）または outbox 削除で管理し再送しない。失敗分はローカルに残し次回リトライ。
+- 変更:
+  - `cli/ura-db.js`: `getWikiSyncMeta(db)`, `markNoteWikiSynced(db, id, syncedAt)`, `getUnsyncedWikiNotes(db)` を追加（meta キー `sync.wiki`）。canonical export/import 互換性を保持。
+  - `cli/wiki-push.js`: `formatTimestampFilename(updatedAt)`, `getMonthDir(filename, updatedAt)`, `pushNotesToWiki(...)`, `syncWiki(db, options)` を実装。Git Data API（ref, commit, tree）で `raw/<MM>/<timestamp>.txt` へ 1 コミットで push。
+  - `cli/cli.js`: `chira sync wiki` および `chira push wiki` コマンドを追加。
+  - `rs/src/sync.rs`: `WikiSyncClient` を追加し、Rust GUI クライアントの outbox から GitHub Git Data API 経由で 1 コミット一括送信と送信後 outbox 削除を実装。
+  - `test/wiki-push.test.js`: 月ディレクトリ振分け、1 コミット一括 push、SQLite 同期メタ記録、冪等性、オフライン失敗時保持のテストを追加。
+  - `rs/Cargo.toml` / `crx/manifest.json`: バージョンを `0.1.9` (`0.1.9-dev`) にインクリメント。
+
 ## 2026-11-05 / v0.1.8-dev — MCP サーバー（/mcp、pi-coding 連携）
 
 - 指示: MCP サーバー（/mcp、pi-coding 連携）。設計 dev/cloud-design.md §7。
