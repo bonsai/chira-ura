@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>chira-ura / チラ裏</title>
-<meta name="description" content="書いたら自動保存。メモとコピーだけの軽量 Chrome 拡張。箱はローカル / GDrive / GitHub / Box。" />
+<meta name="description" content="書いたら自動保存。メモとコピーだけの軽量クライアント群。crx / cli / api / win / rust。" />
 <style>
   :root{
     --washi:#faf7f0; --sumi:#2c241e; --enji:#8b0000;
@@ -15,14 +15,15 @@
     font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo",system-ui,sans-serif;
     line-height:1.75;-webkit-font-smoothing:antialiased}
   a{color:var(--enji)}
-  .wrap{max-width:680px;margin:0 auto;padding:48px 24px 64px}
+  .wrap{max-width:760px;margin:0 auto;padding:48px 24px 64px}
   header .brand{font-size:.82rem;font-weight:800;letter-spacing:.18em;color:#c2b8a4}
   header .brand span{color:#d8a06a}
   h1{font-size:2rem;margin:.4em 0 .2em;letter-spacing:.04em}
   h1 small{display:block;font-size:.9rem;font-weight:400;color:var(--mute);letter-spacing:.1em;margin-top:.3em}
-  .lead{font-size:1rem;color:#5b5248;margin:1.2em 0 2em}
+  .lead{font-size:1rem;color:#5b5248;margin:1.2em 0 1.6em}
   .rule{border:none;border-top:1px solid var(--border);margin:2.4em 0}
   h2{font-size:.78rem;letter-spacing:.16em;color:var(--mute);font-weight:700;margin:0 0 .8em}
+  h3{font-size:1rem;margin:1.4em 0 .4em}
   ul.points{list-style:none;padding:0;margin:0}
   ul.points li{padding:.5em 0;border-bottom:1px solid var(--border);font-size:.92rem}
   ul.points li:last-child{border-bottom:none}
@@ -39,6 +40,24 @@
     font-size:.75rem;color:var(--mute);display:flex;gap:14px;flex-wrap:wrap;align-items:center}
   footer .sp{margin-left:auto}
   footer img{width:14px;height:14px;opacity:.6;vertical-align:-2px}
+
+  /* tabs */
+  .tabs{display:flex;gap:4px;flex-wrap:wrap;margin:0 0 1.4em;
+    border-bottom:1px solid var(--border);padding-bottom:0}
+  .tab{appearance:none;border:1px solid transparent;border-bottom:none;background:transparent;
+    color:var(--mute);font:inherit;font-size:.84rem;font-weight:700;letter-spacing:.06em;
+    padding:8px 14px;border-radius:8px 8px 0 0;cursor:pointer;position:relative;top:1px}
+  .tab:hover{color:var(--sumi)}
+  .tab[aria-selected="true"]{background:#fff;border-color:var(--border);color:var(--enji)}
+  .panel{display:none;animation:fade .18s ease}
+  .panel.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(2px)}to{opacity:1;transform:none}}
+  .meta{font-size:.78rem;color:var(--mute);margin:.2em 0 1em}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:1em}
+  .card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:#fff}
+  .card h4{margin:0 0 .3em;font-size:.95rem}
+  .card p{margin:0;font-size:.84rem;color:#5b5248}
+  .thumb{width:88px;height:auto;border-radius:8px;border:1px solid var(--border);background:#fff;padding:6px}
 </style>
 </head>
 <body>
@@ -47,47 +66,145 @@
   <header>
     <div class="brand">chira<span>ura</span></div>
     <h1>チラ裏<small>chira-ura</small></h1>
-    <p class="lead">書いたら自動保存。メモとコピーだけの軽量 Chrome 拡張。<br>
-      設定画面はありません。書く・読む・コピるだけ。</p>
+    <p class="lead">書いたら自動保存。メモとコピーだけの軽量クライアント群。<br>
+      入口（UI）は多様に、正はひとつ。</p>
     <div class="keys">
-      <span>自動保存</span><span>箱: ローカル / GDrive / GitHub / Box</span><span>OAuth</span><span>MV3</span>
+      <span>自動保存</span><span>箱: ローカル / GDrive / GitHub / Box</span><span>OAuth</span><span>MV3</span><span>オフライン</span>
     </div>
   </header>
 
   <hr class="rule" />
 
-  <section>
+  <nav class="tabs" role="tablist" aria-label="コンポーネント">
+    <button class="tab" role="tab" data-tab="overview" aria-selected="true">概要</button>
+    <button class="tab" role="tab" data-tab="crx">crx</button>
+    <button class="tab" role="tab" data-tab="cli">cli</button>
+    <button class="tab" role="tab" data-tab="api">api</button>
+    <button class="tab" role="tab" data-tab="win">win</button>
+    <button class="tab" role="tab" data-tab="rust">rust</button>
+    <button class="tab" role="tab" data-tab="mobile">mobile</button>
+    <button class="tab" role="tab" data-tab="dev">dev</button>
+  </nav>
+
+  <!-- 概要 -->
+  <section class="panel active" role="tabpanel" data-panel="overview">
     <h2>できること</h2>
     <ul class="points">
       <li>サイドパネルで書く。入力は自動保存（トグルで停止可）。</li>
-      <li>過去記事を読む。カードを開いて本文、コピーは本文だけ（前置き無し＝そのままプロンプトに流せる）。</li>
-      <li>箱を選ぶ。ローカル / Google Drive / GitHub / Box。認証は OAuth で、トークンは保存しない。</li>
-      <li>CLI と同期。意味はひとつ「GDrive が正」。CLI が配り、拡張は取りに行くだけ。</li>
+      <li>過去記事を読む。コピーは本文だけ（前置き無し＝そのままプロンプトに流せる）。</li>
+      <li>箱を選ぶ。ローカル / Google Drive / GitHub / Box。認証は OAuth、トークンは保存しない。</li>
+      <li>オフラインでためて、オンラインでまとめて送る。送信は CLI に集約。</li>
     </ul>
+    <div class="cards">
+      <div class="card"><h4>crx/</h4><p>Chrome 拡張（本体 UI）</p></div>
+      <div class="card"><h4>cli/</h4><p>設定・同期・wiki push（bin: chira）</p></div>
+      <div class="card"><h4>api/</h4><p>Cloudflare Worker（FE API / cron / MCP）</p></div>
+      <div class="card"><h4>gui/</h4><p>win（C#）・rust（egui）・iphone/apk（計画）</p></div>
+    </div>
   </section>
 
-  <hr class="rule" />
-
-  <section>
-    <h2>インストール</h2>
+  <!-- crx -->
+  <section class="panel" role="tabpanel" data-panel="crx">
+    <h2>crx — Chrome 拡張</h2>
+    <p class="meta"><code>crx/</code> ・ MV3 / Vanilla JS</p>
+    <h3>インストール</h3>
     <div class="cta">
       <a class="btn" href="https://github.com/bonsai/chira-ura/releases/latest">Release から zip</a>
-      <a class="btn ghost" href="https://github.com/bonsai/chira-ura">ソース</a>
+      <a class="btn ghost" href="https://github.com/bonsai/chira-ura/tree/main/crx">crx/ ソース</a>
     </div>
     <pre>1. zip を展開
 2. chrome://extensions → デベロッパーモード ON
 3. 「パッケージ化されていない拡張機能を読み込む」→ 展開したフォルダを指定</pre>
+    <h3>特徴</h3>
+    <ul class="points">
+      <li>sidepanel で書く / 読む。保存は 600ms デバウンスの自動保存。</li>
+      <li>1分毎チェック + closed 送信（NEW / ページを閉じる / 10分無更新）で <code>/inbox</code> へ。</li>
+      <li>オフライン時は <code>chrome.storage.local</code> に保留し、復帰時に再送。</li>
+    </ul>
   </section>
 
-  <hr class="rule" />
-
-  <section>
-    <h2>CLI</h2>
-    <pre>chira client-id &lt;id&gt;.apps.googleusercontent.com   # OAuth クライアント
+  <!-- cli -->
+  <section class="panel" role="tabpanel" data-panel="cli">
+    <h2>cli — 設定・同期・wiki push</h2>
+    <p class="meta"><code>cli/</code> ・ bin: <code>chira</code>（Node / node:sqlite）</p>
+    <h3>セットアップ</h3>
+    <pre>bash cli/install.sh    # ~/.local/bin/chira（初回だけ）
+chira client-id &lt;id&gt;.apps.googleusercontent.com   # OAuth クライアント
 chira set gdrive.folderId &lt;id&gt;                    # 箱フォルダ
-chira box gdrive                                  # 既定の箱
-chira serve                                       # ブリッジ（拡張が取りに来る）
-chira pull | push | sync                          # 同期＝GDrive が正</pre>
+chira box gdrive                                  # 既定の箱</pre>
+    <h3>同期・送信</h3>
+    <pre>chira serve        # ブリッジ（拡張が取りに来る）
+chira pull|push    # 同期＝GDrive が正
+chira sync         # 未送信（SQLite）→ FE API /inbox
+chira wiki         # 未送信 → bonsai/wiki raw/（10件ずつ 1 コミット）
+chira notes        # メモ一覧（新しい順）
+chira note add 本文 # メモを書く（タイトルは1行目から）</pre>
+    <p>送信は CLI に集約。クライアントは <code>~/.chira/ura.db</code> に保存するだけ（疎結合）。</p>
+  </section>
+
+  <!-- api -->
+  <section class="panel" role="tabpanel" data-panel="api">
+    <h2>api — Cloudflare Worker</h2>
+    <p class="meta"><code>api/</code> ・ FE API + cron + MCP</p>
+    <pre>PUT  /inbox/&lt;name&gt;   { content, updatedAt, closed } を KV へ
+GET  /inbox          { items, count }（updatedAt 降順）
+GET  /count          { count, lastReceivedAt }
+POST /mcp            Streamable HTTP MCP（6 tools）
+POST /cron/flush     手動で closed → bonsai/wiki へ
+scheduled            毎時 0 * * * * でバッチ</pre>
+    <p>認証は <code>API_TOKEN</code>（後方互換 <code>CHIRA_TOKEN</code>）。未設定時は dev 許可。</p>
+  </section>
+
+  <!-- win -->
+  <section class="panel" role="tabpanel" data-panel="win">
+    <h2>win — Windows 付箋（C#/.NET）</h2>
+    <p class="meta"><code>gui/win/</code> ・ .NET 10 WinForms ・ exe: <code>chira.exe</code></p>
+    <img class="thumb" src="gui/win/ChiraUra.Win/chira.svg" alt="chira icon" />
+    <h3>使い方</h3>
+    <ul class="points">
+      <li>起動すると白紙・すぐ書ける。入力は自動保存（1秒デバウンス）。</li>
+      <li>下部フッター三等分: <strong>📝 ステータス ｜ ＋（次の白紙） ｜ ✕（終了）</strong>。</li>
+      <li>日本語入力は IME ひらがなを明示。保存時に吹き出しでファイル名を通知。</li>
+      <li>保存先は <code>~/.chira/ura.db</code>（CLI と同じ DB）。</li>
+    </ul>
+    <h3>ビルド</h3>
+    <pre>dotnet build gui/win/ChiraUra.Win/ChiraUra.Win.csproj -c Release
+dotnet publish gui/win/ChiraUra.Win -c Release -r win-x64 \
+  --self-contained true -p:PublishSingleFile=true -o out</pre>
+  </section>
+
+  <!-- rust -->
+  <section class="panel" role="tabpanel" data-panel="rust">
+    <h2>rust — egui GUI</h2>
+    <p class="meta"><code>gui/rust/</code> ・ Rust + eframe（WSL / Unix / Windows）</p>
+    <ul class="points">
+      <li>起動即フォーカスの1画面付箋。コールドスタート→入力可能 約 122ms。</li>
+      <li>ローカル outbox（<code>~/.chira/outbox/&lt;id&gt;.json</code>）→ オンラインで FE API へ。</li>
+      <li>単一バイナリ配布。ADR-001 の第一候補。</li>
+    </ul>
+    <pre>cargo build --release --manifest-path gui/rust/Cargo.toml
+./gui/rust/target/release/chira-ura-rs</pre>
+  </section>
+
+  <!-- mobile -->
+  <section class="panel" role="tabpanel" data-panel="mobile">
+    <h2>mobile — iOS / Android（計画）</h2>
+    <p class="meta"><code>gui/iphone/</code> ・ <code>gui/apk/</code> ・ 未実装</p>
+    <ul class="points">
+      <li>FE API は共通（<code>PUT /inbox/&lt;name&gt;</code> / <code>GET /inbox</code>）。</li>
+      <li>技術選定・署名・配布・同期方針は未定。</li>
+    </ul>
+  </section>
+
+  <!-- dev -->
+  <section class="panel" role="tabpanel" data-panel="dev">
+    <h2>dev — 開発資料</h2>
+    <div class="cards">
+      <a class="card" href="https://github.com/bonsai/chira-ura/blob/main/dev/dev.history.md"><h4>dev.history.md</h4><p>指示と変更の履歴</p></a>
+      <a class="card" href="https://github.com/bonsai/chira-ura/blob/main/dev/adr-001-rs-vs-cs.md"><h4>ADR-001</h4><p>Rust vs C#（第一候補 Rust）</p></a>
+      <a class="card" href="https://github.com/bonsai/chira-ura/blob/main/dev/benchmarks.md"><h4>benchmarks.md</h4><p>コールドスタート実測</p></a>
+      <a class="card" href="https://github.com/bonsai/chira-ura/blob/main/SKILL.md"><h4>SKILL.md</h4><p>リポジトリ構成</p></a>
+    </div>
   </section>
 
   <footer>
@@ -96,9 +213,22 @@ chira pull | push | sync                          # 同期＝GDrive が正</pre>
     <a href="https://github.com/bonsai/chira-ura/blob/main/dev/dev.history.md">開発履歴</a>
     <a href="https://github.com/bonsai/chira-ura/blob/main/SKILL.md">SKILL</a>
     <span class="sp">&copy; chira-ura</span>
-    <img src="crx/icons/icon.svg" alt="" />
+    <img src="gui/win/ChiraUra.Win/chira.svg" alt="" />
   </footer>
 
 </div>
+
+<script>
+  const tabs = document.querySelectorAll('.tab');
+  const panels = document.querySelectorAll('.panel');
+  function activate(name, push){
+    tabs.forEach(t => t.setAttribute('aria-selected', String(t.dataset.tab === name)));
+    panels.forEach(p => p.classList.toggle('active', p.dataset.panel === name));
+    if (push) history.replaceState(null, '', '#' + name);
+  }
+  tabs.forEach(t => t.addEventListener('click', () => activate(t.dataset.tab, true)));
+  const initial = (location.hash || '').replace('#','');
+  if (initial && document.querySelector('.tab[data-tab="'+initial+'"]')) activate(initial, false);
+</script>
 </body>
 </html>
