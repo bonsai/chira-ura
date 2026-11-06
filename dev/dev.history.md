@@ -2,6 +2,11 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-06 / v0.1.9-dev — index.html をタブ式に
+
+- 指示: `index.html` に crx / win / cli / … を別タブで。
+- 変更: `index.html` をタブ UI に刷新（概要 / crx / cli / api / win / rust / mobile / dev）。`location.hash` でタブ保持。`gui/` 構成（win/rust/mobile）を反映。
+
 ## 2026-11-06 / v0.1.9-dev — gui/win UI 刷新（フッター集約・IME・保存通知）
 
 - 指示: Windows 付箋クライアントの UI を作り直す。
