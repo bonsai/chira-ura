@@ -1,0 +1,62 @@
+name: Diagrams
+
+# dev/*.mmd (Mermaid) と dev/*.puml (PlantUML) を SVG にレンダリングする。
+# ローカルに mmdc / plantuml が無くても gh workflow でビルドできる。
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "dev/*.mmd"
+      - "dev/*.puml"
+      - "dev/puppeteer.json"
+      - ".github/workflows/diagrams.yml"
+  pull_request:
+    paths:
+      - "dev/*.mmd"
+      - "dev/*.puml"
+      - "dev/puppeteer.json"
+      - ".github/workflows/diagrams.yml"
+  workflow_dispatch:
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Render Mermaid (.mmd -> .svg)
+        run: |
+          set -e
+          for f in dev/*.mmd; do
+            [ -e "$f" ] || continue
+            echo "mmd: $f"
+            npx -y @mermaid-js/mermaid-cli -p dev/puppeteer.json -i "$f" -o "${f%.mmd}.svg"
+          done
+
+      - name: Render PlantUML (.puml -> .svg)
+        run: |
+          set -e
+          curl -sSL -o plantuml.jar \
+            https://github.com/plantuml/plantuml/releases/download/v1.2024.8/plantuml-1.2024.8.jar
+          for f in dev/*.puml; do
+            [ -e "$f" ] || continue
+            echo "puml: $f"
+            java -Dfile.encoding=UTF-8 -jar plantuml.jar -tsvg "$f"
+          done
+
+      - name: Upload diagrams
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagrams
+          path: dev/*.svg
+          if-no-files-found: warn

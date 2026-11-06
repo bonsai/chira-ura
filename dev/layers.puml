@@ -1,0 +1,66 @@
+@startuml chira-ura-layers
+' ============================================================
+' chira-ura 三層アーキテクチャ
+'   書き殴る dump / 醸成 weaver / 選び出し rag
+'   m = wiki, weaver   v = rag, llm   c = mcp, cli
+'   データだけで疎結合（別レポ・コード非依存）
+' ============================================================
+title chira-ura — 三層アーキテクチャ（dump / weaver / rag）
+
+skinparam defaultFontName Meiryo
+skinparam shadowing false
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+skinparam linetype ortho
+
+actor 人間 as U
+
+package "書き殴る層 (dump) — bonsai/chira-ura" as DUMP {
+  component "crx\nChrome 拡張" as CRX
+  component "cli\nchira" as CLI
+  component "gui/win\nchira.exe" as WIN
+  component "gui/rust" as RUST
+  component "mobile\n(計画)" as MOB
+}
+
+database "bonsai/wiki\n貯めるだけ・不変\n(raw/ ripe/ pick/)" as WIKI
+
+package "m = wiki, weaver" as M {
+  component "weaver (織姫)\n再構成・再生成 + メタデータ" as WEAVER
+}
+
+package "v = rag, llm" as V {
+  component "rag\n索引・検索" as RAG
+  component "llm\n生成" as LLM
+}
+
+package "c = mcp, cli" as C {
+  component "mcp" as MCP
+  component "cli (読み出し)" as CLIC
+}
+
+component "Muse / チャット" as MUSE
+
+U --> CRX
+U --> CLI
+U --> WIN
+U --> RUST
+U --> MOB
+
+CRX --> WIKI : raw 生メモ\n(追記のみ)
+CLI --> WIKI
+WIN --> WIKI
+RUST --> WIKI
+MOB --> WIKI
+
+WIKI --> WEAVER : raw/
+WEAVER --> WIKI : ripe/ + meta
+WEAVER --> RAG : ripe/ + meta
+RAG <--> LLM
+RAG --> MCP
+RAG --> CLIC
+MCP --> U
+CLIC --> U
+MCP <--> MUSE
+
+@enduml
