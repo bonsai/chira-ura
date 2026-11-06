@@ -47,5 +47,5 @@
 
 ## 影響
 
-- 決まった言語で bonsai/chira-ura に Windows クライアントの実装 Issue を切る（実装はローカル CLI / Jules）
+- 決まった言語で bonsai/chira-ura に Windows クライアントの実装 Issue を切る（実装はローカル CLI / Jules、配置は `app/`）
 - 既存の crx / CLI / API / MCP には影響しない（入口が1つ増えるだけ）

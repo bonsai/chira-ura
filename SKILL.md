@@ -34,7 +34,7 @@ cli/                    設定・同期 CLIENT（bin: chira。`bash cli/install.
   install.ps1           Windows 版。~/.local/bin/chira.cmd を PATH へ
   sync.sh               crx/ → <LOAD> へ流し込む
   package.json
-rs/                     Rust GUI クライアント（egui 付箋メモ）
+app/                    Rust GUI クライアント（egui 付箋メモ）
   Cargo.toml
   src/
 dev/                    開発資料
