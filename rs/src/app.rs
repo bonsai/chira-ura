@@ -34,14 +34,16 @@ impl ChiraApp {
         visuals.window_fill = egui::Color32::from_rgb(254, 252, 232);
         cc.egui_ctx.set_visuals(visuals);
 
-        let outbox = Outbox::new(Outbox::default_dir()).unwrap_or_else(|_| {
-            Outbox::new(std::env::temp_dir().join("chira_outbox")).unwrap()
-        });
+        let outbox = Outbox::new(Outbox::default_dir())
+            .unwrap_or_else(|_| Outbox::new(std::env::temp_dir().join("chira_outbox")).unwrap());
 
         let (sync_tx, sync_rx) = channel();
 
         // Check if there is an active note in outbox to resume, or create new
-        let existing = outbox.list_notes().ok().and_then(|list| list.into_iter().last());
+        let existing = outbox
+            .list_notes()
+            .ok()
+            .and_then(|list| list.into_iter().last());
         let current_note = existing.unwrap_or_else(|| Note::new(""));
         let content = current_note.content.clone();
 
@@ -82,7 +84,9 @@ impl ChiraApp {
 
     fn sync_client_api_url(&self) -> String {
         let config = Config::load();
-        config.api_url.unwrap_or_else(|| "http://127.0.0.1:8787".to_string())
+        config
+            .api_url
+            .unwrap_or_else(|| "http://127.0.0.1:8787".to_string())
     }
 
     fn sync_client_token(&self) -> Option<String> {
@@ -97,7 +101,10 @@ impl eframe::App for ChiraApp {
             self.first_frame_rendered = true;
             let elapsed = self.start_instant.elapsed();
             if self.bench_mode {
-                println!("BENCHMARK_COLD_START_MS: {:.2}", elapsed.as_secs_f64() * 1000.0);
+                println!(
+                    "BENCHMARK_COLD_START_MS: {:.2}",
+                    elapsed.as_secs_f64() * 1000.0
+                );
                 ctx.send_viewport_cmd(egui::ViewportCommand::Close);
                 return;
             }
@@ -124,12 +131,22 @@ impl eframe::App for ChiraApp {
 
         // Top bar / header: Minimal status icon and action
         egui::TopBottomPanel::top("top_panel")
-            .frame(egui::Frame::none().fill(egui::Color32::from_rgb(254, 240, 138)).inner_margin(4.0))
+            .frame(
+                egui::Frame::none()
+                    .fill(egui::Color32::from_rgb(254, 240, 138))
+                    .inner_margin(4.0),
+            )
             .show(ctx, |ui| {
                 ui.horizontal(|ui| {
-                    ui.label(egui::RichText::new("チラ裏").size(11.0).strong().color(egui::Color32::from_rgb(113, 63, 18)));
+                    ui.label(
+                        egui::RichText::new("チラ裏")
+                            .size(11.0)
+                            .strong()
+                            .color(egui::Color32::from_rgb(113, 63, 18)),
+                    );
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        let status_label = ui.label(egui::RichText::new(&self.status_emoji).size(13.0))
+                        let status_label = ui
+                            .label(egui::RichText::new(&self.status_emoji).size(13.0))
                             .on_hover_text(&self.status_tooltip);
 
                         if status_label.clicked() && !self.is_syncing {
@@ -139,14 +156,22 @@ impl eframe::App for ChiraApp {
                             self.trigger_sync();
                         }
 
-                        if ui.small_button("＋ NEW").on_hover_text("新しい付箋メモを作成").clicked() {
+                        if ui
+                            .small_button("＋ NEW")
+                            .on_hover_text("新しい付箋メモを作成")
+                            .clicked()
+                        {
                             self.current_note = Note::new("");
                             self.content.clear();
                             self.status_emoji = "✏️".to_string();
                             self.status_tooltip = "未保存".to_string();
                         }
 
-                        if ui.small_button("📋 コピー").on_hover_text("本文をクリップボードにコピー").clicked() {
+                        if ui
+                            .small_button("📋 コピー")
+                            .on_hover_text("本文をクリップボードにコピー")
+                            .clicked()
+                        {
                             ui.output_mut(|o| o.copied_text = self.content.clone());
                             self.status_emoji = "📋".to_string();
                             self.status_tooltip = "コピー完了".to_string();
@@ -157,7 +182,11 @@ impl eframe::App for ChiraApp {
 
         // Main editing area: full window sticky text area
         egui::CentralPanel::default()
-            .frame(egui::Frame::none().fill(egui::Color32::from_rgb(254, 252, 232)).inner_margin(8.0))
+            .frame(
+                egui::Frame::none()
+                    .fill(egui::Color32::from_rgb(254, 252, 232))
+                    .inner_margin(8.0),
+            )
             .show(ctx, |ui| {
                 let id = egui::Id::new("memo_editor");
                 let response = ui.add_sized(
@@ -167,7 +196,7 @@ impl eframe::App for ChiraApp {
                         .font(egui::TextStyle::Body)
                         .text_color(egui::Color32::from_rgb(28, 25, 23))
                         .frame(false)
-                        .hint_text("ここに書き殴る... (自動保存)")
+                        .hint_text("ここに書き殴る... (自動保存)"),
                 );
 
                 // Auto-focus immediately

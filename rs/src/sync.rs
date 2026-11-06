@@ -160,7 +160,10 @@ impl WikiSyncClient {
         let auth_header = format!("Bearer {}", self.token);
 
         // 1. Get branch ref
-        let ref_url = format!("{}/repos/{}/{}/git/ref/heads/{}", base, self.owner, self.repo, self.branch);
+        let ref_url = format!(
+            "{}/repos/{}/{}/git/ref/heads/{}",
+            base, self.owner, self.repo, self.branch
+        );
         let ref_resp = ureq::get(&ref_url)
             .set("Authorization", &auth_header)
             .set("Accept", "application/vnd.github+json")
@@ -177,7 +180,10 @@ impl WikiSyncClient {
             .ok_or_else(|| "Missing commit sha in git ref".to_string())?;
 
         // 2. Get commit to find base_tree
-        let commit_url = format!("{}/repos/{}/{}/git/commits/{}", base, self.owner, self.repo, latest_commit_sha);
+        let commit_url = format!(
+            "{}/repos/{}/{}/git/commits/{}",
+            base, self.owner, self.repo, latest_commit_sha
+        );
         let commit_resp = ureq::get(&commit_url)
             .set("Authorization", &auth_header)
             .set("Accept", "application/vnd.github+json")
@@ -198,8 +204,8 @@ impl WikiSyncClient {
         let mut file_names = Vec::new();
 
         for note in notes {
-            let dt = DateTime::<Utc>::from_timestamp_millis(note.updated_at)
-                .unwrap_or_else(Utc::now);
+            let dt =
+                DateTime::<Utc>::from_timestamp_millis(note.updated_at).unwrap_or_else(Utc::now);
             let mm = format!("{:02}", dt.month());
             let timestamp_file = format!(
                 "{:04}{:02}{:02}_{:02}{:02}{:02}.txt",
@@ -283,7 +289,10 @@ impl WikiSyncClient {
         if update_ref_resp.status() >= 200 && update_ref_resp.status() < 300 {
             Ok(new_commit_sha)
         } else {
-            Err(format!("Update ref returned status {}", update_ref_resp.status()))
+            Err(format!(
+                "Update ref returned status {}",
+                update_ref_resp.status()
+            ))
         }
     }
 }
@@ -300,7 +309,8 @@ mod tests {
     use std::thread;
 
     fn temp_test_dir(name: &str) -> PathBuf {
-        let path = std::env::temp_dir().join(format!("chira_test_sync_{}_{}", name, uuid::Uuid::new_v4()));
+        let path =
+            std::env::temp_dir().join(format!("chira_test_sync_{}_{}", name, uuid::Uuid::new_v4()));
         let _ = fs::create_dir_all(&path);
         path
     }
@@ -354,7 +364,10 @@ mod tests {
         let note = Note::new("同期テストメモ");
         outbox.save_note(&note).unwrap();
 
-        let client = SyncClient::new(format!("http://127.0.0.1:{}", port), Some("test-token".to_string()));
+        let client = SyncClient::new(
+            format!("http://127.0.0.1:{}", port),
+            Some("test-token".to_string()),
+        );
         let res = client.sync_outbox(&outbox);
         assert_eq!(res, SyncResult::Synced(1));
 
@@ -378,7 +391,9 @@ mod tests {
                     let mut buf = [0u8; 1024];
                     loop {
                         let n = stream.read(&mut buf).unwrap_or(0);
-                        if n == 0 { break; }
+                        if n == 0 {
+                            break;
+                        }
                         req_bytes.extend_from_slice(&buf[..n]);
                         if req_bytes.windows(4).any(|w| w == b"\r\n\r\n") {
                             let s = String::from_utf8_lossy(&req_bytes);
