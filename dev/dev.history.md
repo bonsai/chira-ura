@@ -2,6 +2,11 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-06 / v0.1.9-dev — モバイルクライアント設計 doc
+
+- 指示: doc を書いて issue を作成。
+- 変更: `dev/mobile-design.md` を追加（iOS/Android = `gui/iphone`, `gui/apk` の設計・共通要件・技術候補・受け入れ条件）。
+
 ## 2026-11-06 / v0.1.9-dev — index.html をタブ式に
 
 - 指示: `index.html` に crx / win / cli / … を別タブで。
