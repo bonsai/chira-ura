@@ -16,8 +16,10 @@ import {
   DB_PATH, openDb, listNotes, getNote, addNote, removeNote,
   getMeta, setMeta, exportJsonl, importJsonl,
   exportStorage, importStorage, exportCanonical, importCanonical,
-  getUnsyncedNotes, markNoteSynced
+  getUnsyncedNotes, markNoteSynced,
+  getUnsyncedWikiNotes, markNoteWikiSynced
 } from "./ura-db.js";
+import { syncWiki, pushNotesToWiki, formatTimestampFilename, getMonthDir } from "./wiki-push.js";
 
 const KEYS_PATH = process.env.CHIRA_KEYS
   || join(homedir(), ".config", "chira-ura", "keys.json");
@@ -176,7 +178,9 @@ function usage() {
   chira serve [--port N]      ブリッジを立てる（拡張が pull する）
   chira pull                  ブリッジから keys.json へ（= sync）
   chira push                  keys.json をブリッジへ（GDrive ミラーとして）
+  chira push wiki             未送信メモを 1 コミットで bonsai/wiki/raw/<MM>/ へ push
   chira sync                  未送信メモ（SQLite）を /inbox へ送る
+  chira sync wiki             未送信メモを 1 コミットで bonsai/wiki/raw/<MM>/ へ push
   chira sync pull             ブリッジから keys.json へ（旧 chira pull）
 
   メモ（拡張と同じ JSON。SQLite は ~/.chira/ura.db）
@@ -504,6 +508,23 @@ switch (cmd) {
       pull().catch((e) => { console.error(e.message); process.exit(1); });
       break;
     }
+    if (sub === "wiki") {
+      const { db } = openDb();
+      const keys = read();
+      syncWiki(db, { keys, verbose: rest.includes("-v") || rest.includes("--verbose") })
+        .then((r) => {
+          if (r.sent > 0) {
+            console.log(`synced: ${r.sent} notes -> bonsai/wiki [commit: ${r.commitSha?.slice(0, 7)}]`);
+          }
+        })
+        .catch(() => {
+          // オフライン時は静かに終了
+        })
+        .finally(() => {
+          db.close();
+        });
+      break;
+    }
     const { db } = openDb();
     syncInbox(db, { verbose: rest.includes("-v") || rest.includes("--verbose") })
       .then((r) => {
@@ -520,6 +541,23 @@ switch (cmd) {
     break;
   }
   case "push":
+    if (rest[0] === "wiki") {
+      const { db } = openDb();
+      const keys = read();
+      syncWiki(db, { keys, verbose: rest.includes("-v") || rest.includes("--verbose") })
+        .then((r) => {
+          if (r.sent > 0) {
+            console.log(`synced: ${r.sent} notes -> bonsai/wiki [commit: ${r.commitSha?.slice(0, 7)}]`);
+          }
+        })
+        .catch(() => {
+          // オフライン時は静かに終了
+        })
+        .finally(() => {
+          db.close();
+        });
+      break;
+    }
     push().catch((e) => { console.error(e.message); process.exit(1); });
     break;
 

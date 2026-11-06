@@ -129,6 +129,27 @@ export function getUnsyncedNotes(db) {
   });
 }
 
+// ---------- wiki / raw 送信管理（meta 側に持ち canonical を壊さない） ----------
+export function getWikiSyncMeta(db) {
+  const val = getMeta(db, "sync.wiki", {});
+  return val && typeof val === "object" ? val : {};
+}
+
+export function markNoteWikiSynced(db, id, syncedAt = Date.now()) {
+  const cur = getWikiSyncMeta(db);
+  cur[id] = syncedAt;
+  setMeta(db, "sync.wiki", cur);
+}
+
+export function getUnsyncedWikiNotes(db) {
+  const syncMeta = getWikiSyncMeta(db);
+  const notes = listNotes(db);
+  return notes.filter((n) => {
+    const lastSynced = Number(syncMeta[n.id] || 0);
+    return n.updatedAt > lastSynced;
+  });
+}
+
 // ---------- 拡張と同じ JSON の出し入れ ----------
 /** notes → JSONL（箱のファイル形式） */
 export function exportJsonl(db) {
