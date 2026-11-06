@@ -41,7 +41,7 @@ api/                    Cloudflare Worker（FE API / cron / MCP）
   wrangler.json
 gui/                    プラットフォーム別 GUI（rust / win / iphone / apk）
   rust/                 Rust GUI クライアント（egui 付箋メモ。WSL/Unix/Windows）
-  win/                  Windows C#/.NET WinForms（PR #21）
+  win/                  Windows C#/.NET WinForms
   iphone/               iOS（計画）
   apk/                  Android（計画）
 dev/                    開発資料

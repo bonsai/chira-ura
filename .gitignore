@@ -4,6 +4,17 @@ dist/
 *.zip
 keys.json
 dev/plantuml.jar
+bin/
+obj/
+**/bin/
+**/obj/
+gui/win/**/bin/
+gui/win/**/obj/
+*.user
+*.suo
+gui/win/*.user
+gui/win/*/*.user
+gui/win/*/*.csproj.user
 target/
 **/target/
 Cargo.lock

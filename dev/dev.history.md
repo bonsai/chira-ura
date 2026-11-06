@@ -14,6 +14,21 @@
   - `.github/workflows/rust.yml` の対象パスを `gui/rust/**` に更新。
   - `README.md`, `SKILL.md`, `dev/benchmarks.md` の参照を `gui/` に更新。
 
+## 2026-11-05 / v0.1.9-dev — Windowsクライアント（C#/.NET）：付箋メモ専用アプリ
+
+- 指示: Windowsクライアント（C#/.NET）：付箋メモ専用アプリ。親: #5。付箋メモを書いて閉じると既存の経路で wiki/raw に届く状態。
+- 変更: `gui/gui/win/` 配下に C# / .NET 10 ソリューション（`gui/gui/win/ChiraUra.sln`）を追加。
+  - `gui/gui/win/ChiraUra.Core/`:
+    - `Note.cs`: メモデータ型 `{ id, title, content, updatedAt }`、本文1行目タイトル導出（`DeriveTitle`）、ID生成
+    - `NoteRepository.cs`: SQLite（`~/.chira/ura.db`）の `notes` / `meta` テーブル読み書き（DELETE journal mode、スキーマ互換）
+    - `ChiraApiClient.cs`: FE API（`PUT /inbox/<name>`）送信クライアント（`CHIRA_TOKEN` 認証ヘッダ対応）
+    - `SyncService.cs`: メモ保存と FE API（`/inbox/<id>.txt`）送信。オフライン時は SQLite に安全に保持されローカル下書きとして機能
+  - `gui/gui/win/ChiraUra.Win/`:
+    - WinForms 付箋メモ UI（`StickyNoteForm.cs`）。コールドスタートから即座にテキスト入力フォーカス、最前面ピン留め（📌）、自動保存、ウィンドウクローズ時の送信
+  - `gui/gui/win/ChiraUra.Tests/`:
+    - xUnit テスト（`NoteTests.cs`）で Note のタイトル導出・JSON 互換性、SQLite リポジトリ CRUD、SyncService と API クライアント送信・オフラインフォールバックを検証
+  - `dev/adr-001-rs-vs-cs.md`: C# / .NET 採用を反映（Accepted）。
+
 ## 2026-11-05 / v0.1.8-dev — MCP サーバー（/mcp、pi-coding 連携）
 
 - 指示: MCP サーバー（/mcp、pi-coding 連携）。設計 dev/cloud-design.md §7。
