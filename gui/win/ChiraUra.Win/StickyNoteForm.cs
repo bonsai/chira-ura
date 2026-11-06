@@ -54,6 +54,17 @@ public class StickyNoteForm : Form
         TopMost = true;
         KeyPreview = true;
 
+        // アイコン（exe に埋め込んだ chira.ico）
+        try
+        {
+            var exeIcon = System.Drawing.Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+            if (exeIcon != null) this.Icon = exeIcon;
+        }
+        catch
+        {
+            // アイコンが取れなくても続行
+        }
+
         // ---- 2 段レイアウト（上: 本文 / 下: フッター）。ヘッダは無し。----
         var layout = new TableLayoutPanel
         {
