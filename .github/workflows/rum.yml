@@ -1,0 +1,76 @@
+name: rum (Rust TUI)
+
+# gui/rum/ の vim 風 TUI リーダ/エディタ "rum" を GitHub Actions でビルドする。
+# ローカルに Rust ツールチェーンが無くても CI で検証できる。
+# gui/rum/Cargo.toml がまだ無い間は build をスキップして成功させる。
+
+on:
+  push:
+    paths:
+      - "gui/rum/**"
+      - ".github/workflows/rum.yml"
+  pull_request:
+    paths:
+      - "gui/rum/**"
+      - ".github/workflows/rum.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: gui/rum
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for gui/rum/Cargo.toml
+        id: check
+        shell: bash
+        working-directory: .
+        run: |
+          if [ -f gui/rum/Cargo.toml ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip notice
+        if: steps.check.outputs.exists == 'false'
+        shell: bash
+        working-directory: .
+        run: echo "::notice::gui/rum/Cargo.toml not found; skipping rum build."
+
+      - uses: dtolnay/rust-toolchain@stable
+        if: steps.check.outputs.exists == 'true'
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+        if: steps.check.outputs.exists == 'true'
+        with:
+          workspaces: gui/rum
+
+      - name: cargo fmt --check
+        if: steps.check.outputs.exists == 'true'
+        run: cargo fmt --all -- --check
+
+      - name: cargo clippy
+        if: steps.check.outputs.exists == 'true'
+        run: cargo clippy --all-targets
+
+      - name: Build (release)
+        if: steps.check.outputs.exists == 'true'
+        run: cargo build --release
+
+      - name: Test
+        if: steps.check.outputs.exists == 'true'
+        run: cargo test
+
+      - name: Upload rum.exe
+        if: steps.check.outputs.exists == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: rum-windows
+          path: gui/rum/target/release/rum.exe
+          if-no-files-found: ignore

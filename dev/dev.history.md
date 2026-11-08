@@ -2,6 +2,17 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-07 / v0.1.11-dev — chira md（DB ⇄ md 単独ファイル）と rum の発注
+
+- 指示: `chira md`（DB から md 単独ファイル生成）/ 全ファイルを読めて編集できる UI。Rust で vim 風、名前は **rum**。issue を作って Jules に委譲。gh workflow でビルド。
+- 変更:
+  - `cli/md.js`: DB ⇄ md（1 ノート 1 ファイル）。front matter に `id` / `title` / `updatedAt`。`exportMarkdown` / `importMarkdown` / `slugify` / `parseMarkdown` / `toMarkdown`。
+  - `cli/cli.js`: `chira md [dir]` / `chira md import [dir]` / `chira md path`（既定 `~/.chira/md`）。
+  - `test/md.test.js`: 往復・冪等・本文編集の取り込み・front matter 無しの取り込み。
+  - `.github/workflows/rum.yml`: `gui/rum`（Rust）の fmt/clippy/build/test + artifact（`Cargo.toml` が無い間はスキップ）。
+  - Issues: #38 `chira md`（実装済み）/ #39 `gui/rum rum TUI` / #40 整形・埋め込みの設計。Jules 発注: #39, #40。
+- メモ: ローカルに Rust 未導入。MSVC はあるが Windows SDK の Lib が無くリンク不可。`rum` のビルドは GitHub Actions（windows-latest）に委ねる。
+
 ## 2026-11-06 / v0.1.10-dev — 三層 UML（Mermaid / PlantUML）と gh wf レンダリング
 
 - 指示: make uml / mmd でも書いて。ビルドは gh workflow で。

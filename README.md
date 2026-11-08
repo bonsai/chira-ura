@@ -4,7 +4,7 @@
 
 旧名 `kami copi`（`kamicopi.net` と衝突するため改名）。
 
-構成: `crx/`（拡張）/ `cli/`（設定・同期クライアント）/ `api/`（Cloudflare Worker）/ `gui/`（GUI: `rust/`, `gui/win/`, `iphone/`, `apk/`）/ `dev/`（履歴・UI/UX 仕様）。
+構成: `crx/`（拡張）/ `cli/`（設定・同期クライアント）/ `api/`（Cloudflare Worker）/ `gui/`（GUI: `rust/`, `rum/`（vim 風 TUI）, `win/`, `iphone/`, `apk/`）/ `dev/`（履歴・UI/UX 仕様）。
 
 ## スタック
 
@@ -47,6 +47,8 @@ chira note add "本文"                              # 追加
 chira export | chira import                       # JSONL（箱のファイル形式と同じ）
 chira storage export                              # chrome.storage.local 相当の JSON
 chira db export <dir> | chira db import <dir>     # canonical（sync-db と同じ形）
+chira md [dir]                                    # DB → md 単独ファイル（既定 ~/.chira/md）
+chira md import [dir]                             # md → DB（編集を戻す）
 ```
 
 同じ `.db` を端末間でそのままコピーできる（journal=DELETE で 1 ファイル完結）。

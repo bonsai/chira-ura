@@ -39,8 +39,9 @@ api/                    Cloudflare Worker（FE API / cron / MCP）
   src/mcp.js            MCP 2026-07-28 / Streamable HTTP
   src/wiki-push.js      closed → wiki/raw バッチ
   wrangler.json
-gui/                    プラットフォーム別 GUI（rust / win / iphone / apk）
+gui/                    プラットフォーム別 GUI（rust / rum / win / iphone / apk）
   rust/                 Rust GUI クライアント（egui 付箋メモ。WSL/Unix/Windows）
+  rum/                  Rust TUI リーダ/エディタ（vim 風。~/.chira/md を開く）
   win/                  Windows C#/.NET WinForms
   iphone/               iOS（計画）
   apk/                  Android（計画）
@@ -104,6 +105,8 @@ chira import file.jsonl  # JSONL → notes（同じ id は新しい updatedAt �
 chira storage export     # chrome.storage.local 相当の JSON
 chira db export <dir>    # canonical（schema.sql + notes.jsonl + meta.jsonl）
 chira db import <dir>    # canonical から読み込む
+chira md [dir]           # DB → md 単独ファイル（既定 ~/.chira/md）
+chira md import [dir]    # md → DB（編集を戻す）
 ```
 
 - 同じ .db を端末間でやり取りできる（journal=DELETE なので 1 ファイルで完結）。

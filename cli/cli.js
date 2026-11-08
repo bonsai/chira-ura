@@ -19,6 +19,7 @@ import {
   getUnsyncedNotes, markNoteSynced
 } from "./ura-db.js";
 import { syncWiki } from "./wiki-push.js";
+import { DEFAULT_MD_DIR, exportMarkdown, importMarkdown } from "./md.js";
 
 const KEYS_PATH = process.env.CHIRA_KEYS
   || join(homedir(), ".config", "chira-ura", "keys.json");
@@ -189,6 +190,9 @@ function usage() {
   chira note add <本文...>    メモを書く（タイトルは本文1行目から）
   chira note get <id>         メモを JSON で
   chira note rm <id>          メモを消す
+  chira md [dir]              DB → dir/*.md（1 ノート 1 ファイル。既定 ~/.chira/md）
+  chira md import [dir]       dir/*.md → DB（本文が変わっていれば updatedAt を上げる）
+  chira md path               既定の md ディレクトリを表示
   chira export [file.jsonl]   メモを JSONL で（箱のファイル形式と同じ）
   chira import <file.jsonl>   JSONL を読み込む
   chira storage export [file] chrome.storage.local 相当の JSON
@@ -540,6 +544,23 @@ switch (cmd) {
   }
 
   // ---------- メモ（拡張と同じ JSON。SQLite は ~/.chira/ura.db） ----------
+  case "md": {
+    const sub = rest[0];
+    const { db } = openDb();
+    if (sub === "path") {
+      console.log(DEFAULT_MD_DIR);
+    } else if (sub === "import") {
+      const dir = rest[1] ? resolve(rest[1]) : DEFAULT_MD_DIR;
+      const r = importMarkdown(db, dir);
+      console.log(`md import: ${r.changed}/${r.total} changed (${r.created} new) <- ${r.dir}`);
+    } else {
+      const dir = sub && sub !== "export" ? resolve(sub) : DEFAULT_MD_DIR;
+      const r = exportMarkdown(db, dir);
+      console.log(`md export: ${r.count} notes -> ${r.dir}`);
+    }
+    db.close();
+    break;
+  }
   case "db": {
     const sub = rest[0];
     const { db, path } = openDb();
