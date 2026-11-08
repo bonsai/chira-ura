@@ -4,7 +4,8 @@
 
 旧名 `kami copi`（`kamicopi.net` と衝突するため改名）。
 
-構成: `crx/`（拡張）/ `cli/`（設定・同期クライアント）/ `api/`（Cloudflare Worker）/ `gui/`（GUI: `rust/`, `rum/`（vim 風 TUI）, `win/`, `iphone/`, `apk/`）/ `dev/`（履歴・UI/UX 仕様）。
+構成: `crx/`（拡張）/ `cli/`（設定・同期クライアント）/ `api/`（Cloudflare Worker）/ `gui/`（GUI: `rust/`, `win/`, `iphone/`, `apk/`）/ `dev/`（履歴・UI/UX 仕様）。
+`rum`（vim 風 TUI）は別レポ **[bonsai/rum](https://github.com/bonsai/rum)**。
 
 ## スタック
 

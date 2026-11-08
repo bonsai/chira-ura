@@ -39,10 +39,10 @@ api/                    Cloudflare Worker（FE API / cron / MCP）
   src/mcp.js            MCP 2026-07-28 / Streamable HTTP
   src/wiki-push.js      closed → wiki/raw バッチ
   wrangler.json
-gui/                    プラットフォーム別 GUI（rust / rum / win / iphone / apk）
+gui/                    プラットフォーム別 GUI（rust / win / iphone / apk）
   rust/                 Rust GUI クライアント（egui 付箋メモ。WSL/Unix/Windows）
-  rum/                  Rust TUI リーダ/エディタ（vim 風。~/.chira/md を開く）
   win/                  Windows C#/.NET WinForms
+                        （rum = vim 風 TUI リーダ/エディタは別レポ bonsai/rum）
   iphone/               iOS（計画）
   apk/                  Android（計画）
 dev/                    開発資料

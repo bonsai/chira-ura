@@ -9,9 +9,9 @@
   - `cli/md.js`: DB ⇄ md（1 ノート 1 ファイル）。front matter に `id` / `title` / `updatedAt`。`exportMarkdown` / `importMarkdown` / `slugify` / `parseMarkdown` / `toMarkdown`。
   - `cli/cli.js`: `chira md [dir]` / `chira md import [dir]` / `chira md path`（既定 `~/.chira/md`）。
   - `test/md.test.js`: 往復・冪等・本文編集の取り込み・front matter 無しの取り込み。
-  - `.github/workflows/rum.yml`: `gui/rum`（Rust）の fmt/clippy/build/test + artifact（`Cargo.toml` が無い間はスキップ）。
-  - Issues: #38 `chira md`（実装済み）/ #39 `gui/rum rum TUI` / #40 整形・埋め込みの設計。Jules 発注: #39, #40。
-- メモ: ローカルに Rust 未導入。MSVC はあるが Windows SDK の Lib が無くリンク不可。`rum` のビルドは GitHub Actions（windows-latest）に委ねる。
+  - Issues: #38 `chira md`（実装済み）/ #39 `rum TUI` / #40 整形・埋め込みの設計。Jules 発注: #39, #40。
+  - `rum`（vim 風 TUI）は別レポ **bonsai/rum** に spin-out（Jules 実装を GitHub Actions でビルド）。
+- メモ: ローカルに Rust を置かない方針（Windows SDK の Lib が無い）。ビルドは GitHub Actions に委ねる。
 
 ## 2026-11-06 / v0.1.10-dev — 三層 UML（Mermaid / PlantUML）と gh wf レンダリング
 
