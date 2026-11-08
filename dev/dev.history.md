@@ -2,6 +2,14 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-08 / v0.1.12-dev — Windows 付箋: 最前面ピン留め（📌）を作り直し
+
+- 指示: pin-topmost を作り直して。
+- 経緯: `feat/pin-topmost` の未コミット変更が作業中に失われたため、現行 UI（フッター三等分）に合わせて再実装。
+- 変更: `gui/win/ChiraUra.Win/StickyNoteForm.cs`
+  - フッターを四等分に（📝 ステータス / 📌 ピン / ＋ / ✕）。
+  - 📌 を追加。クリックで `TopMost` をトグル（📌 最前面 / 📍 通常）。既定は最前面。
+
 ## 2026-11-06 / v0.1.10-dev — 三層 UML（Mermaid / PlantUML）と gh wf レンダリング
 
 - 指示: make uml / mmd でも書いて。ビルドは gh workflow で。

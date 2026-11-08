@@ -15,6 +15,7 @@ public class StickyNoteForm : Form
 
     private readonly TextBox _textBox;
     private readonly Label _statusLabel;
+    private readonly Button _pinButton;
     private readonly Button _newButton;
     private readonly Button _closeButton;
     private readonly ToolTip _balloon;
@@ -99,19 +100,20 @@ public class StickyNoteForm : Form
         _textBox.TextChanged += TextBox_TextChanged;   // IME 切替後も本文はそのまま入力できる
         layout.Controls.Add(_textBox, 0, 0);
 
-        // フッター: 三等分（左: 絵文字ステータス / 中: ＋ / 右: ✕）
+        // フッター: 四等分（📝 ステータス / 📌 最前面ピン / ＋ / ✕）
         var footer = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            ColumnCount = 3,
+            ColumnCount = 4,
             RowCount = 1,
             Margin = new Padding(0),
             Padding = new Padding(0),
             BackColor = Color.FromArgb(254, 240, 138)
         };
-        footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.34F));
-        footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
-        footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
+        footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+        footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+        footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+        footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
         footer.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 
         // 左: 絵文字ステータス（ドラッグでも動かせる）
@@ -130,15 +132,24 @@ public class StickyNoteForm : Form
         _statusLabel.MouseUp += DragEnd;
         footer.Controls.Add(_statusLabel, 0, 0);
 
-        // 中: ＋（横長・大きめ）
+        // 📌 最前面ピン留め（トグル）。既定は最前面（TopMost = true）。
+        _pinButton = MakeFooterButton(TopMost ? "📌" : "📍");
+        _pinButton.Click += (s, e) =>
+        {
+            TopMost = !TopMost;
+            _pinButton.Text = TopMost ? "📌" : "📍";
+        };
+        footer.Controls.Add(_pinButton, 1, 0);
+
+        // ＋（横長・大きめ）
         _newButton = MakeFooterButton("＋");
         _newButton.Click += (s, e) => NewNote();
-        footer.Controls.Add(_newButton, 1, 0);
+        footer.Controls.Add(_newButton, 2, 0);
 
-        // 右: ✕（横長・大きめ）
+        // ✕（横長・大きめ）
         _closeButton = MakeFooterButton("✕");
         _closeButton.Click += (s, e) => Close();
-        footer.Controls.Add(_closeButton, 2, 0);
+        footer.Controls.Add(_closeButton, 3, 0);
 
         layout.Controls.Add(footer, 0, 1);
 
