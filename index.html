@@ -69,7 +69,10 @@
     <p class="lead">書いたら自動保存。メモとコピーだけの軽量クライアント群。<br>
       入口（UI）は多様に、正はひとつ。</p>
     <div class="keys">
-      <span>自動保存</span><span>箱: ローカル / GDrive / GitHub / Box</span><span>OAuth</span><span>MV3</span><span>オフライン</span>
+      <span>自動保存</span><span>PWA</span><span>箱: ローカル / GDrive / GitHub / Box</span><span>OAuth</span><span>MV3</span><span>オフライン</span>
+    </div>
+    <div class="cta" style="margin-top:1.2em;">
+      <a class="btn" href="./pwa/">PWA を開く（ブラウザ・オフライン）</a>
     </div>
   </header>
 
@@ -77,6 +80,7 @@
 
   <nav class="tabs" role="tablist" aria-label="コンポーネント">
     <button class="tab" role="tab" data-tab="overview" aria-selected="true">概要</button>
+    <button class="tab" role="tab" data-tab="pwa">pwa</button>
     <button class="tab" role="tab" data-tab="crx">crx</button>
     <button class="tab" role="tab" data-tab="cli">cli</button>
     <button class="tab" role="tab" data-tab="api">api</button>
@@ -90,17 +94,36 @@
   <section class="panel active" role="tabpanel" data-panel="overview">
     <h2>できること</h2>
     <ul class="points">
+      <li>ブラウザで開く PWA。インストール可能でオフライン起動・保存に対応。</li>
       <li>サイドパネルで書く。入力は自動保存（トグルで停止可）。</li>
       <li>過去記事を読む。コピーは本文だけ（前置き無し＝そのままプロンプトに流せる）。</li>
       <li>箱を選ぶ。ローカル / Google Drive / GitHub / Box。認証は OAuth、トークンは保存しない。</li>
       <li>オフラインでためて、オンラインでまとめて送る。送信は CLI に集約。</li>
     </ul>
     <div class="cards">
+      <div class="card"><h4>pwa/</h4><p>PWA（インストール・オフライン・IndexedDB）</p></div>
       <div class="card"><h4>crx/</h4><p>Chrome 拡張（本体 UI）</p></div>
       <div class="card"><h4>cli/</h4><p>設定・同期・wiki push（bin: chira）</p></div>
       <div class="card"><h4>api/</h4><p>Cloudflare Worker（FE API / cron / MCP）</p></div>
       <div class="card"><h4>gui/</h4><p>win（C#）・rust（egui）・iphone/apk（計画）</p></div>
     </div>
+  </section>
+
+  <!-- pwa -->
+  <section class="panel" role="tabpanel" data-panel="pwa">
+    <h2>pwa — Progressive Web App</h2>
+    <p class="meta"><code>pwa/</code> ・ Vanilla JS / Service Worker / IndexedDB</p>
+    <h3>起動とインストール</h3>
+    <div class="cta">
+      <a class="btn" href="./pwa/">PWA を起動する</a>
+      <a class="btn ghost" href="https://github.com/bonsai/chira-ura/tree/main/pwa">pwa/ ソース</a>
+    </div>
+    <ul class="points">
+      <li>Chrome/Edge で「インストール」でき、スタンドアロンアプリとして起動。</li>
+      <li>Service Worker によるキャッシュで完全オフライン動作。</li>
+      <li>IndexedDB に保存（拡張・CLI と同じ <code>{ id, title, content, updatedAt }</code> 形式）。</li>
+      <li>JSONL のエクスポート／インポート対応（箱と同じフォーマット）。</li>
+    </ul>
   </section>
 
   <!-- crx -->
