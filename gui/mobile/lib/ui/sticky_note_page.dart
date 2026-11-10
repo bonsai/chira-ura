@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 import '../model/note.dart';
 import '../storage/outbox_store.dart';
 import '../sync/sync_service.dart';
@@ -21,17 +22,21 @@ class StickyNotePage extends StatefulWidget {
 class _StickyNotePageState extends State<StickyNotePage> {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
+  final SpeechToText _speech = SpeechToText();
   Note? _currentNote;
   Timer? _debounceTimer;
   String _status = '📝';
   int _pendingCount = 0;
   bool _isSyncing = false;
+  bool _speechAvailable = false;
+  bool _isListening = false;
 
   @override
   void initState() {
     super.initState();
     _startNewNote();
     _refreshPendingCount();
+    _initSpeech();
 
     // Trigger auto-sync on startup if online
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -40,9 +45,26 @@ class _StickyNotePageState extends State<StickyNotePage> {
     });
   }
 
+  Future<void> _initSpeech() async {
+    try {
+      final available = await _speech.initialize(
+        onError: (e) => setState(() => _status = '🎤❌'),
+        onStatus: (s) {
+          if (s == 'done' || s == 'notListening') {
+            if (mounted) setState(() => _isListening = false);
+          }
+        },
+      );
+      if (mounted) setState(() => _speechAvailable = available);
+    } catch (_) {
+      if (mounted) setState(() => _speechAvailable = false);
+    }
+  }
+
   @override
   void dispose() {
     _debounceTimer?.cancel();
+    _speech.stop();
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();
@@ -121,6 +143,38 @@ class _StickyNotePageState extends State<StickyNotePage> {
     }
   }
 
+  Future<void> _toggleListening() async {
+    if (!_speechAvailable) {
+      setState(() => _status = '🎤❌');
+      return;
+    }
+    if (_isListening) {
+      await _speech.stop();
+      if (mounted) setState(() => _isListening = false);
+      return;
+    }
+    setState(() => _isListening = true);
+    await _speech.listen(
+      localeId: 'ja_JP',
+      onResult: (result) {
+        if (!mounted) return;
+        final words = result.recognizedWords;
+        if (words.isEmpty) return;
+        // Append recognized text to current content
+        final base = _controller.text;
+        final newText = base.isEmpty ? words : '$base $words';
+        _controller.value = TextEditingValue(
+          text: newText,
+          selection: TextSelection.collapsed(offset: newText.length),
+        );
+        _onTextChanged(newText);
+        if (result.finalResult) {
+          setState(() => _isListening = false);
+        }
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Styling matching sticky note theme in gui/win and gui/rust:
@@ -153,6 +207,14 @@ class _StickyNotePageState extends State<StickyNotePage> {
           ],
         ),
         actions: [
+          IconButton(
+            tooltip: _isListening ? '音声入力 停止' : '音声入力',
+            icon: Icon(
+              _isListening ? Icons.mic : Icons.mic_none,
+              color: _isListening ? Colors.red : inkColor,
+            ),
+            onPressed: _speechAvailable ? _toggleListening : null,
+          ),
           IconButton(
             tooltip: '同期（送信）',
             icon: _isSyncing
