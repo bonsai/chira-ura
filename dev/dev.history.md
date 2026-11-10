@@ -2,6 +2,20 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-06 / v0.1.10-dev — モバイルクライアント（iOS / Android — gui/iphone, gui/apk, gui/mobile）
+
+- 指示: モバイルクライアント（iOS / Android — gui/iphone, gui/apk）。設計 dev/mobile-design.md。
+- 変更:
+  - `gui/mobile/`: Flutter (Dart) によるクロスプラットフォーム（iOS / Android）付箋メモクライアントを実装。
+    - `lib/model/note.dart`: 既存共通メモスキーマ `{ id, title, content, updatedAt }`、1行目タイトル導出（`deriveTitle`、最大30文字）および Base36 ID 生成。
+    - `lib/storage/outbox_store.dart`: オフライン優先のファイルベース outbox リポジトリ（`<id>.json`、タイムスタンプ順整列）。
+    - `lib/sync/sync_service.dart`: Cloudflare Worker FE API (`PUT /inbox/<id>.txt`) 送信クライアント。既定 10 件ずつのバッチ送信、Bearer 認証、送信成功時の outbox 削除（冪等）、オフライン・通信障害時の静かな失敗と未送信保持。
+    - `lib/ui/sticky_note_page.dart` / `lib/main.dart`: 爆速起動（コールドスタート < 300ms 目安）、日本語入力 IME 既定対応（multiline / autofocus）、350ms デバウンス自動保存、ステータス絵文字表示（📝/✏️/💾/☁️）。
+    - `test/note_test.dart`, `test/outbox_test.dart`, `test/sync_test.dart`: 単体テスト群を追加（スキーマ互換、タイトル抽出、outbox CRUD、10件バッチ送信、冪等性、オフライン復旧）。
+  - `gui/iphone/`: `build.sh`（iOS ビルドスクリプト）と README を更新。
+  - `gui/apk/`: `build.sh`（APK ビルドスクリプト）と README を更新。
+  - `dev/mobile-design.md`, `gui/README.md`: 実装完了と受け入れ条件達成を反映。
+
 ## 2026-11-06 / v0.1.10-dev — 三層 UML（Mermaid / PlantUML）と gh wf レンダリング
 
 - 指示: make uml / mmd でも書いて。ビルドは gh workflow で。
