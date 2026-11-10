@@ -2,6 +2,18 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-11 / v0.1.10-dev — feat(pwa): chira-ura を PWA 化（インストール可能・オフライン）
+
+- 指示: chira-ura を PWA 化（ブラウザで開き、インストールでき、オフラインでメモを書ける）。拡張と同じメモ JSON、箱と JSONL で受け渡し。
+- 変更:
+  - `pwa/` ディレクトリに PWA クライアントを追加（`index.html`, `style.css`, `manifest.webmanifest`, `sw.js`, `app.js`, `model.js`, `icons/`）。
+  - `pwa/manifest.webmanifest`: name, short_name, icons (192, 512, maskable), theme_color, background_color, display: standalone, start_url を定義。
+  - `pwa/sw.js`: バージョン付きキャッシュ（`chira-ura-v1`）でアプリシェルを事前キャッシュ。オフライン起動・更新に対応。
+  - `pwa/model.js`: `crx/scripts/model.js` から deriveTitle / noteJson / toJsonl / parseJsonl などを直接 re-export（複製なし）。
+  - `pwa/app.js`: IndexedDB（`chira-ura`、ストア `notes`、キー `id`、インデックス `updatedAt`）によるメモ保存。一覧／書く／読む／コピー（本文のみ）、自動保存（600ms デバウンス）、JSONL エクスポート／インポート、`navigator.onLine` によるオンライン／オフライン表示、PWA インストールプロンプト対応。
+  - `index.html`: PWA への入口ボタンおよびタブ解説を追加。
+  - `crx/manifest.json`: version を 0.1.10、`version_name` を `0.1.10-dev` にインクリメント。
+
 ## 2026-11-06 / v0.1.10-dev — 三層 UML（Mermaid / PlantUML）と gh wf レンダリング
 
 - 指示: make uml / mmd でも書いて。ビルドは gh workflow で。
