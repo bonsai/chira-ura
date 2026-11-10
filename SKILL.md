@@ -42,7 +42,7 @@ api/                    Cloudflare Worker（FE API / cron / MCP）
 gui/                    プラットフォーム別 GUI（rust / win / iphone / apk）
   rust/                 Rust GUI クライアント（egui 付箋メモ。WSL/Unix/Windows）
   win/                  Windows C#/.NET WinForms
-  iphone/               iOS（計画）
+  iphone/               iOS SwiftUI 付箋クライアント（実装済み）
   apk/                  Android（計画）
 dev/                    開発資料
   dev.history.md        指示と変更の履歴（新しいものが上）

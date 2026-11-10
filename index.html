@@ -99,7 +99,7 @@
       <div class="card"><h4>crx/</h4><p>Chrome 拡張（本体 UI）</p></div>
       <div class="card"><h4>cli/</h4><p>設定・同期・wiki push（bin: chira）</p></div>
       <div class="card"><h4>api/</h4><p>Cloudflare Worker（FE API / cron / MCP）</p></div>
-      <div class="card"><h4>gui/</h4><p>win（C#）・rust（egui）・iphone/apk（計画）</p></div>
+      <div class="card"><h4>gui/</h4><p>win（C#）・rust（egui）・iphone（SwiftUI）・apk（計画）</p></div>
     </div>
   </section>
 
@@ -189,7 +189,7 @@ dotnet publish gui/win/ChiraUra.Win -c Release -r win-x64 \
   <!-- mobile -->
   <section class="panel" role="tabpanel" data-panel="mobile">
     <h2>mobile — iOS / Android（計画）</h2>
-    <p class="meta"><code>gui/iphone/</code> ・ <code>gui/apk/</code> ・ 未実装</p>
+    <p class="meta"><code>gui/iphone/</code>（SwiftUI 実装済み） ・ <code>gui/apk/</code>（未実装）</p>
     <ul class="points">
       <li>FE API は共通（<code>PUT /inbox/&lt;name&gt;</code> / <code>GET /inbox</code>）。</li>
       <li>技術選定・署名・配布・同期方針は未定。</li>

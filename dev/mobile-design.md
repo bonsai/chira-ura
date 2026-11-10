@@ -1,6 +1,6 @@
 # モバイルクライアント設計（iOS / Android）
 
-対象: `gui/iphone/`（iOS）, `gui/apk/`（Android）。状態: **計画**（未実装）。
+対象: `gui/iphone/`（iOS, 実装済み）, `gui/apk/`（Android, 計画）。
 
 ## 思想
 「DB はひとつ、UI は多様に」。入口（UI）は増やしてよいが、正と保存形式は共通にする。
@@ -28,7 +28,7 @@
 ## 技術選定（未定・候補）
 | 案 | iOS | Android | 備考 |
 |---|---|---|---|
-| ネイティブ | SwiftUI | Kotlin / Jetpack Compose | 起動・入力が最速。実装は二重 |
+| ネイティブ（採用） | SwiftUI（実装済み） | Kotlin / Jetpack Compose | 起動・入力が最速。実装は二重 |
 | クロス | .NET MAUI | .NET MAUI | C#（`gui/win` と知見共有） |
 | クロス | Flutter | Flutter | 単一コードベース |
 
@@ -39,7 +39,7 @@
 gui/
 ├── rust/     Rust egui（WSL/Unix/Windows） 実装済み
 ├── win/      C#/.NET WinForms（chira.exe） 実装済み
-├── iphone/   iOS（これ）
+├── iphone/   iOS（SwiftUI クライアント 実装済み）
 └── apk/      Android（これ）
 ```
 

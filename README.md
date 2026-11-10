@@ -14,6 +14,7 @@
 - Google Drive + Apps Script（箱のマスター、拡張の外でデプロイ）
 - Node CLI（`cli/cli.js`、bin: `chira`）
 - Windows クライアント（`gui/win/`、C#/.NET 10 WinForms 付箋メモ）
+- iOS クライアント（`gui/iphone/`、SwiftUI / SwiftData 互換 付箋メモ）
 
 ## 使い方
 
@@ -60,6 +61,18 @@ dotnet run --project gui/win/ChiraUra.Win/ChiraUra.Win.csproj
 ```
 
 起動が速く、最前面固定・自動保存・閉じる際の FE API（`/inbox/<id>.txt`）送信とローカル SQLite（`~/.chira/ura.db`）永続化に対応。
+
+iOS 付箋クライアント（`gui/iphone/`）:
+
+```bash
+# ユニットテスト実行
+xcodebuild test -project gui/iphone/ChiraUra.xcodeproj -scheme ChiraUra -destination 'platform=iOS Simulator,name=iPhone 15' CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+
+# Debug アプリビルド
+xcodebuild build -project gui/iphone/ChiraUra.xcodeproj -scheme ChiraUra -configuration Debug -sdk iphonesimulator CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+```
+
+起動即入力フォーカス（<300ms 目安）、オフライン時ローカル即保存 & outbox 蓄積、オンライン復帰時 10 件ずつ FE API（`PUT /inbox/<id>.txt`）へ送信（冪等）。
 
 トークンは保存しない。Google は `chrome.identity.getAuthToken`、GH/Box は `launchWebAuthFlow`（コード取得まで）。
 

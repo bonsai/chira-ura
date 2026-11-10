@@ -1,0 +1,429 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		100100012D00000100000001 /* ChiraUraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200100012D00000100000001 /* ChiraUraApp.swift */; };
+		100100012D00000100000002 /* Note.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200100012D00000100000002 /* Note.swift */; };
+		100100012D00000100000003 /* OutboxItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200100012D00000100000003 /* OutboxItem.swift */; };
+		100100012D00000100000004 /* NoteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200100012D00000100000004 /* NoteStore.swift */; };
+		100100012D00000100000005 /* ChiraApiClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200100012D00000100000005 /* ChiraApiClient.swift */; };
+		100100012D00000100000006 /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200100012D00000100000006 /* NetworkMonitor.swift */; };
+		100100012D00000100000007 /* SyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200100012D00000100000007 /* SyncService.swift */; };
+		100100012D00000100000008 /* StickyNoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200100012D00000100000008 /* StickyNoteView.swift */; };
+		100100012D00000100000009 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200100012D00000100000009 /* SettingsView.swift */; };
+		100100012D00000100000010 /* NoteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200100012D00000100000010 /* NoteTests.swift */; };
+		100100012D00000100000011 /* SyncServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200100012D00000100000011 /* SyncServiceTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		300100012D00000100000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 000100012D00000100000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 400100012D00000100000001;
+			remoteInfo = ChiraUra;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		200100012D00000100000000 /* ChiraUra.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChiraUra.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		200100012D00000100000001 /* ChiraUraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChiraUraApp.swift; sourceTree = "<group>"; };
+		200100012D00000100000002 /* Note.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Note.swift; sourceTree = "<group>"; };
+		200100012D00000100000003 /* OutboxItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutboxItem.swift; sourceTree = "<group>"; };
+		200100012D00000100000004 /* NoteStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteStore.swift; sourceTree = "<group>"; };
+		200100012D00000100000005 /* ChiraApiClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChiraApiClient.swift; sourceTree = "<group>"; };
+		200100012D00000100000006 /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
+		200100012D00000100000007 /* SyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncService.swift; sourceTree = "<group>"; };
+		200100012D00000100000008 /* StickyNoteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickyNoteView.swift; sourceTree = "<group>"; };
+		200100012D00000100000009 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		200100012D00000100000010 /* NoteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteTests.swift; sourceTree = "<group>"; };
+		200100012D00000100000011 /* SyncServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncServiceTests.swift; sourceTree = "<group>"; };
+		200100012D00000100000012 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		200100012D00000100000020 /* ChiraUraTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ChiraUraTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		500100012D00000100000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		500100012D00000100000002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		600100012D00000100000000 /* MainGroup */ = {
+			isa = PBXGroup;
+			children = (
+				600100012D00000100000001 /* ChiraUra */,
+				600100012D00000100000002 /* ChiraUraTests */,
+				600100012D00000100000003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		600100012D00000100000001 /* ChiraUra */ = {
+			isa = PBXGroup;
+			children = (
+				200100012D00000100000001 /* ChiraUraApp.swift */,
+				600100012D00000100000010 /* Models */,
+				600100012D00000100000020 /* Storage */,
+				600100012D00000100000030 /* Network */,
+				600100012D00000100000040 /* Sync */,
+				600100012D00000100000050 /* Views */,
+				200100012D00000100000012 /* Info.plist */,
+			);
+			path = ChiraUra;
+			sourceTree = "<group>";
+		};
+		600100012D00000100000010 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				200100012D00000100000002 /* Note.swift */,
+				200100012D00000100000003 /* OutboxItem.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		600100012D00000100000020 /* Storage */ = {
+			isa = PBXGroup;
+			children = (
+				200100012D00000100000004 /* NoteStore.swift */,
+			);
+			path = Storage;
+			sourceTree = "<group>";
+		};
+		600100012D00000100000030 /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				200100012D00000100000005 /* ChiraApiClient.swift */,
+				200100012D00000100000006 /* NetworkMonitor.swift */,
+			);
+			path = Network;
+			sourceTree = "<group>";
+		};
+		600100012D00000100000040 /* Sync */ = {
+			isa = PBXGroup;
+			children = (
+				200100012D00000100000007 /* SyncService.swift */,
+			);
+			path = Sync;
+			sourceTree = "<group>";
+		};
+		600100012D00000100000050 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				200100012D00000100000008 /* StickyNoteView.swift */,
+				200100012D00000100000009 /* SettingsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		600100012D00000100000002 /* ChiraUraTests */ = {
+			isa = PBXGroup;
+			children = (
+				200100012D00000100000010 /* NoteTests.swift */,
+				200100012D00000100000011 /* SyncServiceTests.swift */,
+			);
+			path = ChiraUraTests;
+			sourceTree = "<group>";
+		};
+		600100012D00000100000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				200100012D00000100000000 /* ChiraUra.app */,
+				200100012D00000100000020 /* ChiraUraTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		400100012D00000100000001 /* ChiraUra */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 700100012D00000100000001 /* Build configuration list for PBXNativeTarget "ChiraUra" */;
+			buildPhases = (
+				800100012D00000100000001 /* Sources */,
+				500100012D00000100000001 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ChiraUra;
+			productName = ChiraUra;
+			productReference = 200100012D00000100000000 /* ChiraUra.app */;
+			productType = "com.apple.product-type.application";
+		};
+		400100012D00000100000002 /* ChiraUraTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 700100012D00000100000002 /* Build configuration list for PBXNativeTarget "ChiraUraTests" */;
+			buildPhases = (
+				800100012D00000100000002 /* Sources */,
+				500100012D00000100000002 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				900100012D00000100000001 /* PBXTargetDependency */,
+			);
+			name = ChiraUraTests;
+			productName = ChiraUraTests;
+			productReference = 200100012D00000100000020 /* ChiraUraTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		000100012D00000100000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					400100012D00000100000001 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+					400100012D00000100000002 = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = 400100012D00000100000001;
+					};
+				};
+			};
+			buildConfigurationList = 700100012D00000100000000 /* Build configuration list for PBXProject "ChiraUra" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 600100012D00000100000000 /* MainGroup */;
+			productRefGroup = 600100012D00000100000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				400100012D00000100000001 /* ChiraUra */,
+				400100012D00000100000002 /* ChiraUraTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		800100012D00000100000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				100100012D00000100000001 /* ChiraUraApp.swift in Sources */,
+				100100012D00000100000002 /* Note.swift in Sources */,
+				100100012D00000100000003 /* OutboxItem.swift in Sources */,
+				100100012D00000100000004 /* NoteStore.swift in Sources */,
+				100100012D00000100000005 /* ChiraApiClient.swift in Sources */,
+				100100012D00000100000006 /* NetworkMonitor.swift in Sources */,
+				100100012D00000100000007 /* SyncService.swift in Sources */,
+				100100012D00000100000008 /* StickyNoteView.swift in Sources */,
+				100100012D00000100000009 /* SettingsView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		800100012D00000100000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				100100012D00000100000010 /* NoteTests.swift in Sources */,
+				100100012D00000100000011 /* SyncServiceTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		900100012D00000100000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 400100012D00000100000001 /* ChiraUra */;
+			targetProxy = 300100012D00000100000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		A00100012D00000100000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A00100012D00000100000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		A00100012D00000100000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ChiraUra/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ChiraUra;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.11;
+				PRODUCT_BUNDLE_IDENTIFIER = net.kamicopi.chiraura;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A00100012D00000100000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ChiraUra/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ChiraUra;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.11;
+				PRODUCT_BUNDLE_IDENTIFIER = net.kamicopi.chiraura;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		A00100012D00000100000005 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 0.1.11;
+				PRODUCT_BUNDLE_IDENTIFIER = net.kamicopi.chiraura.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ChiraUra.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ChiraUra";
+			};
+			name = Debug;
+		};
+		A00100012D00000100000006 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 0.1.11;
+				PRODUCT_BUNDLE_IDENTIFIER = net.kamicopi.chiraura.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ChiraUra.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ChiraUra";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		700100012D00000100000000 /* Build configuration list for PBXProject "ChiraUra" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A00100012D00000100000001 /* Debug */,
+				A00100012D00000100000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		700100012D00000100000001 /* Build configuration list for PBXNativeTarget "ChiraUra" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A00100012D00000100000003 /* Debug */,
+				A00100012D00000100000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		700100012D00000100000002 /* Build configuration list for PBXNativeTarget "ChiraUraTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A00100012D00000100000005 /* Debug */,
+				A00100012D00000100000006 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = 000100012D00000100000001 /* Project object */;
+}

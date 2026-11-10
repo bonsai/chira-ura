@@ -2,6 +2,26 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-10 / v0.1.11-dev — iOS 付箋メモクライアント（gui/iphone - SwiftUI）
+
+- 指示: `gui/iphone/` に iOS 向け付箋メモクライアントを SwiftUI で実装する。共通要件（mobile-design.md）準拠。
+- 変更:
+  - `gui/iphone/ChiraUra.xcodeproj`: Xcode プロジェクト設定（iOS 16.0+、SwiftUI、ChiraUra / ChiraUraTests ターゲット）。
+  - `gui/iphone/ChiraUra/`:
+    - `Models/Note.swift`, `Models/OutboxItem.swift`: 共通メモスキーマ `{ id, title, content, updatedAt }`、本文1行目タイトル導出（`deriveTitle`）、`InboxPayload`。
+    - `Storage/NoteStore.swift`: スレッドセーフなローカル永続化（Application Support / JSON）と outbox キュー管理。
+    - `Network/ChiraApiClient.swift`: FE API（`PUT /inbox/<name>`）送信クライアント（`Bearer` / `X-Chira-Token` 認証ヘッダ対応）。
+    - `Network/NetworkMonitor.swift`: `NWPathMonitor` によるオンライン/オフライン状態監視。
+    - `Sync/SyncService.swift`: オフライン優先保存、outbox 蓄積、オンライン復帰時の小分け送信（既定 10 件ずつ）、冪等リトライ。
+    - `Views/StickyNoteView.swift`: 黄色付箋 UI、起動即エディタ自動フォーカス（<300ms 目安）、日本語入力標準対応、三等分フッター（📝保存 ｜ ＋新規 ｜ ☁️送信）。
+    - `Views/SettingsView.swift`: FE API の接続先 URL とトークンの設定シート。
+    - `ChiraUraApp.swift`: App エントリポイント。
+  - `gui/iphone/ChiraUraTests/`:
+    - `NoteTests.swift`: タイトル導出、canonical JSON 互換、InboxPayload 形式の検証。
+    - `SyncServiceTests.swift`: オンライン送信、オフライン時の outbox フォールバック、10 件バッチ処理と冪等性の検証。
+  - `.github/workflows/ios.yml`: GitHub Actions による Xcode ユニットテストおよび Debug アプリビルドの自動化。
+  - `test/iphone-project.test.js`: Xcode プロジェクト構成、モデル定義、バッチ処理、CI 構成の整合性を検証するテスト。
+
 ## 2026-11-06 / v0.1.10-dev — 三層 UML（Mermaid / PlantUML）と gh wf レンダリング
 
 - 指示: make uml / mmd でも書いて。ビルドは gh workflow で。

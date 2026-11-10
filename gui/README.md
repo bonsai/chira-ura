@@ -6,7 +6,7 @@ chira-ura の GUI クライアントをプラットフォームごとに配置�
 |---|---|---|---|
 | `rust/` | Rust（egui + eframe） | WSL / Unix / Windows | 実装済み |
 | `win/` | C# / .NET（WinForms） | Windows | PR #21 |
-| `iphone/` | TBD | iOS | 計画 |
+| `iphone/` | Swift / SwiftUI | iOS | 実装済み |
 | `apk/` | TBD | Android | 計画 |
 
 - 方針は **ADR-001**（`dev/adr-001-rs-vs-cs.md`）: Rust を第一候補、C# をフォールバック。
