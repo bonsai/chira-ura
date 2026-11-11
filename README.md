@@ -36,6 +36,9 @@ chira pull | push                                 # ブリッジ同期（GDrive 
 chira sync                                        # 未送信メモ（SQLite）を /inbox へ送る
 chira set cloud.url https://<worker>.workers.dev  # 送信先 FE API
 chira set cloud.token <token>                     # API トークン
+chira wiki                                        # 未送信メモを bonsai/wiki raw/<MM>/ へ（10件ずつ 1 コミット）
+chira wiki import <dir|file>                      # wiki（JSON/JSONL）から取り込む
+chira wiki list <dir|file>                        # wiki の中身だけ見る（取り込まない）
 ```
 
 メモ（拡張と同じ JSON。SQLite は `~/.chira/ura.db`）:
@@ -47,6 +50,9 @@ chira note add "本文"                              # 追加
 chira export | chira import                       # JSONL（箱のファイル形式と同じ）
 chira storage export                              # chrome.storage.local 相当の JSON
 chira db export <dir> | chira db import <dir>     # canonical（sync-db と同じ形）
+chira md [dir]                                    # DB → dir/*.md（既定 ~/.chira/md）
+chira md import [dir]                             # dir/*.md → DB
+chira md path                                     # 既定ディレクトリを表示
 ```
 
 同じ `.db` を端末間でそのままコピーできる（journal=DELETE で 1 ファイル完結）。

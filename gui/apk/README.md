@@ -1,6 +1,16 @@
-# gui/apk — Android クライアント（計画）
+# gui/apk — Android クライアント（実装済み）
 
-Android（APK）向け付箋メモクライアントの予定地。未実装。
+Android（APK）向け付箋メモクライアント（Flutter / `gui/mobile`）。
 
-- FE API: `api/`（`PUT /inbox/<name>`, `GET /inbox`）
-- TODO: 技術選定（Kotlin / .NET MAUI 等）、署名・配布、同期方針
+- FE API: `api/`（`PUT /inbox/<name>` に `{ content, updatedAt, closed }`）
+- 保存形式: メモ JSON `{ id, title, content, updatedAt }`
+- オフライン優先: ローカル outbox に保存し、オンライン復帰時に 10 件ずつ送信
+- 日本語入力: IME 最適化、起動即入力フォーカス
+
+## ビルド
+
+```bash
+bash gui/apk/build.sh
+# または gui/mobile ディレクトリから
+cd gui/mobile && flutter build apk
+```
