@@ -47,6 +47,9 @@ chira note add "本文"                              # 追加
 chira export | chira import                       # JSONL（箱のファイル形式と同じ）
 chira storage export                              # chrome.storage.local 相当の JSON
 chira db export <dir> | chira db import <dir>     # canonical（sync-db と同じ形）
+chira md [dir]                                    # DB → dir/*.md（既定 ~/.chira/md）
+chira md import [dir]                             # dir/*.md → DB
+chira md path                                     # 既定ディレクトリを表示
 ```
 
 同じ `.db` を端末間でそのままコピーできる（journal=DELETE で 1 ファイル完結）。
