@@ -1,6 +1,6 @@
 # モバイルクライアント設計（iOS / Android）
 
-対象: `gui/iphone/`（iOS）, `gui/apk/`（Android）。状態: **実装済み**（`gui/mobile` / Flutter）。
+対象: `mob/iphone/`（iOS）, `mob/apk/`（Android）。状態: **実装済み**（`mob/mobile` / Flutter）。
 
 ## 思想
 「DB はひとつ、UI は多様に」。入口（UI）は増やしてよいが、正と保存形式は共通にする。

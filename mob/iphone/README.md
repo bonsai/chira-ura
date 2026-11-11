@@ -1,6 +1,6 @@
-# gui/apk — Android クライアント（実装済み）
+# mob/iphone — iOS クライアント（実装済み）
 
-Android（APK）向け付箋メモクライアント（Flutter / `gui/mobile`）。
+iOS 向け付箋メモクライアント（Flutter / `mob/mobile`）。
 
 - FE API: `api/`（`PUT /inbox/<name>` に `{ content, updatedAt, closed }`）
 - 保存形式: メモ JSON `{ id, title, content, updatedAt }`
@@ -10,7 +10,7 @@ Android（APK）向け付箋メモクライアント（Flutter / `gui/mobile`）
 ## ビルド
 
 ```bash
-bash gui/apk/build.sh
-# または gui/mobile ディレクトリから
-cd gui/mobile && flutter build apk
+bash mob/iphone/build.sh
+# または mob/mobile ディレクトリから
+cd mob/mobile && flutter build ios --no-codesign
 ```

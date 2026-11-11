@@ -44,7 +44,7 @@
 ## 2026-11-06 / v0.1.9-dev — モバイルクライアント設計 doc
 
 - 指示: doc を書いて issue を作成。
-- 変更: `dev/mobile-design.md` を追加（iOS/Android = `gui/iphone`, `gui/apk` の設計・共通要件・技術候補・受け入れ条件）。
+- 変更: `dev/mobile-design.md` を追加（iOS/Android = `mob/iphone`, `mob/apk` の設計・共通要件・技術候補・受け入れ条件）。
 
 ## 2026-11-06 / v0.1.9-dev — index.html をタブ式に
 
@@ -79,11 +79,11 @@
 
 - 指示: ディレクトリ再編。
   - Worker → `api/`（旧 `worker/`）
-  - GUI を `gui/` 配下にプラットフォーム別で集約し、`gui/rust`, `gui/win`, `gui/iphone`, `gui/apk` とする
+  - GUI を `gui/` 配下にプラットフォーム別で集約し、`gui/rust`, `gui/win`, `mob/iphone`, `mob/apk` とする
 - 変更:
   - `worker/` → `api/` にリネーム（PR #18 で main にマージ。FE API + cron + MCP を統合）。
   - `rs/` → `gui/rust/` にリネーム。`gui/README.md` を追加。
-  - `gui/iphone/`, `gui/apk/` を計画プレースホルダとして追加。
+  - `mob/iphone/`, `mob/apk/` を計画プレースホルダとして追加。
   - `.github/workflows/rust.yml` の対象パスを `gui/rust/**` に更新。
   - `README.md`, `SKILL.md`, `dev/benchmarks.md` の参照を `gui/` に更新。
 
