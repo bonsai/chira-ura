@@ -36,6 +36,9 @@ chira pull | push                                 # ブリッジ同期（GDrive 
 chira sync                                        # 未送信メモ（SQLite）を /inbox へ送る
 chira set cloud.url https://<worker>.workers.dev  # 送信先 FE API
 chira set cloud.token <token>                     # API トークン
+chira wiki                                        # 未送信メモを bonsai/wiki raw/<MM>/ へ（10件ずつ 1 コミット）
+chira wiki import <dir|file>                      # wiki（JSON/JSONL）から取り込む
+chira wiki list <dir|file>                        # wiki の中身だけ見る（取り込まない）
 ```
 
 メモ（拡張と同じ JSON。SQLite は `~/.chira/ura.db`）:

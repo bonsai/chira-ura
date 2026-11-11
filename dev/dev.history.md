@@ -2,6 +2,23 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-11 / v0.1.11-dev — wiki（JSON / JSONL）からの取り込み（chira wiki import / list）
+
+- 指示: wiki（C:\Users\0501JP\wiki など）に置いた JSON / JSONL を chira-ura のメモとして取り込む。
+  - `chira wiki import <dir|file>`: ディレクトリ（*.json / *.jsonl）または単体ファイルから取り込む
+  - `chira wiki list <dir|file>`: 中身だけ見る（取り込まない）
+  - 日付付きファイル名（`2026-10-22-*.json`）は時系列で読みやすくソート
+  - 拡張と同じ JSON（`{id, title, content, updatedAt}`）にする（`crx/scripts/model.js` 共用）
+  - 同じ id は上書き（再実行でも重複しない）
+  - `chira export notes.jsonl` で拡張に渡せる
+- 変更:
+  - `cli/wiki-import.js`: `collectWikiFiles`, `parseWikiFile`, `readWikiNotes`, `importWikiNotes`, `listWikiNotes`, `wikiToNote`, `compareWikiFileNames` を実装。
+    - スキーマ正規化: `id`（無ければ `newNoteId()`）、`title`（無ければ本文1行目から `deriveTitle()`）、`content`（`content` || `body` || `text`）、`updatedAt`（`updatedAt` || `updated` || `createdAt` || mtime || now を ms に正規化）。
+    - 日付付きファイル名（YYYY-MM-DD 等）の時系列ソート。
+  - `cli/cli.js`: `chira wiki import <path>` と `chira wiki list <path>` サブコマンドを追加。既存の `chira wiki`（push）と共存。
+  - `test/wiki-import.test.js`: 単体 JSON、JSONL、日付ソート、SQLite への取り込み、上書き冪等性、CLI コマンド実行のテストを追加。
+  - `README.md`: `chira wiki import` / `list` の使用例を追記。
+
 ## 2026-11-06 / v0.1.10-dev — モバイルクライアント（iOS / Android — gui/iphone, gui/apk, gui/mobile）
 
 - 指示: モバイルクライアント（iOS / Android — gui/iphone, gui/apk）。設計 dev/mobile-design.md。
