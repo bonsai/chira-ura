@@ -2,31 +2,17 @@
 
 指示と実装の履歴。新しいものが上。
 
-## 2026-11-11 / v0.1.14-dev — rum TUI リーダ/エディタ（Rust, ratatui）
+## 2026-11-08 / v0.1.11-dev — vim 風 TUI リーダ/エディタ rum（Rust, ratatui）
 
-- 実装: `gui/rum/` に Rust stable + ratatui + crossterm の vim 風 TUI リーダ/エディタを追加。
-- 機能: Markdown / text の一覧・閲覧・編集、検索、移動、undo/redo、ファイル操作、front matter の保持と保存時メタデータ更新。
-- CI: `.github/workflows/rum.yml` で Windows 上の fmt / clippy / build / test を実行し、`rum.exe` を artifact 化。
-- 入口: `gui/tui` は `gui/rum` を指す Git symlink。実装本体は `gui/rum/` のみとし、二重管理しない。
-
-## 2026-11-10 / v0.1.13-dev — Windows 付箋: 物理 UI のフッターとアクション時だけのステータス
-
-- 指示: 物理 ui。X / pin 止めマーク / ＋ / コピペマーク。ステータスはアクション表示のみに。
-- 変更: `gui/win/ChiraUra.Win/StickyNoteForm.cs`
-  - フッターを物理キー風の 4 つに: `✕`（閉じる）/ `📌`（最前面トグル）/ `＋`（新しいメモ）/ `📋`（本文コピー）。
-  - 常設ステータス（`📝`）を廃止。コピー・ピン・新規は一時トースト、保存は従来どおり吹き出し（ファイル名）で、**アクション時だけ**表示。
-  - 枠なしウィンドウの移動を復活: 余白・フッター・キーをつかんで移動（キーは 5px 動かすとクリックではなくドラッグ）。
-- 追加:
-  - `gui/win/ChiraUra.Win/PhysicalButton.cs`: ベベル・グラデーション・押下で沈む自前描画キー。
-  - `gui/win/ChiraUra.Win/StatusToast.cs`: 一定時間でフェードアウトするアクション専用ステータス。
-
-## 2026-11-08 / v0.1.12-dev — Windows 付箋: 最前面ピン留め（📌）を作り直し
-
-- 指示: pin-topmost を作り直して。
-- 経緯: `feat/pin-topmost` の未コミット変更が作業中に失われたため、現行 UI（フッター三等分）に合わせて再実装。
-- 変更: `gui/win/ChiraUra.Win/StickyNoteForm.cs`
-  - フッターを四等分に（📝 ステータス / 📌 ピン / ＋ / ✕）。
-  - 📌 を追加。クリックで `TopMost` をトグル（📌 最前面 / 📍 通常）。既定は最前面。
+- 指示: メモを「全部読めて全部編集できる」vim 風 TUI リーダ/エディタを作る。アプリ名は rum。
+- 変更:
+  - `gui/rum/`: Rust stable + `ratatui` + `crossterm` による単一バイナリ TUI リーダ/エディタを実装。
+  - 画面: 左サイドバー（`*.md`, `*.txt` 一覧）、右エディタ（行番号なし、現在行ハイライト、front matter 淡色）、下部ステータス行＋コマンド行。
+  - 起動: `rum [path]`（既定 `~/.chira/md`）。
+  - vim 風キーバインド: Normal（h/j/k/l, w/b, 0/$, gg/G, i/a/o/O/A/I, x, dd, yy, p, u, Ctrl-r, /, n/N, :, Ctrl-s, Ctrl-p, Ctrl-n）、Insert（Esc, Enter, Backspace, Delete, Tab, 矢印）、Command（:w, :w <path>, :q, :q!, :wq, :x, :e, :e!, :new, :next, :prev, :md, :sync）。
+  - front matter の id/title/updatedAt を保持。保存時に updatedAt を更新し、欠落時のみ新規採番。front matter 無しは素テキストとして保存。
+  - `.github/workflows/rum.yml`: `windows-latest` で fmt / clippy / build / test + artifact `rum.exe` アップロードを追加。
+  - `gui/README.md`: `rum/` の説明を追加。
 
 ## 2026-11-06 / v0.1.10-dev — 三層 UML（Mermaid / PlantUML）と gh wf レンダリング
 
@@ -51,7 +37,7 @@
 ## 2026-11-06 / v0.1.9-dev — モバイルクライアント設計 doc
 
 - 指示: doc を書いて issue を作成。
-- 変更: `dev/mobile-design.md` を追加（iOS/Android = `mob/iphone`, `mob/apk` の設計・共通要件・技術候補・受け入れ条件）。
+- 変更: `dev/mobile-design.md` を追加（iOS/Android = `gui/iphone`, `gui/apk` の設計・共通要件・技術候補・受け入れ条件）。
 
 ## 2026-11-06 / v0.1.9-dev — index.html をタブ式に
 
@@ -86,11 +72,11 @@
 
 - 指示: ディレクトリ再編。
   - Worker → `api/`（旧 `worker/`）
-  - GUI を `gui/` 配下にプラットフォーム別で集約し、`gui/rust`, `gui/win`, `mob/iphone`, `mob/apk` とする
+  - GUI を `gui/` 配下にプラットフォーム別で集約し、`gui/rust`, `gui/win`, `gui/iphone`, `gui/apk` とする
 - 変更:
   - `worker/` → `api/` にリネーム（PR #18 で main にマージ。FE API + cron + MCP を統合）。
   - `rs/` → `gui/rust/` にリネーム。`gui/README.md` を追加。
-  - `mob/iphone/`, `mob/apk/` を計画プレースホルダとして追加。
+  - `gui/iphone/`, `gui/apk/` を計画プレースホルダとして追加。
   - `.github/workflows/rust.yml` の対象パスを `gui/rust/**` に更新。
   - `README.md`, `SKILL.md`, `dev/benchmarks.md` の参照を `gui/` に更新。
 

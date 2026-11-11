@@ -230,10 +230,8 @@ impl App {
                     self.editor.cmd_cursor -= 1;
                 }
             }
-            KeyCode::Right => {
-                if self.editor.cmd_cursor < self.editor.cmd_input.len() {
-                    self.editor.cmd_cursor += 1;
-                }
+            KeyCode::Right if self.editor.cmd_cursor < self.editor.cmd_input.len() => {
+                self.editor.cmd_cursor += 1;
             }
             _ => {}
         }
@@ -268,10 +266,8 @@ impl App {
                     self.editor.cmd_cursor -= 1;
                 }
             }
-            KeyCode::Right => {
-                if self.editor.cmd_cursor < self.editor.cmd_input.len() {
-                    self.editor.cmd_cursor += 1;
-                }
+            KeyCode::Right if self.editor.cmd_cursor < self.editor.cmd_input.len() => {
+                self.editor.cmd_cursor += 1;
             }
             _ => {}
         }

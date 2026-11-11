@@ -50,6 +50,7 @@ fn run_app(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, app: &mut App)
             })
             .map_err(|e| io::Error::other(e.to_string()))?;
 
+        #[allow(clippy::collapsible_if)]
         if event::poll(Duration::from_millis(100))? {
             if let Ok(Event::Key(key)) = event::read() {
                 if key.kind == crossterm::event::KeyEventKind::Press {
