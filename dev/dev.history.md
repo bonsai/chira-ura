@@ -2,36 +2,24 @@
 
 指示と実装の履歴。新しいものが上。
 
-## 2026-11-11 / v0.1.11-dev — wiki（JSON / JSONL）からの取り込み（chira wiki import / list）
+## 2026-11-10 / v0.1.13-dev — Windows 付箋: 物理 UI のフッターとアクション時だけのステータス
 
-- 指示: wiki（C:\Users\0501JP\wiki など）に置いた JSON / JSONL を chira-ura のメモとして取り込む。
-  - `chira wiki import <dir|file>`: ディレクトリ（*.json / *.jsonl）または単体ファイルから取り込む
-  - `chira wiki list <dir|file>`: 中身だけ見る（取り込まない）
-  - 日付付きファイル名（`2026-10-22-*.json`）は時系列で読みやすくソート
-  - 拡張と同じ JSON（`{id, title, content, updatedAt}`）にする（`crx/scripts/model.js` 共用）
-  - 同じ id は上書き（再実行でも重複しない）
-  - `chira export notes.jsonl` で拡張に渡せる
-- 変更:
-  - `cli/wiki-import.js`: `collectWikiFiles`, `parseWikiFile`, `readWikiNotes`, `importWikiNotes`, `listWikiNotes`, `wikiToNote`, `compareWikiFileNames` を実装。
-    - スキーマ正規化: `id`（無ければ `newNoteId()`）、`title`（無ければ本文1行目から `deriveTitle()`）、`content`（`content` || `body` || `text`）、`updatedAt`（`updatedAt` || `updated` || `createdAt` || mtime || now を ms に正規化）。
-    - 日付付きファイル名（YYYY-MM-DD 等）の時系列ソート。
-  - `cli/cli.js`: `chira wiki import <path>` と `chira wiki list <path>` サブコマンドを追加。既存の `chira wiki`（push）と共存。
-  - `test/wiki-import.test.js`: 単体 JSON、JSONL、日付ソート、SQLite への取り込み、上書き冪等性、CLI コマンド実行のテストを追加。
-  - `README.md`: `chira wiki import` / `list` の使用例を追記。
+- 指示: 物理 ui。X / pin 止めマーク / ＋ / コピペマーク。ステータスはアクション表示のみに。
+- 変更: `gui/win/ChiraUra.Win/StickyNoteForm.cs`
+  - フッターを物理キー風の 4 つに: `✕`（閉じる）/ `📌`（最前面トグル）/ `＋`（新しいメモ）/ `📋`（本文コピー）。
+  - 常設ステータス（`📝`）を廃止。コピー・ピン・新規は一時トースト、保存は従来どおり吹き出し（ファイル名）で、**アクション時だけ**表示。
+  - 枠なしウィンドウの移動を復活: 余白・フッター・キーをつかんで移動（キーは 5px 動かすとクリックではなくドラッグ）。
+- 追加:
+  - `gui/win/ChiraUra.Win/PhysicalButton.cs`: ベベル・グラデーション・押下で沈む自前描画キー。
+  - `gui/win/ChiraUra.Win/StatusToast.cs`: 一定時間でフェードアウトするアクション専用ステータス。
 
-## 2026-11-06 / v0.1.10-dev — モバイルクライアント（iOS / Android — gui/iphone, gui/apk, gui/mobile）
+## 2026-11-08 / v0.1.12-dev — Windows 付箋: 最前面ピン留め（📌）を作り直し
 
-- 指示: モバイルクライアント（iOS / Android — gui/iphone, gui/apk）。設計 dev/mobile-design.md。
-- 変更:
-  - `gui/mobile/`: Flutter (Dart) によるクロスプラットフォーム（iOS / Android）付箋メモクライアントを実装。
-    - `lib/model/note.dart`: 既存共通メモスキーマ `{ id, title, content, updatedAt }`、1行目タイトル導出（`deriveTitle`、最大30文字）および Base36 ID 生成。
-    - `lib/storage/outbox_store.dart`: オフライン優先のファイルベース outbox リポジトリ（`<id>.json`、タイムスタンプ順整列）。
-    - `lib/sync/sync_service.dart`: Cloudflare Worker FE API (`PUT /inbox/<id>.txt`) 送信クライアント。既定 10 件ずつのバッチ送信、Bearer 認証、送信成功時の outbox 削除（冪等）、オフライン・通信障害時の静かな失敗と未送信保持。
-    - `lib/ui/sticky_note_page.dart` / `lib/main.dart`: 爆速起動（コールドスタート < 300ms 目安）、日本語入力 IME 既定対応（multiline / autofocus）、350ms デバウンス自動保存、ステータス絵文字表示（📝/✏️/💾/☁️）。
-    - `test/note_test.dart`, `test/outbox_test.dart`, `test/sync_test.dart`: 単体テスト群を追加（スキーマ互換、タイトル抽出、outbox CRUD、10件バッチ送信、冪等性、オフライン復旧）。
-  - `gui/iphone/`: `build.sh`（iOS ビルドスクリプト）と README を更新。
-  - `gui/apk/`: `build.sh`（APK ビルドスクリプト）と README を更新。
-  - `dev/mobile-design.md`, `gui/README.md`: 実装完了と受け入れ条件達成を反映。
+- 指示: pin-topmost を作り直して。
+- 経緯: `feat/pin-topmost` の未コミット変更が作業中に失われたため、現行 UI（フッター三等分）に合わせて再実装。
+- 変更: `gui/win/ChiraUra.Win/StickyNoteForm.cs`
+  - フッターを四等分に（📝 ステータス / 📌 ピン / ＋ / ✕）。
+  - 📌 を追加。クリックで `TopMost` をトグル（📌 最前面 / 📍 通常）。既定は最前面。
 
 ## 2026-11-06 / v0.1.10-dev — 三層 UML（Mermaid / PlantUML）と gh wf レンダリング
 

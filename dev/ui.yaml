@@ -1,7 +1,7 @@
 # chira-ura UI 仕様（実装の正）
 # 変更したら実装（crx/）と同時に更新する。ここに無い UI は足さない。
-version: 0.1.5-dev
-updated: 2026-10-19
+version: 0.1.13-dev
+updated: 2026-11-10
 
 brand:
   name: chira-ura / チラ裏
@@ -75,6 +75,32 @@ sidepanel_read:                        # crx/sidepanel/read.html
     expanded: "pre (white-space pre-wrap)"
     action: コピー (content only, no title/prefix)
   footer: [書く (ghost -> write.html)]
+  brand: none
+  gh: none
+
+gui_win:                               # gui/win/ChiraUra.Win/StickyNoteForm.cs
+  window:
+    chrome: none                       # FormBorderStyle.None
+    size: "360x640（最小 280x420）"
+    topmost_default: true
+    drag: "余白・フッター・キー（5px 動かすとドラッグ）"
+  body: "textarea（スクロールバーなし・折り返し・IME ひらがな・自動保存 1s）"
+  footer:                              # 物理キー 4 つ。常設ステータスは置かない
+    height: 68
+    style: "PhysicalButton（ベベル + グラデーション + 押下で沈む）"
+    items:
+      - { id: close, glyph: "✕", action: "閉じる" }
+      - { id: pin,   glyph: "📌", on: "📌", off: "📍", action: "TopMost トグル", default: on }
+      - { id: new,   glyph: "＋", action: "新しい白紙メモ" }
+      - { id: copy,  glyph: "📋", action: "本文のみコピー（前置き・タイトルなし）" }
+  status:                              # アクション時だけ。idle では何も出さない
+    style: "StatusToast（下右・保持 1.5s → フェード）"
+    save: "吹き出しでファイル名（💾 保存しました / 💾 ローカル保存）"
+    copied: "📋 コピーしました"
+    empty: "✖️ 対象なし"
+    copy_fail: "🚫 コピー失敗"
+    pinned: "📌 最前面に固定 / 📍 固定を解除"
+    new: "＋ 新しいメモ"
   brand: none
   gh: none
 
