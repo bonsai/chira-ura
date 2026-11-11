@@ -2,19 +2,22 @@
 
 指示と実装の履歴。新しいものが上。
 
-## 2026-11-06 / v0.1.11-dev — CLI `chira md`（DB ⇄ md 単独ファイル：1 ノート 1 ファイル）
+## 2026-11-11 / v0.1.11-dev — wiki（JSON / JSONL）からの取り込み（chira wiki import / list）
 
-- 指示: DB（`~/.chira/ura.db`）のメモを 1 ノート = 1 ファイルの md として出し入れする。人の目で読め、rum（vim 風 TUI）で編集でき、編集を DB に戻せる可搬ビュー。DB が正。md はビュー。往復は front matter の id で対応付ける。
+- 指示: wiki（C:\Users\0501JP\wiki など）に置いた JSON / JSONL を chira-ura のメモとして取り込む。
+  - `chira wiki import <dir|file>`: ディレクトリ（*.json / *.jsonl）または単体ファイルから取り込む
+  - `chira wiki list <dir|file>`: 中身だけ見る（取り込まない）
+  - 日付付きファイル名（`2026-10-22-*.json`）は時系列で読みやすくソート
+  - 拡張と同じ JSON（`{id, title, content, updatedAt}`）にする（`crx/scripts/model.js` 共用）
+  - 同じ id は上書き（再実行でも重複しない）
+  - `chira export notes.jsonl` で拡張に渡せる
 - 変更:
-  - `cli/md.js`:
-    - `DEFAULT_MD_DIR`: `~/.chira/md`
-    - `slugify`: 日本語 slug 対応、ファイル名禁則文字のサニタイズ
-    - `generateNoteFileName`: `<id末尾4>-<slug>.md`
-    - `formatNoteMarkdown` / `parseNoteMarkdown`: YAML front matter（`id`, `title`, `updatedAt`）と本文の相互変換
-    - `scanExistingFiles` / `exportNotesToMd`: 既存ファイルの `id` → ファイル名のマッピングを維持し再 export 時の重複防止
-    - `importMdToNotes`: 本文・タイトル変更時は `updatedAt` を現在時刻に更新して upsert、変更なしは no-op、front matter が無い md は新規ノート生成およびファイルへの front matter 書き戻し
-  - `cli/cli.js`: `chira md [dir]`, `chira md import [dir]`, `chira md path` サブコマンドを追加、usage に反映
-  - `test/md.test.js`: 往復同一性、変更なし no-op、本文編集取り込み、front matter 無し md の新規取り込みと id 書き戻し、ファイル名維持をテスト
+  - `cli/wiki-import.js`: `collectWikiFiles`, `parseWikiFile`, `readWikiNotes`, `importWikiNotes`, `listWikiNotes`, `wikiToNote`, `compareWikiFileNames` を実装。
+    - スキーマ正規化: `id`（無ければ `newNoteId()`）、`title`（無ければ本文1行目から `deriveTitle()`）、`content`（`content` || `body` || `text`）、`updatedAt`（`updatedAt` || `updated` || `createdAt` || mtime || now を ms に正規化）。
+    - 日付付きファイル名（YYYY-MM-DD 等）の時系列ソート。
+  - `cli/cli.js`: `chira wiki import <path>` と `chira wiki list <path>` サブコマンドを追加。既存の `chira wiki`（push）と共存。
+  - `test/wiki-import.test.js`: 単体 JSON、JSONL、日付ソート、SQLite への取り込み、上書き冪等性、CLI コマンド実行のテストを追加。
+  - `README.md`: `chira wiki import` / `list` の使用例を追記。
 
 ## 2026-11-06 / v0.1.10-dev — モバイルクライアント（iOS / Android — gui/iphone, gui/apk, gui/mobile）
 

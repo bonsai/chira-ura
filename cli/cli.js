@@ -19,9 +19,7 @@ import {
   getUnsyncedNotes, markNoteSynced
 } from "./ura-db.js";
 import { syncWiki } from "./wiki-push.js";
-import {
-  DEFAULT_MD_DIR, exportNotesToMd, importMdToNotes
-} from "./md.js";
+import { importWikiNotes, listWikiNotes } from "./wiki-import.js";
 
 const KEYS_PATH = process.env.CHIRA_KEYS
   || join(homedir(), ".config", "chira-ura", "keys.json");
@@ -183,9 +181,8 @@ function usage() {
   chira sync                  未送信メモ（SQLite）を /inbox へ送る
   chira sync pull             ブリッジから keys.json へ（旧 chira pull）
   chira wiki                  未送信メモを bonsai/wiki raw/<MM>/ へ（10件ずつ 1 コミット）
-  chira md [dir]              DB → dir/*.md（既定 ~/.chira/md）
-  chira md import [dir]       dir/*.md → DB
-  chira md path               既定ディレクトリを表示
+  chira wiki import <dir|file> wiki（JSON/JSONL）から取り込む
+  chira wiki list <dir|file>   wiki の中身だけ見る（取り込まない）
 
   メモ（拡張と同じ JSON。SQLite は ~/.chira/ura.db）
   chira db path | init        DB の場所 / 作る
@@ -531,6 +528,47 @@ switch (cmd) {
     push().catch((e) => { console.error(e.message); process.exit(1); });
     break;
   case "wiki": {
+    const sub = rest[0];
+    if (sub === "import") {
+      const target = rest[1];
+      if (!target) {
+        console.error("使い方: chira wiki import <dir|file>");
+        process.exit(1);
+      }
+      const { db } = openDb();
+      try {
+        const r = importWikiNotes(db, target);
+        console.log(`imported: ${r.imported}/${r.total} notes`);
+      } catch (e) {
+        console.error(e.message);
+        process.exitCode = 1;
+      } finally {
+        db.close();
+      }
+      break;
+    }
+    if (sub === "list") {
+      const target = rest[1];
+      if (!target) {
+        console.error("使い方: chira wiki list <dir|file>");
+        process.exit(1);
+      }
+      try {
+        const notes = listWikiNotes(target);
+        if (!notes.length) {
+          console.log("メモなし");
+        } else {
+          for (const n of notes) {
+            console.log(`${n.id}\t${new Date(n.updatedAt).toISOString()}\t${n.title}`);
+          }
+        }
+      } catch (e) {
+        console.error(e.message);
+        process.exitCode = 1;
+      }
+      break;
+    }
+
     const { db } = openDb();
     syncWiki(db)
       .then((r) => {
@@ -542,32 +580,6 @@ switch (cmd) {
         process.exitCode = 1;
       })
       .finally(() => db.close());
-    break;
-  }
-  case "md": {
-    const sub = rest[0];
-    if (sub === "path") {
-      console.log(DEFAULT_MD_DIR);
-    } else if (sub === "import") {
-      const targetDir = rest[1] || DEFAULT_MD_DIR;
-      const { db } = openDb();
-      try {
-        const r = importMdToNotes(db, targetDir);
-        console.log(`imported: ${r.imported}/${r.total} (created: ${r.created}, unchanged: ${r.unchanged})`);
-      } finally {
-        db.close();
-      }
-    } else {
-      // chira md [dir] (export)
-      const targetDir = sub || DEFAULT_MD_DIR;
-      const { db } = openDb();
-      try {
-        const r = exportNotesToMd(db, targetDir);
-        console.log(`exported: ${r.total} notes -> ${r.dir}`);
-      } finally {
-        db.close();
-      }
-    }
     break;
   }
 
