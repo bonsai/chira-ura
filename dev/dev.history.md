@@ -2,6 +2,27 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-06 / v0.1.11-dev — Google Keep Takeout からの取り込み (`chira keep import`)
+
+- 指示: Google Keep Takeout からの取り込み（branch: feat/keep-takeout-import）。
+  - `chira keep import ~/Downloads/takeout-xxxx.zip`（zip / 展開ディレクトリ / Notes.json のどれでも）
+  - `chira export notes.jsonl`（拡張へ渡す JSONL）
+  - 変換: id, title（無ければ本文1行目から導出）、content（textContent + lists + annotations）、updatedAt（µs → ms）
+  - trashed: true は既定で除く（`--trash` で含める）、同じ id は上書き（重複しない）
+- ブランチ: `feat/keep-takeout-import`（main から切る）
+- 変更:
+  - `cli/keep.js`: Takeout 読み出しモジュールを追加。
+    - zip 最小展開 reader（store / deflate 対応）。
+    - Notes.json（ラベル無し）、Notes.html（ラベル付き）の両形式に対応。
+    - Keep の時刻（µs / ms / ISO8601）を ms に統一。
+    - lists（`- [x] 項目`）、annotations（リンク）、textContent を content に結合し、attachments は除外。
+    - trashed 判定と除外（`--trash` で含める）。
+  - `cli/cli.js`: `chira keep list <path>` および `chira keep import <path> [--trash] [--jsonl <file>]` を追加。
+    - 取り込んだメモは `~/.chira/ura.db` に格納（拡張共通 model.js を共用）。
+    - 同一 id のメモは upsert で上書きし重複防止。
+    - `chira export` により拡張や他端末へ JSONL で受け渡し可能。
+  - `test/keep.test.js`: テストを追加（JSON / HTML / zip 読み出し、フィールド変換、trashed 除外/包含、SQLite への重複なし取り込み、JSONL エクスポート）。
+
 ## 2026-11-06 / v0.1.10-dev — モバイルクライアント（iOS / Android — gui/iphone, gui/apk, gui/mobile）
 
 - 指示: モバイルクライアント（iOS / Android — gui/iphone, gui/apk）。設計 dev/mobile-design.md。
