@@ -2,6 +2,17 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-06 / v0.1.11-dev — ADR-002: wiki push 前の整形 / 埋め込みパイプライン設計（raw 不変・weaver/rag 分離）
+
+- 指示: wiki push 前の整形 / 埋め込みの設計（raw 不変・weaver/rag 分離）。
+- 変更:
+  - `dev/adr-002-wiki-pipeline.md`: 送信前整形・埋め込みの要否に関する決定レコード（ADR）を策定。
+    - 決定: 送信前整形および embedding は行わず、chira-ura は raw のまま 10 件ずつ 1 コミットで push する（速さとオフライン耐性を最大化、一次情報の損失防止）。
+    - 構造化プロンプト設計: 「pain のメモ → アイデア / 作業 / 目的 / 実装」への構造化仕様（YAML frontmatter、元 raw 参照 sources）を定義。
+    - モデル選定・評価: 長文バッチ醸成用（Qwen2.5-72B/32B, Llama-3.1-70B, Gemini 1.5 Pro）および検索 embedding 用（bge-m3, text-embedding-3）を比較評価。
+    - 三層整合性: 生メモ（raw）不変、構造化・醸成は weaver（ripe/）、embedding は rag の責務分担を確立。
+  - `dev/layers.md`: ADR-002 決定事項を三層アーキテクチャ定義へ反映。
+
 ## 2026-11-06 / v0.1.10-dev — モバイルクライアント（iOS / Android — gui/iphone, gui/apk, gui/mobile）
 
 - 指示: モバイルクライアント（iOS / Android — gui/iphone, gui/apk）。設計 dev/mobile-design.md。
