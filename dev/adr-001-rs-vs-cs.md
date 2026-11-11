@@ -1,6 +1,6 @@
 # ADR-001: Windows クライアントの実装言語 — Rust vs C#
 
-- 状態: **Proposed（決定待ち）** — 2026-11-05 起票
+- 状態: **Accepted** — 2026-11-05 採択
 - 対象: bonsai/chira-ura Issue #12「Windowsクライアント：付箋メモ専用アプリ」
 - 前提: 思想は「DBはひとつ（正は bonsai/wiki の raw/）、UI/クライアントは多様に」。本 ADR は入口の1つの実装言語だけを決める
 
@@ -41,7 +41,8 @@
 
 ## 決定
 
-未決定（ユーザーの決定待ち）。決まったら本 ADR の状態を Accepted にし、敗れた側の不採用理由を1行残す。
+**C# + WinForms (.NET 8.0)** を採択。
+不採用理由（Rust）：生産性・保守性および TOY 環境（Windows 中心）との親和性を考慮し、開発速度と HttpClient/Sqlite の標準装備に優れた C# を優先。
 
 ## 影響
 

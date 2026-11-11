@@ -2,6 +2,16 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-05 / v0.1.8-dev — Windowsクライアント（C#/.NET）：付箋メモ専用アプリ
+
+- 指示: Windowsクライアント（C#/.NET）：付箋メモ専用アプリ。紙copi の UX（起動が速い、書くまでの手数が最小、整理・読み戻しは足さない）。
+- 変更:
+  - `win/ChiraUra.Core/`: メモ JSON モデル（`NoteModel`）、SQLite リポジトリ（`NoteRepository`、~/.chira/ura.db 互換）、FE API 送信クライアント（`InboxClient`、PUT /inbox/<id>.txt）、同期管理サービス（`SyncService`）。
+  - `win/ChiraUra.Win/`: WinForms 付箋メモ GUI。枠なし・ドラッグ移動可能ヘッダ・和紙風付箋デザイン、600ms 自動保存デバウンス、閉じる時の FE API / outbox 送信。
+  - `win/ChiraUra.Core.Tests/`: xUnit によるモデル、SQLite 永続化、同期ロジックの単体テスト。
+  - `win/ChiraUra.sln`: ソリューションファイル。
+  - `dev/adr-001-rs-vs-cs.md`: C# 採択として Accepted に更新。
+
 ## 2026-11-04 / v0.1.7-dev — 入口1は crx の HTML をローカル起動（オフラインメモ）
 
 - 指示: crx の HTML をローカルで起動してオフラインメモにする。
