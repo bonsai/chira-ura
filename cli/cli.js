@@ -19,6 +19,9 @@ import {
   getUnsyncedNotes, markNoteSynced
 } from "./ura-db.js";
 import { syncWiki } from "./wiki-push.js";
+import {
+  DEFAULT_MD_DIR, exportNotesToMd, importMdToNotes
+} from "./md.js";
 
 const KEYS_PATH = process.env.CHIRA_KEYS
   || join(homedir(), ".config", "chira-ura", "keys.json");
@@ -180,6 +183,9 @@ function usage() {
   chira sync                  未送信メモ（SQLite）を /inbox へ送る
   chira sync pull             ブリッジから keys.json へ（旧 chira pull）
   chira wiki                  未送信メモを bonsai/wiki raw/<MM>/ へ（10件ずつ 1 コミット）
+  chira md [dir]              DB → dir/*.md（既定 ~/.chira/md）
+  chira md import [dir]       dir/*.md → DB
+  chira md path               既定ディレクトリを表示
 
   メモ（拡張と同じ JSON。SQLite は ~/.chira/ura.db）
   chira db path | init        DB の場所 / 作る
@@ -536,6 +542,32 @@ switch (cmd) {
         process.exitCode = 1;
       })
       .finally(() => db.close());
+    break;
+  }
+  case "md": {
+    const sub = rest[0];
+    if (sub === "path") {
+      console.log(DEFAULT_MD_DIR);
+    } else if (sub === "import") {
+      const targetDir = rest[1] || DEFAULT_MD_DIR;
+      const { db } = openDb();
+      try {
+        const r = importMdToNotes(db, targetDir);
+        console.log(`imported: ${r.imported}/${r.total} (created: ${r.created}, unchanged: ${r.unchanged})`);
+      } finally {
+        db.close();
+      }
+    } else {
+      // chira md [dir] (export)
+      const targetDir = sub || DEFAULT_MD_DIR;
+      const { db } = openDb();
+      try {
+        const r = exportNotesToMd(db, targetDir);
+        console.log(`exported: ${r.total} notes -> ${r.dir}`);
+      } finally {
+        db.close();
+      }
+    }
     break;
   }
 

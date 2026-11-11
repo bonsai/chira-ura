@@ -2,6 +2,20 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-06 / v0.1.11-dev — CLI `chira md`（DB ⇄ md 単独ファイル：1 ノート 1 ファイル）
+
+- 指示: DB（`~/.chira/ura.db`）のメモを 1 ノート = 1 ファイルの md として出し入れする。人の目で読め、rum（vim 風 TUI）で編集でき、編集を DB に戻せる可搬ビュー。DB が正。md はビュー。往復は front matter の id で対応付ける。
+- 変更:
+  - `cli/md.js`:
+    - `DEFAULT_MD_DIR`: `~/.chira/md`
+    - `slugify`: 日本語 slug 対応、ファイル名禁則文字のサニタイズ
+    - `generateNoteFileName`: `<id末尾4>-<slug>.md`
+    - `formatNoteMarkdown` / `parseNoteMarkdown`: YAML front matter（`id`, `title`, `updatedAt`）と本文の相互変換
+    - `scanExistingFiles` / `exportNotesToMd`: 既存ファイルの `id` → ファイル名のマッピングを維持し再 export 時の重複防止
+    - `importMdToNotes`: 本文・タイトル変更時は `updatedAt` を現在時刻に更新して upsert、変更なしは no-op、front matter が無い md は新規ノート生成およびファイルへの front matter 書き戻し
+  - `cli/cli.js`: `chira md [dir]`, `chira md import [dir]`, `chira md path` サブコマンドを追加、usage に反映
+  - `test/md.test.js`: 往復同一性、変更なし no-op、本文編集取り込み、front matter 無し md の新規取り込みと id 書き戻し、ファイル名維持をテスト
+
 ## 2026-11-06 / v0.1.10-dev — モバイルクライアント（iOS / Android — gui/iphone, gui/apk, gui/mobile）
 
 - 指示: モバイルクライアント（iOS / Android — gui/iphone, gui/apk）。設計 dev/mobile-design.md。
