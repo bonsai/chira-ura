@@ -2,6 +2,13 @@
 
 指示と実装の履歴。新しいものが上。
 
+## 2026-11-11 / v0.1.14-dev — rum TUI リーダ/エディタ（Rust, ratatui）
+
+- 実装: `gui/rum/` に Rust stable + ratatui + crossterm の vim 風 TUI リーダ/エディタを追加。
+- 機能: Markdown / text の一覧・閲覧・編集、検索、移動、undo/redo、ファイル操作、front matter の保持と保存時メタデータ更新。
+- CI: `.github/workflows/rum.yml` で Windows 上の fmt / clippy / build / test を実行し、`rum.exe` を artifact 化。
+- 入口: `gui/tui` は `gui/rum` を指す Git symlink。実装本体は `gui/rum/` のみとし、二重管理しない。
+
 ## 2026-11-10 / v0.1.13-dev — Windows 付箋: 物理 UI のフッターとアクション時だけのステータス
 
 - 指示: 物理 ui。X / pin 止めマーク / ＋ / コピペマーク。ステータスはアクション表示のみに。

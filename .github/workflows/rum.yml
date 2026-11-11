@@ -1,0 +1,52 @@
+name: rum TUI (gui/rum)
+
+# rum: vim 風 TUI リーダ/エディタ（Rust, ratatui）を GitHub Actions でビルドする。
+# Windows / Unix で動く単一バイナリ。
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "gui/rum/**"
+      - ".github/workflows/rum.yml"
+  pull_request:
+    paths:
+      - "gui/rum/**"
+      - ".github/workflows/rum.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: gui/rum
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: gui/rum
+
+      - name: cargo fmt --check
+        run: cargo fmt --all -- --check
+
+      - name: cargo clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Build (release)
+        run: cargo build --release
+
+      - name: Test
+        run: cargo test
+
+      - name: Upload exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: rum-windows
+          path: gui/rum/target/release/rum.exe
+          if-no-files-found: error
