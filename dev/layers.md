@@ -40,6 +40,11 @@
 - `dev/layers.puml`（PlantUML）
 - レンダリングは CI（`.github/workflows/diagrams.yml`）が SVG を生成（`gh workflow`）
 
+## ADR 決定事項（ADR-002）
+- **送信前整形・embedding は行わない**: `chira-ura` は生メモをそのまま最速で `bonsai/wiki/raw/` に 10 件ずつ commit push する（速さとオフライン耐性を最大化、一次情報の損失をゼロに）。
+- **構造化・整形は weaver**: 「pain → 目的 / アイデア / 実装」への構造化・要約・創作的再構成は `bonsai/weaver`（非同期バッチ）が担当し、`wiki/ripe/` に出力。必ず元 raw への参照を持つ。
+- **埋め込みは rag**: embedding（bge-m3 等）は `bonsai/rag` が担当し、`wiki/ripe/` をベクトル化。
+
 ## 各層
 
 ### 1. 書き殴る層（dump）— `bonsai/chira-ura`
