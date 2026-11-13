@@ -13,9 +13,15 @@
  * - chira_wiki_list_raw(month?)
  * - chira_wiki_read(path)
  * - chira_wiki_search(query)
+ * - search_notes(query, k?)        (LLM semantic search, issue #1)
+ * - ask_notes(question, k?)         (LLM RAG answer with citations)
+ * - related_notes(name, k?)         (LLM related notes by embedding)
  */
 
 import { listAllKeys } from "./wiki-push.js";
+import { searchNotes } from "./search.js";
+import { askNotes } from "./ask.js";
+import { similarNotes } from "./similar.js";
 
 const PROTOCOL_VERSION = "2026-07-28";
 const GITHUB_API_BASE = "https://api.github.com";
@@ -116,6 +122,72 @@ export const TOOLS = [
         }
       },
       required: ["query"]
+    },
+    annotations: {
+      readOnlyHint: true
+    }
+  },
+  {
+    name: "search_notes",
+    title: "Chira: Semantic Search Notes",
+    description: "Embedding-based semantic search over bonsai/wiki raw/ notes. Returns top-k {path, score, snippet}. Falls back to keyword search when embeddings are unavailable. Read-only.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description: "Search query (semantic)"
+        },
+        k: {
+          type: "number",
+          description: "Max results (default 5, max 20)"
+        }
+      },
+      required: ["query"]
+    },
+    annotations: {
+      readOnlyHint: true
+    }
+  },
+  {
+    name: "ask_notes",
+    title: "Chira: Ask Notes (RAG)",
+    description: "Ask a question against bonsai/wiki raw/ notes. Retrieves top-3 notes and answers with citations in raw/<MM>/<name> format. Read-only.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        question: {
+          type: "string",
+          description: "Question to answer from past notes"
+        },
+        k: {
+          type: "number",
+          description: "Max notes to retrieve (default 3)"
+        }
+      },
+      required: ["question"]
+    },
+    annotations: {
+      readOnlyHint: true
+    }
+  },
+  {
+    name: "related_notes",
+    title: "Chira: Related Notes",
+    description: "Find past notes related to a given note by embedding similarity. Accepts 'raw/<MM>/<name>' or a bare file name. Read-only.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        name: {
+          type: "string",
+          description: "Note file name, e.g. 'raw/04/20260415_120000.txt' or '20260415_120000.txt'"
+        },
+        k: {
+          type: "number",
+          description: "Max results (default 5, max 20)"
+        }
+      },
+      required: ["name"]
     },
     annotations: {
       readOnlyHint: true
@@ -475,6 +547,60 @@ async function handleToolCall(name, args, env, fetchFn = fetch) {
       };
     }
 
+    case "search_notes": {
+      const result = await searchNotes({
+        query: args.query,
+        env,
+        fetchFn,
+        k: args.k
+      });
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({ mode: result.mode, results: result.results }, null, 2)
+          }
+        ]
+      };
+    }
+
+    case "ask_notes": {
+      const result = await askNotes({
+        question: args.question,
+        env,
+        fetchFn,
+        k: args.k
+      });
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(result, null, 2)
+          }
+        ]
+      };
+    }
+
+    case "related_notes": {
+      const result = await similarNotes({
+        name: args.name,
+        env,
+        fetchFn,
+        k: args.k
+      });
+      if (!result) {
+        throw new Error(`Note not found in corpus: ${args.name}`);
+      }
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(result, null, 2)
+          }
+        ]
+      };
+    }
+
     default:
       throw new Error(`Unknown tool: ${name}`);
   }
@@ -523,7 +649,7 @@ export async function handleMcpRequest(request, env, fetchFn = fetch) {
               version: "0.1.8"
             }
           },
-          instructions: "Chira: ultra-minimal scratchpad MCP server for inbox memo capture and wiki/raw retrieval."
+          instructions: "Chira: ultra-minimal scratchpad MCP server for inbox memo capture, wiki/raw retrieval, and LLM read-side (semantic search / RAG ask / related notes)."
         };
         return new Response(JSON.stringify(rpcResponse(id, result)), {
           headers: { "Content-Type": "application/json" }

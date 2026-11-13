@@ -1,5 +1,5 @@
 /**
- * Cloudflare Worker: chira-ura FE API + Cron Hourly Batch + MCP
+ * Cloudflare Worker: chira-ura FE API + Cron Hourly Batch + MCP + LLM read-side
  *
  * Endpoints:
  * - PUT /inbox/<name>: writes memo { content, updatedAt, closed } into KV (INBOX)
@@ -7,6 +7,9 @@
  * - GET /count: { count, lastReceivedAt } (ISO string, liveness check)
  * - POST /mcp: Streamable HTTP MCP endpoint
  * - POST /cron/flush: manually trigger flush of closed files to bonsai/wiki
+ * - GET /search?q=&k=: semantic search over wiki/raw (issue #1, read-side LLM)
+ * - POST /ask {question}: RAG answer with 出典 (raw/<MM>/<name>)
+ * - GET /similar/<name>: related notes by embedding
  *
  * Scheduled event:
  * - 0 * * * * (hourly): triggers flushClosedFiles(env)
@@ -14,6 +17,9 @@
 
 import { flushClosedFiles, listAllKeys } from "./wiki-push.js";
 import { handleMcpRequest } from "./mcp.js";
+import { searchNotes } from "./search.js";
+import { askNotes } from "./ask.js";
+import { similarNotes } from "./similar.js";
 
 /**
  * Checks bearer token / X-Chira-Token against API_TOKEN (or legacy CHIRA_TOKEN).
@@ -91,9 +97,9 @@ export default {
   },
 
   /**
-   * Fetch Handler
+   * Fetch Handler. fetchFn is injectable for tests (defaults to global fetch).
    */
-  async fetch(request, env, ctx) {
+  async fetch(request, env, ctx, fetchFn = fetch) {
     if (request.method === "OPTIONS") {
       return new Response(null, {
         status: 204,
@@ -121,7 +127,57 @@ export default {
           headers: { Allow: "POST" }
         });
       }
-      return handleMcpRequest(request, env);
+      return handleMcpRequest(request, env, fetchFn);
+    }
+
+    // GET /search?q=&k= (semantic search over wiki/raw, read-only)
+    if (request.method === "GET" && pathname === "/search") {
+      const query = url.searchParams.get("q") || "";
+      const k = url.searchParams.get("k") || undefined;
+      try {
+        const { mode, results } = await searchNotes({ query, env, fetchFn, k });
+        return jsonResponse({ query, mode, count: results.length, results });
+      } catch (err) {
+        const status = err.status || 500;
+        return jsonResponse({ error: err.message }, status);
+      }
+    }
+
+    // POST /ask {question} (RAG answer with 出典, read-only)
+    if (request.method === "POST" && pathname === "/ask") {
+      let body;
+      try {
+        body = await request.json();
+      } catch {
+        return jsonResponse({ error: "Invalid JSON body" }, 400);
+      }
+      const question = typeof body.question === "string" ? body.question : "";
+      if (!question.trim()) {
+        return jsonResponse({ error: "Question is required" }, 400);
+      }
+      try {
+        const result = await askNotes({ question, env, fetchFn, k: body.k });
+        return jsonResponse({ question, ...result });
+      } catch (err) {
+        const status = err.status || 500;
+        return jsonResponse({ error: err.message }, status);
+      }
+    }
+
+    // GET /similar/<name> (related notes by embedding, read-only)
+    if (request.method === "GET" && pathname.startsWith("/similar/")) {
+      const name = decodeURIComponent(pathname.slice("/similar/".length));
+      const k = url.searchParams.get("k") || undefined;
+      try {
+        const result = await similarNotes({ name, env, fetchFn, k });
+        if (!result) {
+          return jsonResponse({ error: `Note not found in corpus: ${name}` }, 404);
+        }
+        return jsonResponse({ ...result, count: result.results.length });
+      } catch (err) {
+        const status = err.status || 500;
+        return jsonResponse({ error: err.message }, status);
+      }
     }
 
     const kv = env.INBOX;

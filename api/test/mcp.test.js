@@ -93,7 +93,7 @@ test("MCP: server/discover and initialize", async () => {
   assert.equal(data2.result.serverInfo.name, "chira-mcp");
 });
 
-test("MCP: tools/list lists all 6 tools", async () => {
+test("MCP: tools/list lists all 9 tools", async () => {
   const env = { INBOX: createMockKV() };
   const req = new Request("https://worker.local/mcp", {
     method: "POST",
@@ -104,7 +104,7 @@ test("MCP: tools/list lists all 6 tools", async () => {
   assert.equal(res.status, 200);
   const data = await res.json();
   assert.equal(data.id, 20);
-  assert.equal(data.result.tools.length, 6);
+  assert.equal(data.result.tools.length, 9);
   const names = data.result.tools.map((t) => t.name);
   assert.deepEqual(names, [
     "chira_note_add",
@@ -112,7 +112,10 @@ test("MCP: tools/list lists all 6 tools", async () => {
     "chira_count",
     "chira_wiki_list_raw",
     "chira_wiki_read",
-    "chira_wiki_search"
+    "chira_wiki_search",
+    "search_notes",
+    "ask_notes",
+    "related_notes"
   ]);
 });
 
