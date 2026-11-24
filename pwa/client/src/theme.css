@@ -1,0 +1,106 @@
+@import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap');
+@import "tailwindcss";
+@import "tailwindcss-safe-area";
+
+@theme {
+  --text-xs: 12px;
+  --text-xs--line-height: 16px;
+  --text-sm: 14px;
+  --text-sm--line-height: 20px;
+  --text-base: 16px;
+  --text-base--line-height: 24px;
+  --text-lg: 18px;
+  --text-lg--line-height: 28px;
+  --text-xl: 20px;
+  --text-xl--line-height: 28px;
+  --text-2xl: 24px;
+  --text-2xl--line-height: 32px;
+  --text-3xl: 30px;
+  --text-3xl--line-height: 36px;
+  --font-display: "Zen Maru Gothic", system-ui, sans-serif;
+}
+
+:root {
+  color-scheme: light dark;
+  --bg: #f3ecdb;
+  --surface: #fffdf6;
+  --paper: #fffdf6;
+  --paper-edge: #e7dcc0;
+  --text: #262019;
+  --dim: #7a6f5c;
+  --border: #ddd2b8;
+  --accent: #c2401f;
+  --accent-soft: #f6e3da;
+  --radius: 4px;
+  --space-surface: var(--surface);
+  --space-surface-alt: #f7f1e0;
+  --space-muted: var(--dim);
+  --space-border: var(--border);
+  --space-accent: var(--accent);
+  /* washi tape colors */
+  --tape-sage: #9caf88;
+  --tape-sky: #8fa8bf;
+  --tape-sand: #d9b36c;
+  --tape-rose: #cf9a94;
+  --tape-plain: #cbbfa3;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #171410;
+    --surface: #241f18;
+    --paper: #2a241b;
+    --paper-edge: #171310;
+    --text: #f0e8d5;
+    --dim: #a2957d;
+    --border: #40382a;
+    --accent: #e0683f;
+    --accent-soft: #3d2620;
+    --space-surface-alt: #2e2820;
+    --tape-plain: #6b5f49;
+  }
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* A sheet of paper: faint ruled lines and a soft drop shadow. */
+.paper {
+  background-color: var(--paper);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 27px,
+    color-mix(in srgb, var(--border) 45%, transparent) 27px,
+    color-mix(in srgb, var(--border) 45%, transparent) 28px
+  );
+  box-shadow:
+    0 1px 2px rgb(38 32 25 / 0.12),
+    0 8px 20px -12px rgb(38 32 25 / 0.35);
+}
+
+/* Washi tape strip across the top of a slip. */
+.tape {
+  position: relative;
+}
+.tape::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-1.5deg);
+  width: 84px;
+  height: 20px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--tape-color, var(--tape-plain)) 75%, transparent);
+  box-shadow: 0 1px 2px rgb(38 32 25 / 0.15);
+  pointer-events: none;
+}
+
+/* Phone tap targets: at least 32px tall. */
+@layer base {
+  button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) {
+    min-height: 2rem;
+  }
+}

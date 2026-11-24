@@ -1,0 +1,9 @@
+{
+  "design_brief": {
+    "aesthetic": "紙とインクのアナログ感 — warm paper, torn edges, hanko-red stamps, washi-tape box tabs; tactile and quiet, not appy",
+    "colors": "paper cream #faf5e9, ink black #262019, hanko vermillion #c2401f as the single accent, muted box-tab pastels (sage #9caf88, sky #8fa8bf, sand #d9b36c, rose #cf9a94) tinted toward the paper",
+    "hero_element": "The capture slip: one big blank sheet of paper pinned at the top — write, pick a box, tear it off. Everything else is filed paper below it.",
+    "moment": "yo が思いついた断片を、アプリを開いて1秒で紙に書いて箱へ放り込む。あとから JSONL で丸ごと持ち出せるので、メモはこの箱の中に永遠に残る。",
+    "typography": "Zen Maru Gothic (rounded Japanese gothic, sticky-note warmth) for headings and box labels; system-ui for memo body text so handwriting-speed entry stays crisp"
+  }
+}

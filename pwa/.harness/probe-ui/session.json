@@ -1,0 +1,8 @@
+{
+  "schema_version": "hatch.probe_ui_session.v1",
+  "socket": "/home/hatch/workspace/ts-spaces/chira-ura-pwa/.harness/probe-ui/sock",
+  "slug": "chira-ura-pwa",
+  "url": "https://artifact-capture.invalid/spaces/v2/hatch-audit-d2698516-ac28-419c-8411-05f5a1957863/",
+  "audit_session_id": "ba56cdbc-b667-490b-8a6f-74ea3228a736",
+  "pid": 10148
+}
